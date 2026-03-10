@@ -1,12 +1,13 @@
 import '@mantine/core/styles.css';
 
 import { Metadata } from 'next';
-import { ColorSchemeScript, mantineHtmlProps, MantineProvider } from '@mantine/core';
+import { ColorSchemeScript, mantineHtmlProps, MantineProvider, Title, Container, Box } from '@mantine/core';
 import { theme } from '../theme';
+import { QueryProvider } from '../components/QueryProvider';
 
 export const metadata: Metadata = {
-  title: 'Mantine Next.js template',
-  description: 'I am using Mantine with Next.js!',
+  title: 'Snappy Case',
+  description: 'Case management dashboard',
 };
 
 export default function RootLayout({ children }: { children: any }) {
@@ -21,7 +22,16 @@ export default function RootLayout({ children }: { children: any }) {
         />
       </head>
       <body>
-        <MantineProvider theme={theme}>{children}</MantineProvider>
+        <MantineProvider theme={theme} defaultColorScheme="dark">
+          <QueryProvider>
+            <Box component="header" py="md" px="lg" style={{ borderBottom: '1px solid var(--mantine-color-gray-8)' }}>
+              <Container>
+                <Title order={1} size="h3">Snappy Case</Title>
+              </Container>
+            </Box>
+            {children}
+          </QueryProvider>
+        </MantineProvider>
       </body>
     </html>
   );

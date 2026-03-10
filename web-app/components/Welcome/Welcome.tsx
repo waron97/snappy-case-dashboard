@@ -1,7 +1,11 @@
 import { Anchor, Text, Title } from '@mantine/core';
+import { odooRead } from '@/app/api';
 import classes from './Welcome.module.css';
 
-export function Welcome() {
+export async function Welcome() {
+  const data = await odooRead('helpdesk.ticket', [1415688], ['name', 'stage_id']);
+  console.log(data);
+
   return (
     <>
       <Title className={classes.title} ta="center" mt={100}>
