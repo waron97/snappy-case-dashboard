@@ -1,21 +1,22 @@
 'use client';
 
 import { useParams } from 'next/navigation';
+import { IconCode } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import {
+  Anchor,
+  Button,
   Center,
   Container,
   Grid,
   Group,
-  Input,
   Loader,
   Space,
   Stack,
   Text,
-  TextInput,
   Title,
 } from '@mantine/core';
-import CaseTimeline from '@/components/CaseTimeline';
+import UiCard from '@/components/UiCard';
 import { odooRead, OneToMany } from '../../api';
 
 type BaseFields = {
@@ -26,6 +27,7 @@ type BaseFields = {
   triplet_subtype_id: OneToMany;
   triplet_type_id: OneToMany;
   workflow_id: OneToMany;
+  parent_case_id: OneToMany;
 };
 
 export default function Ticket() {
@@ -56,6 +58,7 @@ export default function Ticket() {
           'workflow_id',
           'triplet_subtype_id',
           'triplet_type_id',
+          'parent_case_id',
         ]
       ),
   });
@@ -71,21 +74,32 @@ export default function Ticket() {
   function renderTimeline(values: BaseFields) {}
 
   function renderBasicInfo(values: BaseFields) {
-    const item = (label, value) => (
-      <Group justify="space-between" gap={24}>
-        <Text>{label}</Text>
-        <Text fw="bold">{value}</Text>
-      </Group>
+    const item = (label: string, value: string, href?: string) => (
+      <Stack gap={0}>
+        <Text c="dimmed">{label}</Text>
+        {href ? (
+          <Anchor href={href} fw="bold">
+            {value}
+          </Anchor>
+        ) : (
+          <Text fw="bold">{value}</Text>
+        )}
+      </Stack>
     );
 
+    const parent = values.parent_case_id;
+
     return (
-      <Stack>
-        {item('Stage', values.stage_id[1])}
-        {item('Type', values.triplet_type_id[1])}
-        {item('Subtype', values.triplet_subtype_id[1])}
-        {item('Detail', values.ticket_type_id[1])}
-        {item('Workflow', values.workflow_id?.[1])}
-      </Stack>
+      <UiCard title="Case Type">
+        <Stack>
+          {item('Stage', values.stage_id[1])}
+          {item('Type', values.triplet_type_id[1])}
+          {item('Subtype', values.triplet_subtype_id[1])}
+          {item('Detail', values.ticket_type_id[1])}
+          {item('Workflow', values.workflow_id?.[1])}
+          {!!parent?.[0] && item('Parent', parent[1], `/helpdesk.ticket/${parent[0]}`)}
+        </Stack>
+      </UiCard>
     );
   }
 
@@ -119,20 +133,36 @@ export default function Ticket() {
 
   return (
     <Container size="xl" py="md">
-      <Title fz={28}>
-        {caseBaseFields.name} (#{id})
-      </Title>
+      <Group gap="md" justify="space-between">
+        <Title fz={28}>
+          {caseBaseFields.name} (#{id})
+        </Title>
+        <Group gap="sm">
+          <Anchor
+            href={`https://odoo.sorgenia-test-02.symple.cloud/web#id=${id}&model=helpdesk.ticket&view_type=form`}
+            target="_blank"
+          >
+            <Button bg="#714B67">ODOO</Button>
+          </Anchor>
+          <Button>
+            <IconCode />
+          </Button>
+        </Group>
+      </Group>
 
       <Space h={32} />
 
       <Grid gutter="md">
-        <Grid.Col span={3}>
-          <Stack gap="lg">{renderBasicInfo(caseBaseFields)}</Stack>
+        <Grid.Col span={8}>
+          <UiCard title="Active Phase" />
         </Grid.Col>
-        <Grid.Col span={4}></Grid.Col>
-        <Grid.Col span={3}></Grid.Col>
-        <Grid.Col span={2}>
-          <CaseTimeline caseId={caseBaseFields.id} />
+        <Grid.Col span={4}>
+          <Stack gap="lg">
+            {renderBasicInfo(caseBaseFields)}
+            <UiCard title="Children" />
+            <UiCard title="Logs" />
+            <UiCard title="Staging Area" />
+          </Stack>
         </Grid.Col>
       </Grid>
     </Container>

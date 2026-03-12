@@ -5,6 +5,7 @@ import { IconArrowRight } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { Center, Loader, Text, Timeline } from '@mantine/core';
 import { odooSearchRead, OneToMany } from '../../../app/api';
+import UiCard from '../UiCard';
 
 type Props = {
   caseId: number;
@@ -63,24 +64,26 @@ export default function CaseTimeline({ caseId }: Props) {
   }
 
   return (
-    <Timeline>
-      {caseHistory
-        ?.filter((historyItem) => historyItem.phase_id && historyItem.phase_result_id)
-        ?.map((historyItem) => {
-          return (
-            <Timeline.Item title="Case avanzato">
-              <Text c="dimmed" size="sm">
-                {historyItem.active_phase_id[1]}
-              </Text>
-              <Text c="dimmed" size="sm">
-                {historyItem.phase_result_id[1]}
-              </Text>
-              <Text size="xs" mt={4}>
-                {dayjs(historyItem.date).format('DD/MM/YY HH:mm')}
-              </Text>
-            </Timeline.Item>
-          );
-        })}
-    </Timeline>
+    <UiCard>
+      <Timeline>
+        {caseHistory
+          ?.filter((historyItem) => historyItem.phase_id && historyItem.phase_result_id)
+          ?.map((historyItem) => {
+            return (
+              <Timeline.Item title="Case avanzato">
+                <Text c="dimmed" size="sm">
+                  {historyItem.active_phase_id[1]}
+                </Text>
+                <Text c="dimmed" size="sm">
+                  {historyItem.phase_result_id[1]}
+                </Text>
+                <Text size="xs" mt={4}>
+                  {dayjs(historyItem.date).format('DD/MM/YY HH:mm')}
+                </Text>
+              </Timeline.Item>
+            );
+          })}
+      </Timeline>
+    </UiCard>
   );
 }

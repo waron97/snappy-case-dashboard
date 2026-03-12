@@ -145,7 +145,7 @@ export default function HomePage() {
       <Table.Td>{item.triplet_active_phase_id?.[1]}</Table.Td>
       <Table.Td>{dayjs(item.create_date).format('D/M/YY HH:mm')}</Table.Td>
       <Table.Td>
-        <Link href={`/helpdesk_ticket/${item.id}`}>
+        <Link href={`/helpdesk.ticket/${item.id}`}>
           <Button>
             <IconEye size={18} />
           </Button>
