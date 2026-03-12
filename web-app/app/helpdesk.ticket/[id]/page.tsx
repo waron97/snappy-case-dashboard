@@ -16,6 +16,12 @@ import {
   Text,
   Title,
 } from '@mantine/core';
+import CaseActivePhase from '@/components/CaseActivePhase';
+import CaseChildren from '@/components/CaseChildren';
+import CaseIntegrationHistory from '@/components/CaseIntegrationHistory';
+import CaseLogs from '@/components/CaseLogs';
+import CaseMarketComm from '@/components/CaseMarketComm';
+import CaseStagingArea from '@/components/CaseStagingArea';
 import UiCard from '@/components/UiCard';
 import { odooRead, OneToMany } from '../../api';
 
@@ -28,6 +34,9 @@ type BaseFields = {
   triplet_type_id: OneToMany;
   workflow_id: OneToMany;
   parent_case_id: OneToMany;
+  child_case_ids: number[];
+  market_comm_event_log_ids: number[];
+  integration_history_ids: number[];
 };
 
 export default function Ticket() {
@@ -46,7 +55,7 @@ export default function Ticket() {
     isLoading: isBaseLoading,
     error,
   } = useQuery<BaseFields[]>({
-    queryKey: ['case', 'base', id],
+    queryKey: ['case', id, 'for-base-view'],
     queryFn: () =>
       odooRead(
         'helpdesk.ticket',
@@ -59,6 +68,9 @@ export default function Ticket() {
           'triplet_subtype_id',
           'triplet_type_id',
           'parent_case_id',
+          'child_case_ids',
+          'market_comm_event_log_ids',
+          'integration_history_ids',
         ]
       ),
   });
@@ -71,20 +83,20 @@ export default function Ticket() {
   // Functions
   // -------------------------------------
 
-  function renderTimeline(values: BaseFields) {}
-
   function renderBasicInfo(values: BaseFields) {
     const item = (label: string, value: string, href?: string) => (
-      <Stack gap={0}>
-        <Text c="dimmed">{label}</Text>
-        {href ? (
-          <Anchor href={href} fw="bold">
-            {value}
-          </Anchor>
-        ) : (
-          <Text fw="bold">{value}</Text>
-        )}
-      </Stack>
+      <Grid.Col span={4}>
+        <Stack gap={0}>
+          <Text c="dimmed">{label}</Text>
+          {href ? (
+            <Anchor href={href} fw="bold">
+              {value}
+            </Anchor>
+          ) : (
+            <Text fw="bold">{value}</Text>
+          )}
+        </Stack>
+      </Grid.Col>
     );
 
     const parent = values.parent_case_id;
@@ -92,12 +104,16 @@ export default function Ticket() {
     return (
       <UiCard title="Case Type">
         <Stack>
-          {item('Stage', values.stage_id[1])}
-          {item('Type', values.triplet_type_id[1])}
-          {item('Subtype', values.triplet_subtype_id[1])}
-          {item('Detail', values.ticket_type_id[1])}
-          {item('Workflow', values.workflow_id?.[1])}
-          {!!parent?.[0] && item('Parent', parent[1], `/helpdesk.ticket/${parent[0]}`)}
+          <Grid>
+            {item('Type', values.triplet_type_id[1])}
+            {item('Subtype', values.triplet_subtype_id[1])}
+            {item('Detail', values.ticket_type_id[1])}
+          </Grid>
+          <Grid>
+            {item('Stage', values.stage_id[1])}
+            {item('Workflow', values.workflow_id?.[1])}
+            {!!parent?.[0] && item('Parent', parent[1], `/helpdesk.ticket/${parent[0]}`)}
+          </Grid>
         </Stack>
       </UiCard>
     );
@@ -154,14 +170,37 @@ export default function Ticket() {
 
       <Grid gutter="md">
         <Grid.Col span={8}>
-          <UiCard title="Active Phase" />
+          <Stack gap="md">
+            {renderBasicInfo(caseBaseFields)}
+            <CaseActivePhase
+              caseId={caseBaseFields.id}
+              workflowId={caseBaseFields.workflow_id[0]}
+            />
+          </Stack>
         </Grid.Col>
         <Grid.Col span={4}>
           <Stack gap="lg">
-            {renderBasicInfo(caseBaseFields)}
-            <UiCard title="Children" />
-            <UiCard title="Logs" />
-            <UiCard title="Staging Area" />
+            {caseBaseFields.market_comm_event_log_ids.length > 0 && (
+              <UiCard title="Market comm">
+                <CaseMarketComm caseId={caseBaseFields.id} />
+              </UiCard>
+            )}
+            <UiCard title="Logs">
+              <CaseLogs caseId={caseBaseFields.id} />
+            </UiCard>
+            {caseBaseFields.integration_history_ids.length > 0 && (
+              <UiCard title="Integration History">
+                <CaseIntegrationHistory caseId={caseBaseFields.id} />
+              </UiCard>
+            )}
+            <UiCard title="Staging Area">
+              <CaseStagingArea caseId={caseBaseFields.id} />
+            </UiCard>
+            {caseBaseFields.child_case_ids.length > 0 && (
+              <UiCard title="Children">
+                <CaseChildren caseId={caseBaseFields.id} />
+              </UiCard>
+            )}
           </Stack>
         </Grid.Col>
       </Grid>

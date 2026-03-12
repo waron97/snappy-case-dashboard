@@ -2,6 +2,7 @@
 
 import dayjs from 'dayjs';
 import { useRef, useState } from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { IconEye } from '@tabler/icons-react';
 import { useInfiniteQuery } from '@tanstack/react-query';
@@ -145,7 +146,7 @@ export default function HomePage() {
       <Table.Td>{item.triplet_active_phase_id?.[1]}</Table.Td>
       <Table.Td>{dayjs(item.create_date).format('D/M/YY HH:mm')}</Table.Td>
       <Table.Td>
-        <Link href={`/helpdesk.ticket/${item.id}`}>
+        <Link href={`/helpdesk.ticket/${item.id}`} target="_blank">
           <Button>
             <IconEye size={18} />
           </Button>

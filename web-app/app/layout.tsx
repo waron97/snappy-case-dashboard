@@ -34,7 +34,7 @@ export default function RootLayout({ children }: { children: any }) {
             <Box py="md" style={{ borderBottom: '1px solid var(--mantine-color-gray-8)' }}>
               <header>
                 <Container size="xl">
-                  <a href="#">
+                  <a href="/">
                     <Title fz={21}>Snappy Case</Title>
                   </a>
                 </Container>
