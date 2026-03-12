@@ -1,9 +1,16 @@
 import '@mantine/core/styles.css';
 
 import { Metadata } from 'next';
-import { ColorSchemeScript, mantineHtmlProps, MantineProvider, Title, Container, Box } from '@mantine/core';
+import {
+  Box,
+  ColorSchemeScript,
+  Container,
+  mantineHtmlProps,
+  MantineProvider,
+  Title,
+} from '@mantine/core';
+import { QueryProvider } from '@/components/QueryProvider';
 import { theme } from '../theme';
-import { QueryProvider } from '../components/QueryProvider';
 
 export const metadata: Metadata = {
   title: 'Snappy Case',
@@ -24,10 +31,14 @@ export default function RootLayout({ children }: { children: any }) {
       <body>
         <MantineProvider theme={theme} defaultColorScheme="dark">
           <QueryProvider>
-            <Box component="header" py="md" px="lg" style={{ borderBottom: '1px solid var(--mantine-color-gray-8)' }}>
-              <Container>
-                <Title order={1} size="h3">Snappy Case</Title>
-              </Container>
+            <Box py="md" style={{ borderBottom: '1px solid var(--mantine-color-gray-8)' }}>
+              <header>
+                <Container size="xl">
+                  <a href="#">
+                    <Title fz={21}>Snappy Case</Title>
+                  </a>
+                </Container>
+              </header>
             </Box>
             {children}
           </QueryProvider>

@@ -1,5 +1,7 @@
 'use server';
 
+export type OneToMany = [number, string];
+
 class ConnectError extends Error {
   constructor(response: Response, text: string) {
     super(`Failed to load resource at ${response.url}: status code ${response.status} : ${text}`);
@@ -9,6 +11,12 @@ class ConnectError extends Error {
 class AuthError extends Error {
   constructor() {
     super('Authentication failed (401)');
+  }
+}
+
+class OdooError extends Error {
+  constructor(error: { code: number; message: string; data: { message: string } }) {
+    super(`Odoo error: ${error.data?.message ?? error.message}`);
   }
 }
 
@@ -92,7 +100,9 @@ async function odooJsonRpc(params: OdooParams, token: string) {
     throw new ConnectError(response, await response.text());
   }
   const json = await response.json();
-  console.log(json);
+  if (json.error) {
+    throw new OdooError(json.error);
+  }
   return json.result;
 }
 
@@ -129,7 +139,7 @@ async function odooExecuteKw(
   }
 }
 
-type OdooDomain = Array<string | number | boolean | null | OdooDomain>;
+export type OdooDomain = Array<string | number | boolean | null | OdooDomain>;
 
 export async function odooSearch(
   model: string,
@@ -179,4 +189,13 @@ export async function odooSearchRead(
   }
 
   return odooExecuteKw(model, 'search_read', args, kwargs);
+}
+
+export async function odooFieldsGet(model: string, fields?: string[], attributes?: string[]) {
+  const kwargs: Record<string, unknown> = {};
+  if (attributes !== undefined) {
+    kwargs.attributes = attributes;
+  }
+  const args: unknown[] = [fields ?? []];
+  return odooExecuteKw(model, 'fields_get', args, kwargs);
 }

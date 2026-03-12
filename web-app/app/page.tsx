@@ -1,80 +1,158 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import dayjs from 'dayjs';
+import { useRef, useState } from 'react';
+import Link from 'next/link';
+import { IconEye } from '@tabler/icons-react';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import {
+  Badge,
+  Button,
   Center,
+  Checkbox,
   Container,
   Group,
   Loader,
-  Pagination,
-  Select,
   Stack,
   Table,
+  TagsInput,
   Text,
-  TextInput,
 } from '@mantine/core';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { constructOdooDomain } from '@/utils/odoo';
 import { odooSearchRead } from './api';
 
 interface Case {
   id: number;
-  title: string;
-  status: string;
-  priority: string;
-  date: string;
+  name: string;
+  stage_id: [number, string];
+  workflow_id: [number, string];
+  ticket_type_id: [number, string];
+  customer_id: [number, string];
+  triplet_active_phase_id: [number, string];
+  error_message?: string;
+  create_date: string;
 }
 
 export default function HomePage() {
-  const [filters, setFilters] = useState({
-    search: '',
-    status: '',
-    priority: '',
+  // -------------------------------------
+  // Hooks
+  // -------------------------------------
+  const [filters, setFilters] = useState<{
+    name: string[];
+    is_close: boolean | null;
+    workflow: string[];
+    ticketType: string[];
+    customer_id: string[];
+  }>({
+    name: [],
+    is_close: false,
+    workflow: [],
+    ticketType: [],
+    customer_id: [],
   });
 
-  const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const {
-    data: cases = [],
-    isLoading,
-    isError,
-    error,
-  } = useQuery<Case[]>({
-    queryKey: ['cases'],
-    queryFn: () =>
-      odooSearchRead(
-        'helpdesk.ticket',
-        [],
-        ['name', 'id', 'ticket_type_id'],
-        0,
-        20,
-        'create_date DESC'
-      ),
+  // -------------------------------------
+  // Queries
+  // -------------------------------------
+
+  const { data, isLoading, isError, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ['cases', filters],
+      queryFn: ({ pageParam = 0 }) =>
+        odooSearchRead(
+          'helpdesk.ticket',
+          constructOdooDomain({
+            'workflow_id.name': { operator: 'ilike', value: filters.workflow },
+            'ticket_type_id.name': { operator: 'ilike', value: filters.ticketType },
+            name: { operator: 'ilike', value: filters.name },
+            is_close: { operator: '=', value: filters.is_close },
+          }),
+          [
+            'name',
+            'id',
+            'ticket_type_id',
+            'workflow_id',
+            'customer_id',
+            'stage_id',
+            'triplet_active_phase_id',
+            'error_message',
+            'create_date',
+          ],
+          pageParam,
+          20,
+          'create_date DESC'
+        ),
+      getNextPageParam: (lastPage, allPages) =>
+        lastPage.length === 20 ? allPages.length * 20 : undefined,
+      initialPageParam: 0,
+    });
+
+  useInfiniteScroll({
+    sentinelRef,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
   });
 
-  const filteredData = useMemo(
-    () =>
-      cases.filter((item: Case) => {
-        const matchesSearch = item.title.toLowerCase().includes(filters.search.toLowerCase());
-        const matchesStatus = !filters.status || item.status === filters.status;
-        const matchesPriority = !filters.priority || item.priority === filters.priority;
-        return matchesSearch && matchesStatus && matchesPriority;
-      }),
-    [cases, filters]
-  );
+  // -------------------------------------
+  // Functions
+  // -------------------------------------
 
-  const totalPages = Math.ceil(filteredData.length / pageSize);
-  const paginatedData = filteredData.slice((page - 1) * pageSize, page * pageSize);
+  const itemName = (row: Case) => {
+    const stageName = row.stage_id[1];
+    if (row.error_message || ['Done KO'].includes(stageName)) {
+      return (
+        <Badge size="md" color="red" style={{ whiteSpace: 'normal', overflow: 'visible' }}>
+          {row.name}
+        </Badge>
+      );
+    }
 
-  if (isLoading) {
-    return (
-      <Container size="lg" py="xl">
-        <Center py="xl">
-          <Loader />
-        </Center>
-      </Container>
-    );
-  }
+    if (['Cancelled'].includes(stageName)) {
+      return (
+        <Badge size="md" color="gray" style={{ whiteSpace: 'normal', overflow: 'visible' }}>
+          {row.name}
+        </Badge>
+      );
+    }
+
+    if (['Solved', 'Done'].includes(stageName)) {
+      return (
+        <Badge size="md" color="green" style={{ whiteSpace: 'normal', overflow: 'visible' }}>
+          {row.name}
+        </Badge>
+      );
+    }
+
+    return row.name;
+  };
+
+  // -------------------------------------
+  // Local Variables
+  // -------------------------------------
+
+  const cases = data?.pages.flatMap((page) => page) ?? [];
+
+  const rows = cases.map((item: Case) => (
+    <Table.Tr key={item.id}>
+      <Table.Td miw={130}>{itemName(item)}</Table.Td>
+      <Table.Td>{item.customer_id[1]}</Table.Td>
+      <Table.Td>{item.ticket_type_id[1]}</Table.Td>
+      <Table.Td>{item.workflow_id[1]}</Table.Td>
+      <Table.Td>{item.triplet_active_phase_id?.[1]}</Table.Td>
+      <Table.Td>{dayjs(item.create_date).format('D/M/YY HH:mm')}</Table.Td>
+      <Table.Td>
+        <Link href={`/helpdesk_ticket/${item.id}`}>
+          <Button>
+            <IconEye size={18} />
+          </Button>
+        </Link>
+      </Table.Td>
+    </Table.Tr>
+  ));
 
   if (isError) {
     return (
@@ -88,59 +166,56 @@ export default function HomePage() {
     );
   }
 
-  const rows = paginatedData.map((item: Case) => (
-    <Table.Tr key={item.id}>
-      <Table.Td>{item.id}</Table.Td>
-      <Table.Td>{item.title}</Table.Td>
-      <Table.Td>{item.status}</Table.Td>
-      <Table.Td>{item.priority}</Table.Td>
-      <Table.Td>{item.date}</Table.Td>
-    </Table.Tr>
-  ));
-
   return (
-    <Container size="lg" py="xl">
+    <Container size="xl" py="sm">
       <Stack gap="md">
         <Stack gap="sm">
-          <TextInput
-            placeholder="Search cases..."
-            value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.currentTarget.value })}
-          />
           <Group grow>
-            <Select
-              placeholder="Filter by status"
-              data={['Open', 'In Progress', 'Closed']}
-              value={filters.status}
-              onChange={(value) => setFilters({ ...filters, status: value || '' })}
-              clearable
+            <TagsInput
+              label="Case Name"
+              value={filters.name}
+              onChange={(value: string[]) => setFilters({ ...filters, name: value || [] })}
             />
-            <Select
-              placeholder="Filter by priority"
-              data={['Low', 'Medium', 'High']}
-              value={filters.priority}
-              onChange={(value) => setFilters({ ...filters, priority: value || '' })}
-              clearable
+            <TagsInput
+              label="Workflow"
+              value={filters.workflow}
+              onChange={(v) => setFilters({ ...filters, workflow: v })}
+            />
+            <TagsInput
+              label="Ticket type"
+              value={filters.ticketType}
+              onChange={(v) => setFilters({ ...filters, ticketType: v })}
             />
           </Group>
+          <Checkbox
+            label="Mostra case chiusi"
+            checked={filters.is_close === null}
+            onChange={(v) => setFilters({ ...filters, is_close: v.target.checked ? null : false })}
+          />
         </Stack>
 
         <Table striped highlightOnHover>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>ID</Table.Th>
-              <Table.Th>Title</Table.Th>
-              <Table.Th>Status</Table.Th>
-              <Table.Th>Priority</Table.Th>
-              <Table.Th>Date</Table.Th>
+              <Table.Th>Name</Table.Th>
+              <Table.Th>Customer</Table.Th>
+              <Table.Th>Detail</Table.Th>
+              <Table.Th>Workflow</Table.Th>
+              <Table.Th>Active phase</Table.Th>
+              <Table.Th>Create date</Table.Th>
+              <Table.Th />
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>{rows}</Table.Tbody>
         </Table>
 
-        <Group justify="center">
-          <Pagination value={page} onChange={setPage} total={totalPages} />
-        </Group>
+        <div ref={sentinelRef} style={{ height: '1px' }} />
+
+        {(isLoading || isFetchingNextPage) && (
+          <Center py="xl">
+            <Loader size="sm" />
+          </Center>
+        )}
       </Stack>
     </Container>
   );
