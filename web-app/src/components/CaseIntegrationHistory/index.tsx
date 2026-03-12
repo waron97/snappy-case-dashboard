@@ -28,7 +28,6 @@ export default function CaseIntegrationHistory({ caseId }: Props) {
     { id: number; name: string; create_date: string }[]
   >({
     queryKey: ['integration-history', { caseId, isShowAll }],
-    refetchInterval: 20 * 1000,
     queryFn: () =>
       odooSearchRead(
         'case.integration.history',

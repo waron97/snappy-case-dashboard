@@ -163,8 +163,14 @@ export async function odooRead(model: string, ids: number[], fields: string[]) {
   return odooExecuteKw(model, 'read', [ids, fields]);
 }
 
-export async function odooWrite(model: string, ids: number[], values: Record<string, unknown>) {
-  return odooExecuteKw(model, 'write', [ids, values]);
+export async function odooWrite(
+  model: string,
+  ids: number[],
+  values: Record<string, unknown>,
+  context?: Record<string, unknown>
+) {
+  const kwargs = context ? { context } : undefined;
+  return odooExecuteKw(model, 'write', [ids, values], kwargs);
 }
 
 export async function odooSearchRead(
@@ -198,4 +204,12 @@ export async function odooFieldsGet(model: string, fields?: string[], attributes
   }
   const args: unknown[] = [fields ?? []];
   return odooExecuteKw(model, 'fields_get', args, kwargs);
+}
+
+export async function odooCallMethod(
+  model: string,
+  ids: number[],
+  method: string
+) {
+  return odooExecuteKw(model, method, [ids]);
 }

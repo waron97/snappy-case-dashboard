@@ -33,12 +33,14 @@ export default function UiCard({ title, children, rightElement }: Props) {
   return (
     <Paper withBorder radius={4} p="xs" component="section">
       <Stack gap="md">
-        <Group gap="md" justify="space-between">
-          <Text size="lg" c="cyan">
-            {title}
-          </Text>
-          <Box>{rightElement}</Box>
-        </Group>
+        {title && (
+          <Group gap="md" justify="space-between">
+            <Text size="lg" c="cyan">
+              {title}
+            </Text>
+            <Box>{rightElement}</Box>
+          </Group>
+        )}
         <Box>{children}</Box>
       </Stack>
     </Paper>

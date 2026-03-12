@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import { IconCode } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import {
+  Alert,
   Anchor,
   Button,
   Center,
@@ -13,6 +14,7 @@ import {
   Loader,
   Space,
   Stack,
+  Tabs,
   Text,
   Title,
 } from '@mantine/core';
@@ -22,6 +24,7 @@ import CaseIntegrationHistory from '@/components/CaseIntegrationHistory';
 import CaseLogs from '@/components/CaseLogs';
 import CaseMarketComm from '@/components/CaseMarketComm';
 import CaseStagingArea from '@/components/CaseStagingArea';
+import CaseTimeline from '@/components/CaseTimeline';
 import UiCard from '@/components/UiCard';
 import { odooRead, OneToMany } from '../../api';
 
@@ -32,11 +35,15 @@ type BaseFields = {
   ticket_type_id: OneToMany;
   triplet_subtype_id: OneToMany;
   triplet_type_id: OneToMany;
+  error_message?: string;
   workflow_id: OneToMany;
   parent_case_id: OneToMany;
   child_case_ids: number[];
   market_comm_event_log_ids: number[];
   integration_history_ids: number[];
+  customer_id: OneToMany;
+  partner_id?: OneToMany;
+  customer_code: string;
 };
 
 export default function Ticket() {
@@ -64,6 +71,7 @@ export default function Ticket() {
           'name',
           'stage_id',
           'ticket_type_id',
+          'error_message',
           'workflow_id',
           'triplet_subtype_id',
           'triplet_type_id',
@@ -71,6 +79,9 @@ export default function Ticket() {
           'child_case_ids',
           'market_comm_event_log_ids',
           'integration_history_ids',
+          'customer_id',
+          'partner_id',
+          'customer_code',
         ]
       ),
   });
@@ -114,8 +125,33 @@ export default function Ticket() {
             {item('Workflow', values.workflow_id?.[1])}
             {!!parent?.[0] && item('Parent', parent[1], `/helpdesk.ticket/${parent[0]}`)}
           </Grid>
+          <Grid>
+            {item('Customer', values.customer_id[1])}
+            {item('Customer code', values.customer_code)}
+            {item('Contact', values.partner_id?.[1] || '---')}
+          </Grid>
         </Stack>
       </UiCard>
+    );
+  }
+
+  function renderLeft() {
+    return (
+      <Stack gap="md">
+        {caseBaseFields.error_message && <Alert color="red">{caseBaseFields.error_message}</Alert>}
+        {renderBasicInfo(caseBaseFields)}
+        <CaseActivePhase caseId={caseBaseFields.id} workflowId={caseBaseFields.workflow_id[0]} />
+        <UiCard>
+          <Tabs defaultValue="history">
+            <Tabs.List>
+              <Tabs.Tab value="history">History</Tabs.Tab>
+            </Tabs.List>
+            <Tabs.Panel value="history">
+              <CaseTimeline caseId={caseBaseFields.id} />
+            </Tabs.Panel>
+          </Tabs>
+        </UiCard>
+      </Stack>
     );
   }
 
@@ -169,15 +205,7 @@ export default function Ticket() {
       <Space h={32} />
 
       <Grid gutter="md">
-        <Grid.Col span={8}>
-          <Stack gap="md">
-            {renderBasicInfo(caseBaseFields)}
-            <CaseActivePhase
-              caseId={caseBaseFields.id}
-              workflowId={caseBaseFields.workflow_id[0]}
-            />
-          </Stack>
-        </Grid.Col>
+        <Grid.Col span={8}>{renderLeft()}</Grid.Col>
         <Grid.Col span={4}>
           <Stack gap="lg">
             {caseBaseFields.market_comm_event_log_ids.length > 0 && (

@@ -17,6 +17,7 @@ export default function CaseMarketComm({ caseId }: Props) {
   // Hooks
   // -------------------------------------
 
+  const [isShowAll, setIsShowAll] = useState(false);
   const [selected, setSelected] = useState<number | null>(null);
 
   // -------------------------------------
@@ -26,16 +27,16 @@ export default function CaseMarketComm({ caseId }: Props) {
   const { data: logs, isLoading: logsLoading } = useQuery<
     { id: number; flow_code: string; service_code: string; create_date: string }[]
   >({
-    queryKey: ['market-comm', { caseId }],
-    refetchInterval: 30 * 1000,
+    queryKey: ['market-comm', { caseId, isShowAll }],
+    refetchInterval: 3 * 1000,
     queryFn: () =>
       odooSearchRead(
         'market.comm.event.log',
         [['ticket_id', '=', caseId]],
         ['create_date', 'flow_code', 'service_code'],
         0,
-        undefined,
-        'process_name asc'
+        isShowAll ? undefined : 8,
+        'create_date desc'
       ),
   });
 
@@ -75,7 +76,7 @@ export default function CaseMarketComm({ caseId }: Props) {
   // -------------------------------------
 
   return (
-    <Stack gap="sm">
+    <Stack gap="sm" justify="space-between">
       <Box pos="relative" mih={200}>
         <LoadingOverlay visible={logsLoading} />
         <Table>
@@ -105,6 +106,11 @@ export default function CaseMarketComm({ caseId }: Props) {
           </Table.Tbody>
         </Table>
       </Box>
+      {!isShowAll && logs?.length === 8 && (
+        <Button size="sm" onClick={() => setIsShowAll(true)}>
+          Show all
+        </Button>
+      )}
       <Modal opened={!!selected} onClose={() => setSelected(null)} size="xl">
         <Box pos="relative" mih={100}>
           <LoadingOverlay visible={detailLoading} />

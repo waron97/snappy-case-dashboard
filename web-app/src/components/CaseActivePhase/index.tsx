@@ -1,17 +1,19 @@
-import { useEffect, useEffectEvent, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { python } from '@codemirror/lang-python';
 import { vim } from '@replit/codemirror-vim';
 import { IconLock, IconLockX } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { vscodeDark } from '@uiw/codemirror-theme-vscode';
 import ReactCodeMirror from '@uiw/react-codemirror';
-import { Button, Center, Group, Select, Stack, Text } from '@mantine/core';
-import { odooRead, odooSearchRead, OneToMany } from '../../../app/api';
+import { toast, ToastContainer } from 'react-toastify';
+import { Alert, Button, Center, Group, Select, Stack, Text } from '@mantine/core';
+import { odooCallMethod, odooRead, odooSearchRead, odooWrite, OneToMany } from '../../../app/api';
 import UiCard from '../UiCard';
 
 type Props = {
   caseId: number;
   workflowId?: number;
+  activePhaseId?: number;
 };
 
 export default function CaseActivePhase(props: Props) {
@@ -28,12 +30,14 @@ export default function CaseActivePhase(props: Props) {
     code: '',
   });
 
+  const queryClient = useQueryClient();
+
   // -------------------------------------
   // Queries
   // -------------------------------------
 
   const { data: [caseFields] = [] } = useQuery<{ triplet_active_phase_id: OneToMany }[]>({
-    queryKey: ['case', { caseId }, 'for-active-phase'],
+    queryKey: ['case', caseId, 'for-active-phase'],
     refetchInterval: isLocked ? 3 * 1000 : undefined,
     queryFn: () => odooRead('helpdesk.ticket', [caseId], ['triplet_active_phase_id']),
   });
@@ -45,9 +49,24 @@ export default function CaseActivePhase(props: Props) {
       odooSearchRead('symple.triplet.phase', [['workflow_id', '=', workflowId!]], ['id', 'name']),
   });
 
-  const phaseIdToFetch = form.phase;
+  const activePhaseId = caseFields?.triplet_active_phase_id?.[0];
 
   const { data: [activePhaseData] = [] } = useQuery<
+    {
+      id: number;
+      code: string;
+      set_result_automatically: string;
+    }[]
+  >({
+    queryKey: ['phase', activePhaseId, 'for-active-phase'],
+    enabled: !!activePhaseId,
+    queryFn: () =>
+      odooRead('symple.triplet.phase', [activePhaseId], ['code', 'set_result_automatically']),
+  });
+
+  const phaseIdToFetch = form.phase;
+
+  const { data: [selectedPhaseData] = [] } = useQuery<
     {
       id: number;
       code: string;
@@ -60,6 +79,9 @@ export default function CaseActivePhase(props: Props) {
       odooRead('symple.triplet.phase', [phaseIdToFetch!], ['code', 'set_result_automatically']),
   });
 
+  const [submitting, setSubmitting] = useState(false);
+  const [relaunching, setRelaunching] = useState(false);
+
   // -------------------------------------
   // Effects
   // -------------------------------------
@@ -71,14 +93,63 @@ export default function CaseActivePhase(props: Props) {
   }, [caseFields]);
 
   useEffect(() => {
-    if (activePhaseData) {
-      setForm({ ...form, phase: activePhaseData.id, code: activePhaseData.code });
+    if (selectedPhaseData) {
+      setForm({ ...form, phase: selectedPhaseData.id, code: selectedPhaseData.code });
     }
-  }, [activePhaseData]);
+  }, [selectedPhaseData]);
 
   // -------------------------------------
   // Functions
   // -------------------------------------
+
+  async function submit() {
+    setSubmitting(true);
+    try {
+      await odooWrite(
+        'helpdesk.ticket',
+        [caseId],
+        { triplet_phase_id: form.phase },
+        { bypass_ticket_check_write_allowed: true }
+      );
+      setIsLocked(true);
+      queryClient.invalidateQueries({ queryKey: ['case', caseId, 'for-active-phase'] });
+      queryClient.invalidateQueries({ queryKey: ['phase', form.phase, 'for-active-phase'] });
+      queryClient.invalidateQueries({ queryKey: ['case-history', caseId] });
+    } catch (err) {
+      if (err instanceof Error) {
+        toast(err.message);
+        // eslint-disable-next-line
+        console.error(err);
+      } else {
+        toast('Unknown error. Check browser console.');
+        // eslint-disable-next-line
+        console.error(err);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function relaunch() {
+    setRelaunching(true);
+    try {
+      await odooCallMethod('helpdesk.ticket', [caseId], 'run_code_and_set_result');
+      queryClient.invalidateQueries({ queryKey: ['case', caseId, 'for-active-phase'] });
+      queryClient.invalidateQueries({ queryKey: ['logs', caseId] });
+    } catch (err) {
+      if (err instanceof Error) {
+        toast(err.message);
+        // eslint-disable-next-line
+        console.error(err);
+      } else {
+        toast('Unknown error. Check browser console.');
+        // eslint-disable-next-line
+        console.error(err);
+      }
+    } finally {
+      setRelaunching(false);
+    }
+  }
 
   function handleLock() {
     if (isLocked) {
@@ -87,9 +158,57 @@ export default function CaseActivePhase(props: Props) {
       setIsLocked(true);
       setForm({
         phase: caseFields.triplet_active_phase_id[0],
-        code: '',
+        code: activePhaseData?.code || '',
       });
     }
+  }
+
+  function getChangedFields() {
+    const changed = {
+      phase: false,
+      code: false,
+    };
+    let anyChanged = false;
+
+    if (isLocked) {
+      return [false, changed];
+    }
+
+    if (form.phase !== caseFields?.triplet_active_phase_id?.[0]) {
+      changed.phase = true;
+      anyChanged = true;
+    }
+    if (selectedPhaseData?.code && form.code !== selectedPhaseData?.code) {
+      changed.code = true;
+      anyChanged = true;
+    }
+
+    return [anyChanged, changed];
+  }
+
+  function renderCodeEditor() {
+    if (isLocked || !form.code || selectedPhaseData?.set_result_automatically !== 'from_code') {
+      return null;
+    }
+    return (
+      <>
+        <ReactCodeMirror
+          value={selectedPhaseData?.code || ''}
+          readOnly={isLocked}
+          theme={vscodeDark}
+          extensions={[python(), vim()]}
+          maxHeight="600px"
+          basicSetup={{
+            lineNumbers: true,
+            foldGutter: true,
+            highlightActiveLine: true,
+            dropCursor: true,
+            allowMultipleSelections: true,
+            indentOnInput: true,
+          }}
+        />
+      </>
+    );
   }
 
   function renderContent() {
@@ -100,8 +219,40 @@ export default function CaseActivePhase(props: Props) {
         </Center>
       );
     }
+
+    const [didFieldsChange] = getChangedFields();
+
     return (
       <Stack gap="md">
+        {didFieldsChange && (
+          <>
+            <Alert color="orange">
+              <Stack gap="md">
+                <Text>
+                  Data was changed. On save, code changes will be written and the ticket will be
+                  moved to the selected phase.
+                </Text>
+                <Group>
+                  <Button w="fit-content" bg="red" onClick={submit} loading={submitting}>
+                    Submit
+                  </Button>
+                  <Button
+                    w="fit-content"
+                    onClick={() => {
+                      setForm({
+                        ...form,
+                        phase: caseFields.triplet_active_phase_id[0],
+                        code: '',
+                      });
+                    }}
+                  >
+                    Reset
+                  </Button>
+                </Group>
+              </Stack>
+            </Alert>
+          </>
+        )}
         <Select
           label="Active phase"
           disabled={isLocked}
@@ -112,20 +263,7 @@ export default function CaseActivePhase(props: Props) {
           value={String(phaseIdToFetch)}
           onChange={(v) => setForm({ ...form, phase: v ? parseInt(v, 10) : null })}
         />
-        <ReactCodeMirror
-          value={activePhaseData?.code || ''}
-          readOnly={isLocked}
-          theme={vscodeDark}
-          extensions={[python(), vim()]}
-          basicSetup={{
-            lineNumbers: true,
-            foldGutter: true,
-            highlightActiveLine: true,
-            dropCursor: true,
-            allowMultipleSelections: true,
-            indentOnInput: true,
-          }}
-        />
+        {renderCodeEditor()}
       </Stack>
     );
   }
@@ -141,7 +279,9 @@ export default function CaseActivePhase(props: Props) {
       title="Active phase"
       rightElement={
         <Group gap="sm">
-          <Button>Relaunch phase</Button>
+          <Button onClick={relaunch} loading={relaunching}>
+            Relaunch phase
+          </Button>
           <Button onClick={handleLock}>
             <Group gap="sm">
               <Text>{isLocked ? 'Unlock' : 'Lock'}</Text>
@@ -152,6 +292,7 @@ export default function CaseActivePhase(props: Props) {
       }
     >
       {renderContent()}
+      <ToastContainer />
     </UiCard>
   );
 }

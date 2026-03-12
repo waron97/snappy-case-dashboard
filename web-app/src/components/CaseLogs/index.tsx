@@ -27,8 +27,8 @@ export default function CaseLogs({ caseId }: Props) {
   const { data: logs, isLoading: logsLoading } = useQuery<
     { id: number; func: string; create_date: string }[]
   >({
-    queryKey: ['logs', { caseId, isShowAll }],
-    refetchInterval: 20 * 1000,
+    queryKey: ['logs', caseId, { isShowAll }],
+    refetchInterval: 5 * 1000,
     queryFn: () =>
       odooSearchRead(
         'ir.logging',

@@ -27,7 +27,6 @@ export default function CaseStagingArea({ caseId }: Props) {
     { id: number; process_name: string; create_date: string }[]
   >({
     queryKey: ['staging-area', { caseId }],
-    refetchInterval: 30 * 1000,
     queryFn: () =>
       odooSearchRead(
         'symple.pb.process.data',
