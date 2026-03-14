@@ -14,17 +14,15 @@ import {
   Loader,
   Space,
   Stack,
-  Tabs,
   Text,
   Title,
 } from '@mantine/core';
 import CaseActivePhase from '@/components/CaseActivePhase';
-import CaseChildren from '@/components/CaseChildren';
 import CaseIntegrationHistory from '@/components/CaseIntegrationHistory';
 import CaseLogs from '@/components/CaseLogs';
 import CaseMarketComm from '@/components/CaseMarketComm';
 import CaseStagingArea from '@/components/CaseStagingArea';
-import CaseTimeline from '@/components/CaseTimeline';
+import CaseTabs from '@/components/CaseTabs';
 import UiCard from '@/components/UiCard';
 import { odooRead, OneToMany } from '../../api';
 
@@ -44,6 +42,7 @@ type BaseFields = {
   customer_id: OneToMany;
   partner_id?: OneToMany;
   customer_code: string;
+  service_point_ids: number[];
 };
 
 export default function Ticket() {
@@ -82,6 +81,7 @@ export default function Ticket() {
           'customer_id',
           'partner_id',
           'customer_code',
+          'service_point_ids',
         ]
       ),
   });
@@ -141,16 +141,11 @@ export default function Ticket() {
         {caseBaseFields.error_message && <Alert color="red">{caseBaseFields.error_message}</Alert>}
         {renderBasicInfo(caseBaseFields)}
         <CaseActivePhase caseId={caseBaseFields.id} workflowId={caseBaseFields.workflow_id[0]} />
-        <UiCard>
-          <Tabs defaultValue="history">
-            <Tabs.List>
-              <Tabs.Tab value="history">History</Tabs.Tab>
-            </Tabs.List>
-            <Tabs.Panel value="history">
-              <CaseTimeline caseId={caseBaseFields.id} />
-            </Tabs.Panel>
-          </Tabs>
-        </UiCard>
+        <CaseTabs
+          caseId={caseBaseFields.id}
+          servicePointIds={caseBaseFields.service_point_ids}
+          childIds={caseBaseFields.child_case_ids}
+        />
       </Stack>
     );
   }
@@ -224,11 +219,6 @@ export default function Ticket() {
             <UiCard title="Staging Area">
               <CaseStagingArea caseId={caseBaseFields.id} />
             </UiCard>
-            {caseBaseFields.child_case_ids.length > 0 && (
-              <UiCard title="Children">
-                <CaseChildren caseId={caseBaseFields.id} />
-              </UiCard>
-            )}
           </Stack>
         </Grid.Col>
       </Grid>
