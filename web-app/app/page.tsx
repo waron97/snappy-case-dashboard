@@ -19,6 +19,7 @@ import {
   TagsInput,
   Text,
 } from '@mantine/core';
+import CaseFilters from '@/components/CaseFilters';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { constructOdooDomain } from '@/utils/odoo';
 import { odooSearchRead } from './api';
@@ -45,12 +46,16 @@ export default function HomePage() {
     workflow: string[];
     ticketType: string[];
     customer_id: string[];
+    startDate: string | null;
+    endDate: string | null;
   }>({
     name: [],
     is_close: false,
     workflow: [],
     ticketType: [],
     customer_id: [],
+    startDate: null,
+    endDate: null,
   });
 
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -65,12 +70,16 @@ export default function HomePage() {
       queryFn: ({ pageParam = 0 }) =>
         odooSearchRead(
           'helpdesk.ticket',
-          constructOdooDomain({
-            'workflow_id.name': { operator: 'ilike', value: filters.workflow },
-            'ticket_type_id.name': { operator: 'ilike', value: filters.ticketType },
-            name: { operator: 'ilike', value: filters.name },
-            is_close: { operator: '=', value: filters.is_close },
-          }),
+          [
+            ...constructOdooDomain({
+              'workflow_id.name': { operator: 'ilike', value: filters.workflow },
+              'ticket_type_id.name': { operator: 'ilike', value: filters.ticketType },
+              name: { operator: 'ilike', value: filters.name },
+              is_close: { operator: '=', value: filters.is_close },
+            }),
+            ...(filters.startDate ? [['create_date', '>=', filters.startDate]] : []),
+            ...(filters.endDate ? [['create_date', '<=', filters.endDate]] : []),
+          ],
           [
             'name',
             'id',
@@ -170,31 +179,7 @@ export default function HomePage() {
   return (
     <Container size="xl" py="sm">
       <Stack gap="md">
-        <Stack gap="sm">
-          <Group grow>
-            <TagsInput
-              label="Case Name"
-              value={filters.name}
-              onChange={(value: string[]) => setFilters({ ...filters, name: value || [] })}
-            />
-            <TagsInput
-              label="Workflow"
-              value={filters.workflow}
-              onChange={(v) => setFilters({ ...filters, workflow: v })}
-            />
-            <TagsInput
-              label="Ticket type"
-              value={filters.ticketType}
-              onChange={(v) => setFilters({ ...filters, ticketType: v })}
-            />
-          </Group>
-          <Checkbox
-            label="Mostra case chiusi"
-            checked={filters.is_close === null}
-            onChange={(v) => setFilters({ ...filters, is_close: v.target.checked ? null : false })}
-          />
-        </Stack>
-
+        <CaseFilters value={filters} onChange={(v: any) => setFilters(v)} />
         <Table striped highlightOnHover>
           <Table.Thead>
             <Table.Tr>
