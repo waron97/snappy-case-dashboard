@@ -1,5 +1,5 @@
 import { Checkbox, Group, Stack, TagsInput } from '@mantine/core';
-import { DateInput, DatePicker } from '@mantine/dates';
+import { DateInput } from '@mantine/dates';
 
 type Props = {
   value: { [key: string]: any };
@@ -8,7 +8,6 @@ type Props = {
 
 export default function CaseFilters(props: Props) {
   const { value: filters, onChange: setFilters } = props;
-  console.log('filters', filters);
 
   // -------------------------------------
   // Hooks
