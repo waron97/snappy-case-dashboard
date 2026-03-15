@@ -1,7 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { IconCode } from '@tabler/icons-react';
+import { IconCode, ReactNode } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
@@ -23,6 +24,7 @@ import CaseLogs from '@/components/CaseLogs';
 import CaseMarketComm from '@/components/CaseMarketComm';
 import CaseStagingArea from '@/components/CaseStagingArea';
 import CaseTabs from '@/components/CaseTabs';
+import RelationLink from '@/components/RelationLink';
 import UiCard from '@/components/UiCard';
 import { odooRead, OneToMany } from '../../api';
 
@@ -95,7 +97,7 @@ export default function Ticket() {
   // -------------------------------------
 
   function renderBasicInfo(values: BaseFields) {
-    const item = (label: string, value: string, href?: string) => (
+    const item = (label: string, value: ReactNode, href?: string, wrapValue: boolean = true) => (
       <Grid.Col span={4}>
         <Stack gap={0}>
           <Text c="dimmed">{label}</Text>
@@ -103,8 +105,10 @@ export default function Ticket() {
             <Anchor href={href} fw="bold">
               {value}
             </Anchor>
-          ) : (
+          ) : wrapValue ? (
             <Text fw="bold">{value}</Text>
+          ) : (
+            value
           )}
         </Stack>
       </Grid.Col>
@@ -116,19 +120,95 @@ export default function Ticket() {
       <UiCard title="Case Type">
         <Stack>
           <Grid>
-            {item('Type', values.triplet_type_id[1])}
-            {item('Subtype', values.triplet_subtype_id[1])}
-            {item('Detail', values.ticket_type_id[1])}
+            {item(
+              'Type',
+              <RelationLink
+                name={values.triplet_type_id[1]}
+                pgId={values.triplet_type_id[0]}
+                model="symple.triplet.type"
+              />,
+              undefined,
+              false
+            )}
+            {item(
+              'Subtype',
+              <RelationLink
+                name={values.triplet_subtype_id[1]}
+                pgId={values.triplet_subtype_id[0]}
+                model="symple.triplet.subtype"
+              />,
+              undefined,
+              false
+            )}
+            {item(
+              'Detail',
+              <RelationLink
+                name={values.ticket_type_id[1]}
+                pgId={values.ticket_type_id[0]}
+                model="helpdesk.ticket.type"
+              />,
+              undefined,
+              false
+            )}
           </Grid>
           <Grid>
-            {item('Stage', values.stage_id[1])}
-            {item('Workflow', values.workflow_id?.[1])}
-            {!!parent?.[0] && item('Parent', parent[1], `/helpdesk.ticket/${parent[0]}`)}
+            {item(
+              'Stage',
+              <RelationLink
+                name={values.stage_id[1]}
+                pgId={values.stage_id[0]}
+                model="helpdesk.stage"
+              />,
+              undefined,
+              false
+            )}
+            {!!values.workflow_id?.[0] &&
+              item(
+                'Workflow',
+                <RelationLink
+                  name={values.workflow_id[1]}
+                  pgId={values.workflow_id[0]}
+                  model="symple.workflow"
+                />,
+                undefined,
+                false
+              )}
+            {!!parent?.[0] &&
+              item(
+                'Parent',
+                <RelationLink
+                  name={parent[1]}
+                  pgId={parent[0]}
+                  model="helpdesk.ticket"
+                  href={`/helpdesk.ticket/${parent[0]}`}
+                />,
+                undefined,
+                false
+              )}
           </Grid>
           <Grid>
-            {item('Customer', values.customer_id[1])}
+            {item(
+              'Customer',
+              <RelationLink
+                name={values.customer_id[1]}
+                pgId={values.customer_id[0]}
+                model="res.partner"
+              />,
+              undefined,
+              false
+            )}
             {item('Customer code', values.customer_code)}
-            {item('Contact', values.partner_id?.[1] || '---')}
+            {!!values.partner_id?.[0] &&
+              item(
+                'Contact',
+                <RelationLink
+                  name={values.partner_id[1]}
+                  pgId={values.partner_id[0]}
+                  model="res.partner"
+                />,
+                undefined,
+                false
+              )}
           </Grid>
         </Stack>
       </UiCard>
@@ -191,9 +271,12 @@ export default function Ticket() {
           >
             <Button bg="#714B67">ODOO</Button>
           </Anchor>
-          <Button>
-            <IconCode />
-          </Button>
+
+          <Link href={`/full-field-config/helpdesk.ticket/${id}`}>
+            <Button>
+              <IconCode />
+            </Button>
+          </Link>
         </Group>
       </Group>
 

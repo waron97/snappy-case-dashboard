@@ -1,4 +1,44 @@
-import { OdooDomain } from '../../app/api';
+import { OdooDomain, odooFieldsGet, odooNameGet } from '../../app/api';
+
+export type OdooFieldType =
+  | 'char' | 'text' | 'html'
+  | 'integer' | 'float' | 'monetary'
+  | 'boolean'
+  | 'date' | 'datetime'
+  | 'selection'
+  | 'many2one' | 'one2many' | 'many2many'
+  | 'binary'
+  | 'reference';
+
+export interface OdooFieldDefinition {
+  string: string;
+  type: OdooFieldType;
+  required?: boolean;
+  readonly?: boolean;
+  store?: boolean;
+  searchable?: boolean;
+  sortable?: boolean;
+  help?: string;
+  compute?: string;
+  selection?: [string | number, string][];
+  relation?: string;
+}
+
+export async function nameGet(
+  model: string,
+  ids: number[]
+): Promise<Record<number, string>> {
+  const results = await odooNameGet(model, ids);
+  return Object.fromEntries(results);
+}
+
+export async function fieldsGet(
+  model: string,
+  fields?: string[],
+  attributes?: string[]
+): Promise<Record<string, OdooFieldDefinition>> {
+  return odooFieldsGet(model, fields, attributes);
+}
 
 export function constructOdooDomain(
   filters: Record<

@@ -206,6 +206,13 @@ export async function odooFieldsGet(model: string, fields?: string[], attributes
   return odooExecuteKw(model, 'fields_get', args, kwargs);
 }
 
+export async function odooNameGet(
+  model: string,
+  ids: number[]
+): Promise<[number, string][]> {
+  return odooExecuteKw(model, 'name_get', [ids]);
+}
+
 export async function odooCallMethod(
   model: string,
   ids: number[],

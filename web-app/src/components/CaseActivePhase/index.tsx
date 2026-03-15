@@ -225,33 +225,30 @@ export default function CaseActivePhase(props: Props) {
     return (
       <Stack gap="md">
         {didFieldsChange && (
-          <>
-            <Alert color="orange">
-              <Stack gap="md">
-                <Text>
-                  Data was changed. On save, code changes will be written and the ticket will be
-                  moved to the selected phase.
-                </Text>
-                <Group>
-                  <Button w="fit-content" bg="red" onClick={submit} loading={submitting}>
-                    Submit
-                  </Button>
-                  <Button
-                    w="fit-content"
-                    onClick={() => {
-                      setForm({
-                        ...form,
-                        phase: caseFields.triplet_active_phase_id[0],
-                        code: '',
-                      });
-                    }}
-                  >
-                    Reset
-                  </Button>
-                </Group>
-              </Stack>
-            </Alert>
-          </>
+          <Alert color="yellow" mb="md" title="Unsaved changes">
+            <Text size="sm">
+              Data was changed. On save, code changes will be written and the ticket will be moved
+              to the selected phase.
+            </Text>
+            <Group mt="sm" gap="xs">
+              <Button size="xs" color="green" onClick={submit} loading={submitting}>
+                Submit
+              </Button>
+              <Button
+                size="xs"
+                variant="subtle"
+                onClick={() => {
+                  setForm({
+                    ...form,
+                    phase: caseFields.triplet_active_phase_id[0],
+                    code: '',
+                  });
+                }}
+              >
+                Reset
+              </Button>
+            </Group>
+          </Alert>
         )}
         <Select
           label="Active phase"
