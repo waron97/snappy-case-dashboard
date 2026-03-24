@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.gitignore
+.vscode
+.idea
+*.log
+.env
+.env.*
+coverage
+storybook-static
+Dockerfile
+.dockerignore
+.DS_Store

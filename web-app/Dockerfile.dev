@@ -1,0 +1,16 @@
+FROM node:20-alpine
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+COPY .yarn/releases/ ./.yarn/releases/
+COPY .yarnrc.yml package.json yarn.lock ./
+RUN node .yarn/releases/yarn-4.13.0.cjs install --frozen-lockfile
+
+COPY . .
+
+ARG ODOO_URL
+ENV ODOO_URL=$ODOO_URL
+ENV NEXT_TELEMETRY_DISABLED=1
+
+EXPOSE 3000
+CMD ["yarn", "run", "dev"]

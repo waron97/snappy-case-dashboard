@@ -1,0 +1,178 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { startCompletion } from '@codemirror/autocomplete';
+import { python } from '@codemirror/lang-python';
+import { indentUnit } from '@codemirror/language';
+import { Vim, vim } from '@replit/codemirror-vim';
+import { IconHelpCircle, IconKeyboard, IconWand } from '@tabler/icons-react';
+import { vscodeDark } from '@uiw/codemirror-theme-vscode';
+import ReactCodeMirror, { EditorState, EditorView, keymap, Prec } from '@uiw/react-codemirror';
+import init, { format } from '@wasm-fmt/ruff_fmt/web';
+import { jumpToDefinition, languageServer } from 'codemirror-languageserver';
+import { ActionIcon, Button, Group, Stack, Text, Tooltip } from '@mantine/core';
+
+const ruffReady = init();
+
+function moveByLines(view: EditorView, delta: number): boolean {
+    const { state } = view;
+    const sel = state.selection.main;
+    const line = state.doc.lineAt(sel.head);
+    const col = sel.head - line.from;
+    const targetNum = Math.max(1, Math.min(state.doc.lines, line.number + delta));
+    const targetLine = state.doc.line(targetNum);
+    const newPos = Math.min(targetLine.from + col, targetLine.to);
+    view.dispatch({ selection: { anchor: newPos }, scrollIntoView: true });
+    return true;
+}
+
+type Props = {
+    value: string;
+    onChange?: (v: string) => void;
+    onSave?: () => Promise<void>;
+    readOnly?: boolean;
+    maxHeight?: string;
+};
+
+export default function PythonEditor({ value, onChange, onSave, readOnly, maxHeight = '600px' }: Props) {
+    const [saving, setSaving] = useState(false);
+    const [vimEnabled, setVimEnabled] = useState(
+        () => localStorage.getItem('pythonEditor.vimEnabled') !== 'false'
+    );
+
+    function toggleVim() {
+        setVimEnabled((v) => {
+            localStorage.setItem('pythonEditor.vimEnabled', String(!v));
+            return !v;
+        });
+    }
+
+    const valueRef = useRef(value);
+    valueRef.current = value;
+
+    const onChangeRef = useRef(onChange);
+    onChangeRef.current = onChange;
+
+    async function handleFormat() {
+        await ruffReady;
+        let code = valueRef.current;
+        try {
+            code = format(code);
+        } catch {
+            // syntax error — format unformatted
+        }
+        onChangeRef.current?.(code);
+    }
+
+    useEffect(() => {
+        Vim.defineEx('format', 'f', handleFormat);
+        Vim.defineAction('goToDefinition', (cm) => {
+            jumpToDefinition(cm.cm6);
+        });
+        Vim.mapCommand('gd', 'action', 'goToDefinition', undefined, { context: 'normal' });
+    }, []);
+
+    const extensions = useMemo(() => {
+        const serverUri: `ws://${string}` | `wss://${string}` =
+            window.location.protocol === 'https:'
+                ? `wss://${window.location.host}/api/lsp`
+                : `ws://${window.location.host}/api/lsp`;
+        return [
+            python(),
+            ...(vimEnabled ? [vim()] : []),
+            indentUnit.of('    '),
+            EditorState.tabSize.of(4),
+            languageServer({
+                serverUri,
+                rootUri: 'file:///workspace',
+                workspaceFolders: [{ uri: 'file:///workspace', name: 'workspace' }],
+                documentUri: 'file:///workspace/script.py',
+                languageId: 'python',
+                // @ts-expect-error: allowHTMLContent is not in the type definitions but is supported at runtime
+                allowHTMLContent: true,
+            }),
+            Prec.highest(
+                keymap.of([
+                    { key: 'Ctrl-d', run: (view) => moveByLines(view, 10) },
+                    { key: 'Ctrl-u', run: (view) => moveByLines(view, -10) },
+                    { key: 'Ctrl-Space', run: startCompletion, preventDefault: true },
+                ])
+            ),
+        ];
+    }, [vimEnabled]);
+
+    return (
+        <Stack gap="md">
+            <Group justify="end">
+                {onSave && (
+                    <Button
+                        size="compact-sm"
+                        color="green"
+                        loading={saving}
+                        onClick={async () => {
+                            setSaving(true);
+                            try {
+                                await onSave();
+                            } finally {
+                                setSaving(false);
+                            }
+                        }}
+                    >
+                        Save
+                    </Button>
+                )}
+                <Tooltip label={vimEnabled ? 'Disable Vim mode' : 'Enable Vim mode'}>
+                    <ActionIcon
+                        variant={vimEnabled ? 'filled' : 'subtle'}
+                        color="gray"
+                        onClick={toggleVim}
+                    >
+                        <IconKeyboard size={16} />
+                    </ActionIcon>
+                </Tooltip>
+                <Tooltip label="Format with Ruff (:f)">
+                    <ActionIcon variant="subtle" color="gray" onClick={handleFormat}>
+                        <IconWand size={16} />
+                    </ActionIcon>
+                </Tooltip>
+                <Tooltip
+                    label={
+                        <>
+                            <Text fw={600} mb={4}>
+                                Vim shortcuts
+                            </Text>
+                            <Text>:f — format</Text>
+                            <Text>i / Esc — insert / normal</Text>
+                            <Text>yy / p — copy / paste line</Text>
+                            <Text>dd — delete line</Text>
+                            <Text>gd — go to definition</Text>
+                            <Text>Ctrl-d / Ctrl-u — jump 10 lines</Text>
+                            <Text>Ctrl-Space — autocomplete</Text>
+                        </>
+                    }
+                    multiline
+                    maw={220}
+                    withArrow
+                >
+                    <ActionIcon variant="subtle" color="gray">
+                        <IconHelpCircle size={16} />
+                    </ActionIcon>
+                </Tooltip>
+            </Group>
+            <ReactCodeMirror
+                value={value}
+                readOnly={readOnly}
+                onChange={onChange}
+                theme={vscodeDark}
+                extensions={extensions}
+                maxHeight={maxHeight}
+                basicSetup={{
+                    lineNumbers: true,
+                    foldGutter: true,
+                    highlightActiveLine: true,
+                    dropCursor: true,
+                    allowMultipleSelections: true,
+                    indentOnInput: true,
+                }}
+            />
+        </Stack>
+    );
+}
