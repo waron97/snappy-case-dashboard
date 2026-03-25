@@ -276,12 +276,13 @@ export default function Ticket() {
                 )}
                 {caseBaseFields.info_message && (
                     <Alert color="yellow">
-                        <Group justify="space-between" align="center" wrap="nowrap">
+                        <Group justify="space-between" align="start" wrap="nowrap">
                             <Text size="sm">{caseBaseFields.info_message}</Text>
                             <Button
                                 size="xs"
                                 variant="subtle"
                                 color="yellow"
+                                style={{ flexShrink: 0 }}
                                 loading={isClearing}
                                 onClick={handleClearInfoMessage}
                             >
