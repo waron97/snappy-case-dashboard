@@ -15,6 +15,7 @@ import {
 } from '@mantine/core';
 import CredentialsModal from '@/components/CredentialsModal';
 import HeaderNav from '@/components/HeaderNav';
+import OdooNavigateModal from '@/components/OdooNavigateModal';
 import { QueryProvider } from '@/components/QueryProvider';
 import { theme } from '../theme';
 import { getCredentials } from './credentials-reader';
@@ -105,6 +106,7 @@ export default async function RootLayout({ children }: { children: any }) {
                                 </Title>
                             </Box>
                         )}
+                        <OdooNavigateModal />
                         {credentials !== null && children}
                     </QueryProvider>
                 </MantineProvider>
