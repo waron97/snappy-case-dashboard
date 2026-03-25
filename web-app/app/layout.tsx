@@ -105,7 +105,7 @@ export default async function RootLayout({ children }: { children: any }) {
                                 </Title>
                             </Box>
                         )}
-                        {children}
+                        {credentials !== null && children}
                     </QueryProvider>
                 </MantineProvider>
             </body>
