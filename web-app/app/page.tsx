@@ -7,6 +7,7 @@ import { IconEye } from '@tabler/icons-react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Badge, Button, Center, Container, Loader, Stack, Table, Text } from '@mantine/core';
 import CaseFilters from '@/components/CaseFilters';
+import RelationLink from '@/components/RelationLink';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { constructOdooDomain } from '@/utils/odoo';
 import { odooSearchRead } from './api';
@@ -160,10 +161,20 @@ export default function HomePage() {
     const rows = cases.map((item: Case) => (
         <Table.Tr key={item.id}>
             <Table.Td miw={130}>{itemName(item)}</Table.Td>
-            <Table.Td>{item.customer_id[1]}</Table.Td>
-            <Table.Td>{item.ticket_type_id[1]}</Table.Td>
-            <Table.Td>{item.workflow_id[1]}</Table.Td>
-            <Table.Td>{item.triplet_active_phase_id?.[1]}</Table.Td>
+            <Table.Td>
+                <RelationLink name={item.customer_id[1]} pgId={item.customer_id[0]} model="res.partner" />
+            </Table.Td>
+            <Table.Td>
+                <RelationLink name={item.ticket_type_id[1]} pgId={item.ticket_type_id[0]} model="helpdesk.ticket.type" />
+            </Table.Td>
+            <Table.Td>
+                <RelationLink name={item.workflow_id[1]} pgId={item.workflow_id[0]} model="symple.workflow" />
+            </Table.Td>
+            <Table.Td>
+                {item.triplet_active_phase_id?.[0] && (
+                    <RelationLink name={item.triplet_active_phase_id[1]} pgId={item.triplet_active_phase_id[0]} model="symple.triplet.phase" />
+                )}
+            </Table.Td>
             <Table.Td>{dayjs(item.create_date).format('D/M/YY HH:mm')}</Table.Td>
             <Table.Td>
                 <Link href={`/helpdesk.ticket/${item.id}`} target="_blank">
