@@ -3,11 +3,15 @@
 from typing import Any, Dict, List, Optional, Union, Iterator
 import datetime as _dt
 
-
 class Recordset:
     """Base class for all Odoo model record objects."""
+
     id: int
     ids: List[int]
+    create_date: _dt.date
+    write_date: _dt.date
+    create_uid: "Recordset"
+    write_uid: "Recordset"
     def __getattr__(self, name: str) -> Any: ...
     def browse(self, ids: Union[int, List[int]]) -> "Recordset": ...
     def write(self, vals: Dict[str, Any]) -> bool: ...

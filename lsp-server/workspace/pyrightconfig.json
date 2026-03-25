@@ -1,6 +1,6 @@
 {
   "pythonVersion": "3.10",
-  "typeshedPath": "typeshed",
+  "stubPath": "typings",
   "typeCheckingMode": "standard",
   "reportArgumentType": "none"
 }

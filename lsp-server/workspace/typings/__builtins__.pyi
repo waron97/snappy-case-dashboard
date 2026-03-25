@@ -16,7 +16,7 @@ import datetime as _dt
 
 from recordset import Recordset
 from odoo_records import *
-from helpdesk_ticket_extended import HelpdeskTicket
+from helpdesk_ticket_extended import HelpdeskTicketExtended
 
 # --- KV Store ---
 
@@ -753,7 +753,9 @@ class OdooEnvironment:
     uid: int
     context: Dict[str, Any]
     @overload
-    def __getitem__(self, model_name: Literal["helpdesk.ticket"]) -> HelpdeskTicket: ...
+    def __getitem__(
+        self, model_name: Literal["helpdesk.ticket"]
+    ) -> HelpdeskTicketExtended: ...
     @overload
     def __getitem__(self, model_name: Literal["res.partner"]) -> ResPartner: ...
     @overload
@@ -1150,7 +1152,7 @@ class Response:
 
 # --- Globals ---
 
-case_id: HelpdeskTicket
+case_id: HelpdeskTicketExtended
 env: OdooEnvironment
 body: Dict[str, Any]
 args: List[Any]
