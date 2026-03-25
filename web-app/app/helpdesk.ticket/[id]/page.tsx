@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { IconCode, ReactNode } from '@tabler/icons-react';
@@ -59,6 +59,7 @@ export default function Ticket() {
     const { id } = useParams();
     const queryClient = useQueryClient();
     const [isClearing, setIsClearing] = useState(false);
+    const [isCaseDone, setIsCaseDone] = useState(false);
 
     // -------------------------------------
     // Queries
@@ -70,6 +71,7 @@ export default function Ticket() {
         error,
     } = useQuery<BaseFields[]>({
         queryKey: ['case', id, 'for-base-view'],
+        refetchInterval: isCaseDone ? undefined : 3 * 1000,
         queryFn: () =>
             odooRead(
                 'helpdesk.ticket',
@@ -99,6 +101,20 @@ export default function Ticket() {
     // -------------------------------------
     // Effects
     // -------------------------------------
+
+    useEffect(() => {
+        const stage = baseFields?.[0]?.stage_id?.[1];
+        if (
+            stage === 'Solved' ||
+            stage === 'Cancelled' ||
+            stage === 'Done KO' ||
+            stage === 'Done'
+        ) {
+            setIsCaseDone(true);
+        } else {
+            setIsCaseDone(false);
+        }
+    }, [baseFields]);
 
     // -------------------------------------
     // Functions
@@ -195,6 +211,17 @@ export default function Ticket() {
                                     name={values.workflow_id[1]}
                                     pgId={values.workflow_id[0]}
                                     model="symple.workflow"
+                                />,
+                                undefined,
+                                false
+                            )}
+                        {!!values.triplet_active_phase_id?.[0] &&
+                            item(
+                                'Active phase',
+                                <RelationLink
+                                    name={values.triplet_active_phase_id[1]}
+                                    pgId={values.triplet_active_phase_id[0]}
+                                    model="symple.triplet.phase"
                                 />,
                                 undefined,
                                 false
