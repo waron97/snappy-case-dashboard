@@ -20,5 +20,5 @@ rsync -avz --progress \
 ssh "$REMOTE" "cd /app/snappy-case-dashboard && \
     docker compose -p snappy-case-dashboard down && \
     docker compose -p snappy-case-dashboard-test-01 -f docker-compose.test-01.yml down && \
-    docker compose -p snappy-case-dashboard up -d --build && \
-    docker compose -p snappy-case-dashboard-test-01 -f docker-compose.test-01.yml --env-file .env.test-01 up -d --build"
+    docker compose -p snappy-case-dashboard up -d --build --force-recreate && \
+    docker compose -p snappy-case-dashboard-test-01 -f docker-compose.test-01.yml --env-file .env.test-01 up -d --build --force-recreate"

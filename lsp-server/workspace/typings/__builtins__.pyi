@@ -18,6 +18,7 @@ from recordset import Recordset
 from odoo_records import *
 from helpdesk_ticket_extended import HelpdeskTicketExtended
 from ir_config_param_extended import IrConfigParameterExtended
+from market_comm_event_log_extended import MarketCommEventLogExtended
 
 # --- KV Store ---
 
@@ -91,7 +92,7 @@ class OdooEnvironment:
     @overload
     def __getitem__(
         self, model_name: Literal["market.comm.event.log"]
-    ) -> MarketCommEventLog: ...
+    ) -> MarketCommEventLogExtended: ...
     @overload
     def __getitem__(
         self, model_name: Literal["case.integration.history"]

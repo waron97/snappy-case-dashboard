@@ -1,7 +1,8 @@
 """Extended HelpdeskTicket with custom methods."""
 
-from typing import Any, Dict, List, Union
+from typing import Any, Dict
 from odoo_records import HelpdeskTicket as _HelpdeskTicket
+from market_comm_event_log_extended import MarketCommEventLogExtended
 
 class KvStore:
     """Key-value store for Odoo."""
@@ -14,6 +15,7 @@ class KvStore:
 class HelpdeskTicketExtended(_HelpdeskTicket):
     """HelpdeskTicket with custom business logic methods."""
 
+    market_comm_event_log_ids: MarketCommEventLogExtended
     def kv_store(self) -> KvStore: ...
     def run_code_and_set_result(self) -> Any: ...
     def check_compatibility_matrix(self, **kwargs: Any) -> Any: ...
