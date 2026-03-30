@@ -97,13 +97,19 @@ export default function CaseFilters(props: Props) {
                             value={filters.workflow}
                             onChange={(v) => setFilters({ ...filters, workflow: v })}
                         />
+
+                        <TagsInput
+                            label="Active phase"
+                            value={filters.activePhase}
+                            onChange={(v) => setFilters({ ...filters, activePhase: v })}
+                        />
+                    </Group>
+                    <Group grow>
                         <TagsInput
                             label="Ticket type"
                             value={filters.ticketType}
                             onChange={(v) => setFilters({ ...filters, ticketType: v })}
                         />
-                    </Group>
-                    <Group grow>
                         <DateInput
                             label="Creati dopo il"
                             value={filters.startDate}

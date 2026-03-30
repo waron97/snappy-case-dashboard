@@ -14,6 +14,7 @@ type Props = {
 const hrefMap = (model: string, id: number): string | undefined => {
     const map: { [key: string]: (id: number) => string } = {
         'helpdesk.ticket': (id: number) => `/helpdesk.ticket/${id}`,
+        'symple.workflow': (id: number) => `/symple.workflow/${id}`,
     };
 
     if (map[model]) {

@@ -33,6 +33,7 @@ export default function HomePage() {
         is_close: boolean | null;
         workflow: string[];
         ticketType: string[];
+        activePhase: string[];
         customer_id: string[];
         startDate: string | null;
         endDate: string | null;
@@ -43,6 +44,7 @@ export default function HomePage() {
         is_close: false,
         workflow: [],
         ticketType: [],
+        activePhase: [],
         customer_id: [],
         startDate: null,
         endDate: null,
@@ -79,6 +81,10 @@ export default function HomePage() {
                                   'ticket_type_id.name': {
                                       operator: 'ilike',
                                       value: filters.ticketType,
+                                  },
+                                  'triplet_active_phase_id.name': {
+                                      operator: 'ilike',
+                                      value: filters.activePhase,
                                   },
                                   name: { operator: 'ilike', value: filters.name },
                                   is_close: { operator: '=', value: filters.is_close },
@@ -209,6 +215,7 @@ export default function HomePage() {
                         ...constructOdooDomain({
                             'workflow_id.name': { operator: 'ilike', value: f.workflow },
                             'ticket_type_id.name': { operator: 'ilike', value: f.ticketType },
+                            'triplet_active_phase_id.name': { operator: 'ilike', value: f.activePhase },
                             name: { operator: 'ilike', value: f.name },
                             is_close: { operator: '=', value: f.is_close },
                         }),

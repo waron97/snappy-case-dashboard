@@ -23,7 +23,7 @@ type RipLogDetail = {
 const ReactJson = dynamic(() => import('react-json-view'), { ssr: false });
 
 const parseJson = (str: string | undefined) => {
-    if (!str) return {};
+    if (!str) { return {}; }
     try {
         return JSON.parse(str);
     } catch {

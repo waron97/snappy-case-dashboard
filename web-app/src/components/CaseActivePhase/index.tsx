@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast, ToastContainer } from 'react-toastify';
 import { Alert, Button, Center, Group, Select, Stack, Text } from '@mantine/core';
 import { odooCallMethod, odooRead, odooSearchRead, odooWrite, OneToMany } from '../../../app/api';
+import PhaseResultSelector from '../PhaseResultSelector';
 import PythonEditor from '../PythonEditor';
 import UiCard from '../UiCard';
 
@@ -107,6 +108,23 @@ export default function CaseActivePhase(props: Props) {
     // Functions
     // -------------------------------------
 
+    async function handleSubmitError(err: unknown) {
+        if (err instanceof Error) {
+            toast(err.message);
+            // eslint-disable-next-line
+            console.error(err);
+        } else {
+            toast('Unknown error. Check browser console.');
+            // eslint-disable-next-line
+            console.error(err);
+        }
+    }
+
+    async function saveCode() {
+        await odooWrite('symple.triplet.phase', [form.phase!], { code: form.code });
+        queryClient.invalidateQueries({ queryKey: ['phase', form.phase, 'for-active-phase'] });
+    }
+
     async function submit() {
         setSubmitting(true);
         try {
@@ -116,20 +134,11 @@ export default function CaseActivePhase(props: Props) {
                 { triplet_phase_id: form.phase },
                 { bypass_ticket_check_write_allowed: true }
             );
-            setIsLocked(true);
             queryClient.invalidateQueries({ queryKey: ['case', caseId, 'for-active-phase'] });
-            queryClient.invalidateQueries({ queryKey: ['phase', form.phase, 'for-active-phase'] });
             queryClient.invalidateQueries({ queryKey: ['case-history', caseId] });
+            setIsLocked(true);
         } catch (err) {
-            if (err instanceof Error) {
-                toast(err.message);
-                // eslint-disable-next-line
-                console.error(err);
-            } else {
-                toast('Unknown error. Check browser console.');
-                // eslint-disable-next-line
-                console.error(err);
-            }
+            handleSubmitError(err);
         } finally {
             setSubmitting(false);
         }
@@ -168,30 +177,16 @@ export default function CaseActivePhase(props: Props) {
         }
     }
 
-    function getChangedFields() {
-        const changed = {
-            phase: false,
-            code: false,
-        };
-        let anyChanged = false;
-
+    function getChangedFields(): { anyChanged: boolean; phase: boolean; code: boolean } {
         if (isLocked) {
-            return [false, changed];
+            return { anyChanged: false, phase: false, code: false };
         }
-
-        if (form.phase !== caseFields?.triplet_active_phase_id?.[0]) {
-            changed.phase = true;
-            anyChanged = true;
-        }
-        if (selectedPhaseData?.code && form.code !== selectedPhaseData?.code) {
-            changed.code = true;
-            anyChanged = true;
-        }
-
-        return [anyChanged, changed];
+        const phase = form.phase !== caseFields?.triplet_active_phase_id?.[0];
+        const code = !!(selectedPhaseData?.code && form.code !== selectedPhaseData?.code);
+        return { anyChanged: phase || code, phase, code };
     }
 
-    function renderCodeEditor() {
+    function renderCodeEditor(codeChanged: boolean) {
         if (isLocked || !form.code || selectedPhaseData?.set_result_automatically !== 'from_code') {
             return null;
         }
@@ -200,6 +195,7 @@ export default function CaseActivePhase(props: Props) {
                 value={form.code || ''}
                 readOnly={isLocked}
                 onChange={(newCode) => setForm({ ...form, code: newCode })}
+                onSave={codeChanged ? saveCode : undefined}
             />
         );
     }
@@ -213,16 +209,18 @@ export default function CaseActivePhase(props: Props) {
             );
         }
 
-        const [didFieldsChange] = getChangedFields();
+        const { phase: phaseChanged, code: codeChanged } = getChangedFields();
 
         return (
             <Stack gap="md">
-                {didFieldsChange && (
+                {phaseChanged && (
                     <Alert color="yellow" mb="md" title="Unsaved changes">
-                        <Text size="sm">
-                            Data was changed. On save, code changes will be written and the ticket
-                            will be moved to the selected phase.
-                        </Text>
+                        <Text size="sm">The ticket will be moved to the selected phase.</Text>
+                        {codeChanged && (
+                            <Text size="sm" c="red" mt="xs">
+                                Unsaved code changes will be lost.
+                            </Text>
+                        )}
                         <Group mt="sm" gap="xs">
                             <Button size="xs" color="green" onClick={submit} loading={submitting}>
                                 Submit
@@ -256,7 +254,7 @@ export default function CaseActivePhase(props: Props) {
                     value={String(phaseIdToFetch)}
                     onChange={(v) => setForm({ ...form, phase: v ? parseInt(v, 10) : null })}
                 />
-                {renderCodeEditor()}
+                {renderCodeEditor(codeChanged)}
             </Stack>
         );
     }
@@ -275,6 +273,7 @@ export default function CaseActivePhase(props: Props) {
                     <Button onClick={relaunch} loading={relaunching}>
                         Relaunch phase
                     </Button>
+                    <PhaseResultSelector caseId={caseId} activePhaseId={activePhaseId} />
                     <Button onClick={handleLock}>
                         <Group gap="sm">
                             <Text>{isLocked ? 'Unlock' : 'Lock'}</Text>

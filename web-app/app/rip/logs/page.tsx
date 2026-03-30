@@ -40,10 +40,10 @@ interface RipLog {
 }
 
 const truncate = (str: string | undefined, max = 20) =>
-    str && str.length > max ? str.slice(0, max) + '…' : (str ?? '');
+    str && str.length > max ? `${str.slice(0, max)}…` : (str ?? '');
 
 const parseJson = (str: string | undefined) => {
-    if (!str) return {};
+    if (!str) { return {}; }
     try {
         return JSON.parse(str);
     } catch {

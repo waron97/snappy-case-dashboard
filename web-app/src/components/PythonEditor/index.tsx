@@ -29,10 +29,18 @@ type Props = {
     onChange?: (v: string) => void;
     onSave?: () => Promise<void>;
     readOnly?: boolean;
+    height?: string;
     maxHeight?: string;
 };
 
-export default function PythonEditor({ value, onChange, onSave, readOnly, maxHeight = '600px' }: Props) {
+export default function PythonEditor({
+    value,
+    onChange,
+    onSave,
+    readOnly,
+    height,
+    maxHeight = '600px',
+}: Props) {
     const [saving, setSaving] = useState(false);
     const [vimEnabled, setVimEnabled] = useState(
         () => localStorage.getItem('pythonEditor.vimEnabled') !== 'false'
@@ -164,6 +172,7 @@ export default function PythonEditor({ value, onChange, onSave, readOnly, maxHei
                 theme={vscodeDark}
                 extensions={extensions}
                 maxHeight={maxHeight}
+                height={height}
                 basicSetup={{
                     lineNumbers: true,
                     foldGutter: true,

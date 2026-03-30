@@ -127,6 +127,7 @@ export default function Ticket() {
             queryClient.invalidateQueries({ queryKey: ['case', id, 'for-base-view'] });
         } catch (err) {
             toast(err instanceof Error ? err.message : 'Unknown error. Check browser console.');
+            // eslint-disable-next-line no-console
             console.error(err);
         } finally {
             setIsClearing(false);
