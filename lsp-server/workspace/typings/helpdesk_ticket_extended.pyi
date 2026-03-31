@@ -1,7 +1,7 @@
 """Extended HelpdeskTicket with custom methods."""
 
 from typing import Any, Dict
-from odoo_records import HelpdeskTicket as _HelpdeskTicket
+from odoo_records import _HelpdeskTicket
 from market_comm_event_log_extended import MarketCommEventLogExtended
 
 class KvStore:

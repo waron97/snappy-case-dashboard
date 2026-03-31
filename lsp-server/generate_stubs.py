@@ -44,8 +44,9 @@ def connect_db():
 
 
 def model_to_class_name(model_name: str) -> str:
-    """Convert model name like 'sorgenia.contracts' to class name 'SorgeniaContracts'."""
-    return "".join(word.capitalize() for word in model_name.replace(".", "_").split("_"))
+    """Convert model name like 'sorgenia.contracts' to class name '_SorgeniaContracts'."""
+    base = "".join(word.capitalize() for word in model_name.replace(".", "_").split("_"))
+    return f"_{base}"
 
 
 def sanitize_field_name(field_name: str) -> str:
@@ -151,14 +152,45 @@ def generate_class_stub(model_name: str, fields: List[Tuple[str, str, str]], typ
     return "\n".join(lines)
 
 
-def generate_env_overloads(models: List[str]) -> str:
-    """Generate @overload entries for OdooEnvironment.__getitem__."""
+# Models that have hand-written extended classes — these override the auto-generated ones
+EXTENDED_OVERRIDES: Dict[str, Tuple[str, str]] = {
+    "helpdesk.ticket":       ("HelpdeskTicketExtended",     "helpdesk_ticket_extended"),
+    "ir.config_parameter":   ("IrConfigParameterExtended",  "ir_config_param_extended"),
+    "market.comm.event.log": ("MarketCommEventLogExtended", "market_comm_event_log_extended"),
+}
+
+
+def generate_odoo_environment(models: List[str]) -> str:
+    """Generate odoo_environment.pyi with OdooEnvironment class and all __getitem__ overloads."""
     class_names = [model_to_class_name(m) for m in models]
 
-    lines = ["# --- OdooEnvironment overloads for odoo_records.pyi models ---\n"]
-    lines.append("# Add these to the OdooEnvironment class in builtins.pyi:\n")
+    lines = [
+        "# AUTO-GENERATED FILE - do not edit manually",
+        "# Run lsp-server/generate_stubs.py to regenerate\n",
+        "from typing import Any, Dict, List, Literal, Optional, overload",
+        "from recordset import Recordset",
+    ]
 
-    for model, class_name in zip(models, class_names):
+    # Import all generated _-prefixed classes
+    import_names = sorted(class_names)
+    # Chunk into groups of 6 for readability
+    chunk_size = 6
+    for i in range(0, len(import_names), chunk_size):
+        chunk = import_names[i:i + chunk_size]
+        lines.append(f"from odoo_records import {', '.join(chunk)}")
+
+    # Import extended override classes
+    lines.append("")
+    for class_name, module in EXTENDED_OVERRIDES.values():
+        lines.append(f"from {module} import {class_name}")
+
+    lines.append("\n\nclass OdooEnvironment:")
+    lines.append("    cr: Any")
+    lines.append("    uid: int")
+    lines.append("    context: Dict[str, Any]")
+
+    # Extended overrides first (higher priority)
+    for model, (class_name, _) in EXTENDED_OVERRIDES.items():
         if len(model) > 30:
             lines.append(f"    @overload")
             lines.append(f"    def __getitem__(")
@@ -167,6 +199,24 @@ def generate_env_overloads(models: List[str]) -> str:
         else:
             lines.append(f"    @overload")
             lines.append(f"    def __getitem__(self, model_name: Literal[\"{model}\"]) -> {class_name}: ...")
+
+    # Auto-generated overloads for all models
+    for model, class_name in zip(models, class_names):
+        if model in EXTENDED_OVERRIDES:
+            continue
+        if len(model) > 30:
+            lines.append(f"    @overload")
+            lines.append(f"    def __getitem__(")
+            lines.append(f"        self, model_name: Literal[\"{model}\"]")
+            lines.append(f"    ) -> {class_name}: ...")
+        else:
+            lines.append(f"    @overload")
+            lines.append(f"    def __getitem__(self, model_name: Literal[\"{model}\"]) -> {class_name}: ...")
+
+    lines.append("    @overload")
+    lines.append("    def __getitem__(self, model_name: str) -> Recordset: ...")
+    lines.append("    def sudo(self) -> \"OdooEnvironment\": ...")
+    lines.append("    def ref(self, xml_id: str) -> Recordset: ...")
 
     return "\n".join(lines)
 
@@ -205,13 +255,12 @@ def main():
 
     print(f"\nWrote workspace/typings/odoo_records.pyi")
 
-    # Generate OdooEnvironment overloads (for manual paste into builtins.pyi)
-    env_overloads = generate_env_overloads(sorted(models_to_process))
-    overloads_file = "workspace/typings/ENV_OVERLOADS.txt"
-    with open(overloads_file, "w") as f:
-        f.write(env_overloads)
+    # Generate odoo_environment.pyi with OdooEnvironment class and all overloads
+    env_content = generate_odoo_environment(sorted(models_to_process))
+    with open("workspace/typings/odoo_environment.pyi", "w") as f:
+        f.write(env_content)
 
-    print(f"Wrote {overloads_file} - copy the overloads into OdooEnvironment class in builtins.pyi")
+    print(f"Wrote workspace/typings/odoo_environment.pyi")
 
     conn.close()
     print("\nDone!")
