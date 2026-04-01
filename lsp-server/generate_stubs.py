@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 """
-Generate odoo_records.pyi from Odoo database metadata.
+Generate odoo_records.pyi from Odoo database metadata + Odoo runtime method signatures.
 
-Queries ir_model and ir_model_fields to create typed stub classes for Odoo models.
+Queries ir_model and ir_model_fields for fields, then bootstraps the Odoo registry
+to extract real Python method signatures via inspect.
 """
 
+import sys
+import inspect
 import psycopg2
-import re
 import keyword
 from typing import Dict, List, Tuple, Set
-from collections import defaultdict
+
+ODOO_BASE_PATH = "/home/aron/codebase/odoo/15/base"
+ODOO_CONF = "/home/aron/codebase/sorgenia/config/odoo.conf"
+ODOO_DB = "sorgenia"
 
 
 # Don't skip any models - generate stubs for all
@@ -116,14 +121,35 @@ def map_odoo_type_to_python(field_type: str, relation: str, typed_models: Set[st
         return "Any"
 
 
-def generate_class_stub(model_name: str, fields: List[Tuple[str, str, str]], typed_models: Set[str]) -> str:
+def get_model_methods(model_class, skip: Set[str]) -> List[Tuple[str, str]]:
+    """Return [(method_name, signature_str)] for custom methods on model_class."""
+    results = []
+    for name, obj in inspect.getmembers(model_class, predicate=inspect.isroutine):
+        if name.startswith("__"):
+            continue
+        if name in skip:
+            continue
+        try:
+            sig = str(inspect.signature(obj))
+        except (ValueError, TypeError):
+            sig = "(self, *args, **kwargs)"
+        results.append((name, sig))
+    return results
+
+
+def generate_class_stub(
+    model_name: str,
+    fields: List[Tuple[str, str, str]],
+    typed_models: Set[str],
+    methods: List[Tuple[str, str]] = [],
+) -> str:
     """Generate a Python class stub for a model."""
     class_name = model_to_class_name(model_name)
 
     lines = [f"# --- {model_name} ---\n"]
     lines.append(f"class {class_name}(Recordset):")
 
-    if not fields:
+    if not fields and not methods:
         lines.append("    pass")
     else:
         # Field annotations
@@ -132,7 +158,7 @@ def generate_class_stub(model_name: str, fields: List[Tuple[str, str, str]], typ
             safe_field_name = sanitize_field_name(field_name)
             lines.append(f"    {safe_field_name}: {python_type}")
 
-        # Standard methods
+        # Standard methods (self-typed returns)
         lines.append(f"    def browse(self, ids: Union[int, List[int]]) -> \"{class_name}\": ...")
         lines.append(f"    def search(")
         lines.append(f"        self,")
@@ -148,21 +174,49 @@ def generate_class_stub(model_name: str, fields: List[Tuple[str, str, str]], typ
         lines.append(f"    def sudo(self) -> \"{class_name}\": ...")
         lines.append(f"    def with_context(self, ctx: Dict[str, Any] = ..., **kwargs: Any) -> \"{class_name}\": ...")
 
+        # Custom business methods extracted from Odoo registry
+        for method_name, sig in methods:
+            lines.append(f"    def {method_name}{sig}: ...")
+
     lines.append("")
     return "\n".join(lines)
 
 
-# Models that have hand-written extended classes — these override the auto-generated ones
-EXTENDED_OVERRIDES: Dict[str, Tuple[str, str]] = {
-    "helpdesk.ticket":       ("HelpdeskTicketExtended",     "helpdesk_ticket_extended"),
-    "ir.config_parameter":   ("IrConfigParameterExtended",  "ir_config_param_extended"),
-    "market.comm.event.log": ("MarketCommEventLogExtended", "market_comm_event_log_extended"),
-}
+# Frequently used models — their __getitem__ overloads appear first in OdooEnvironment
+# so LSP resolves them faster. Ordered by usage frequency across agrippa-workflows.
+PRIORITY_MODELS = [
+    "ir.config_parameter",
+    "symple.pb.process.data",
+    "service.point",
+    "helpdesk.ticket",
+    "res.partner",
+    "billing.profile",
+    "helpdesk.ticket.type",
+    "payment.method",
+    "case.integration.history",
+    "symple.pb.launcher",
+    "res.toponym",
+    "res.city",
+    "symple.interaction",
+    "res.country.state",
+    "res.partner.pod",
+    "automatic.insurance.service",
+    "symple.triplet.phase",
+    "res.partner.pdr",
+    "symple.triplet.phase.result",
+    "market.comm.event.log",
+    "ir.sequence",
+    "charge.dispatch",
+    "payment.term",
+    "result.type",
+    "party.relation",
+]
 
 
 def generate_odoo_environment(models: List[str]) -> str:
     """Generate odoo_environment.pyi with OdooEnvironment class and all __getitem__ overloads."""
     class_names = [model_to_class_name(m) for m in models]
+    model_to_class = dict(zip(models, class_names))
 
     lines = [
         "# AUTO-GENERATED FILE - do not edit manually",
@@ -173,24 +227,17 @@ def generate_odoo_environment(models: List[str]) -> str:
 
     # Import all generated _-prefixed classes
     import_names = sorted(class_names)
-    # Chunk into groups of 6 for readability
     chunk_size = 6
     for i in range(0, len(import_names), chunk_size):
         chunk = import_names[i:i + chunk_size]
         lines.append(f"from odoo_records import {', '.join(chunk)}")
-
-    # Import extended override classes
-    lines.append("")
-    for class_name, module in EXTENDED_OVERRIDES.values():
-        lines.append(f"from {module} import {class_name}")
 
     lines.append("\n\nclass OdooEnvironment:")
     lines.append("    cr: Any")
     lines.append("    uid: int")
     lines.append("    context: Dict[str, Any]")
 
-    # Extended overrides first (higher priority)
-    for model, (class_name, _) in EXTENDED_OVERRIDES.items():
+    def emit_overload(model: str, class_name: str) -> None:
         if len(model) > 30:
             lines.append(f"    @overload")
             lines.append(f"    def __getitem__(")
@@ -200,18 +247,16 @@ def generate_odoo_environment(models: List[str]) -> str:
             lines.append(f"    @overload")
             lines.append(f"    def __getitem__(self, model_name: Literal[\"{model}\"]) -> {class_name}: ...")
 
-    # Auto-generated overloads for all models
+    # Priority models first
+    for model in PRIORITY_MODELS:
+        if model in model_to_class:
+            emit_overload(model, model_to_class[model])
+
+    # Remaining models in alphabetical order
+    priority_set = set(PRIORITY_MODELS)
     for model, class_name in zip(models, class_names):
-        if model in EXTENDED_OVERRIDES:
-            continue
-        if len(model) > 30:
-            lines.append(f"    @overload")
-            lines.append(f"    def __getitem__(")
-            lines.append(f"        self, model_name: Literal[\"{model}\"]")
-            lines.append(f"    ) -> {class_name}: ...")
-        else:
-            lines.append(f"    @overload")
-            lines.append(f"    def __getitem__(self, model_name: Literal[\"{model}\"]) -> {class_name}: ...")
+        if model not in priority_set:
+            emit_overload(model, class_name)
 
     lines.append("    @overload")
     lines.append("    def __getitem__(self, model_name: str) -> Recordset: ...")
@@ -222,6 +267,19 @@ def generate_odoo_environment(models: List[str]) -> str:
 
 
 def main():
+    # Bootstrap Odoo registry for method signature extraction
+    print("Bootstrapping Odoo registry...")
+    sys.path.insert(0, ODOO_BASE_PATH)
+    import odoo
+    odoo.tools.config.parse_config(["-c", ODOO_CONF, "-d", ODOO_DB])
+    registry = odoo.registry(ODOO_DB)
+
+    # Build the set of methods to skip: BaseModel ORM internals + already-stubbed methods
+    base_skip: Set[str] = set(
+        name for name, _ in inspect.getmembers(odoo.models.BaseModel, predicate=inspect.isroutine)
+    )
+    base_skip |= {"browse", "search", "create", "filtered", "sorted", "exists", "sudo", "with_context"}
+
     conn = connect_db()
 
     # Get all models
@@ -244,9 +302,18 @@ def main():
     ]
 
     # Generate classes for each model
-    for model in sorted(models_to_process):
-        fields = get_model_fields(conn, model)
-        output_lines.append(generate_class_stub(model, fields, typed_models))
+    with registry.cursor() as cr:
+        env = odoo.api.Environment(cr, odoo.SUPERUSER_ID, {})
+        for model in sorted(models_to_process):
+            fields = get_model_fields(conn, model)
+
+            model_class = env.registry.get(model)
+            if model_class is not None:
+                methods: List[Tuple[str, str]] = get_model_methods(model_class, base_skip)
+            else:
+                methods = []
+
+            output_lines.append(generate_class_stub(model, fields, typed_models, methods))
 
     # Write odoo_records.pyi
     stub_content = "\n".join(output_lines)
