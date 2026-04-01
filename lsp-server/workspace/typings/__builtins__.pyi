@@ -1,7 +1,6 @@
 from typing import (
     Any,
     Dict,
-    Iterator,
     List,
     Literal,
     Optional,
@@ -9,34 +8,13 @@ from typing import (
     Type,
     TypeVar,
     Union,
-    overload,
 )
 import logging
 import datetime as _dt
 
 from recordset import Recordset
 from odoo_environment import OdooEnvironment
-from helpdesk_ticket_extended import HelpdeskTicketExtended
-from ir_config_param_extended import IrConfigParameterExtended
-from market_comm_event_log_extended import MarketCommEventLogExtended
-
-# --- KV Store ---
-
-class KvStore:
-    def get(self, key: str) -> Any: ...
-    def set(self, key: str, value: Any) -> None: ...
-    def get_many(self, *keys: str) -> Tuple[Any, ...]: ...
-    def set_many(self, values: Dict[str, Any]) -> None: ...
-
-# --- Process Data ---
-
-class ProcessData:
-    payload: str
-    process_name: str
-    res_id: int
-    def get_payload(self) -> Any: ...
-
-# --- Cursor ---
+from odoo_records import _HelpdeskTicket
 
 class Cursor:
     def execute(self, query: str, params: Any = None) -> None: ...
@@ -44,10 +22,6 @@ class Cursor:
     def fetchall(self) -> List[Tuple[Any, ...]]: ...
     def rollback(self) -> None: ...
     def commit(self) -> None: ...
-
-# --- Odoo Environment (auto-generated, see odoo_environment.pyi) ---
-
-# --- HTTP Response (returned by request()) ---
 
 class Response:
     status_code: int
@@ -60,7 +34,7 @@ class Response:
 
 # --- Globals ---
 
-case_id: HelpdeskTicketExtended
+case_id: _HelpdeskTicket
 env: OdooEnvironment
 body: Dict[str, Any]
 args: List[Any]
