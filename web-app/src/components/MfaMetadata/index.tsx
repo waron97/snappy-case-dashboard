@@ -41,17 +41,21 @@ export default function MfaMetadata({ id }: Props) {
     const { data, isLoading } = useQuery({
         queryKey: ['mfa', id, 'metadata'],
         queryFn: () =>
-            odooRead('rip.model.function.access', [id], [
-                'name',
-                'model_name',
-                'create_date',
-                'create_uid',
-                'write_date',
-                'write_uid',
-                'enabled',
-                'model_schema_in_id',
-                'model_schema_out_id',
-            ]),
+            odooRead(
+                'rip.model.function.access',
+                [id],
+                [
+                    'name',
+                    'model_name',
+                    'create_date',
+                    'create_uid',
+                    'write_date',
+                    'write_uid',
+                    'enabled',
+                    'model_schema_in_id',
+                    'model_schema_out_id',
+                ]
+            ),
     });
 
     const record: MfaRecord | undefined = data?.[0];

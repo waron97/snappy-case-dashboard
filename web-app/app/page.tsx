@@ -168,17 +168,33 @@ export default function HomePage() {
         <Table.Tr key={item.id}>
             <Table.Td miw={130}>{itemName(item)}</Table.Td>
             <Table.Td>
-                <RelationLink name={item.customer_id[1]} pgId={item.customer_id[0]} model="res.partner" />
+                <RelationLink
+                    name={item.customer_id[1]}
+                    pgId={item.customer_id[0]}
+                    model="res.partner"
+                />
             </Table.Td>
             <Table.Td>
-                <RelationLink name={item.ticket_type_id[1]} pgId={item.ticket_type_id[0]} model="helpdesk.ticket.type" />
+                <RelationLink
+                    name={item.ticket_type_id[1]}
+                    pgId={item.ticket_type_id[0]}
+                    model="helpdesk.ticket.type"
+                />
             </Table.Td>
             <Table.Td>
-                <RelationLink name={item.workflow_id[1]} pgId={item.workflow_id[0]} model="symple.workflow" />
+                <RelationLink
+                    name={item.workflow_id[1]}
+                    pgId={item.workflow_id[0]}
+                    model="symple.workflow"
+                />
             </Table.Td>
             <Table.Td>
                 {item.triplet_active_phase_id?.[0] && (
-                    <RelationLink name={item.triplet_active_phase_id[1]} pgId={item.triplet_active_phase_id[0]} model="symple.triplet.phase" />
+                    <RelationLink
+                        name={item.triplet_active_phase_id[1]}
+                        pgId={item.triplet_active_phase_id[0]}
+                        model="symple.triplet.phase"
+                    />
                 )}
             </Table.Td>
             <Table.Td>{dayjs(item.create_date).format('D/M/YY HH:mm')}</Table.Td>
@@ -215,7 +231,10 @@ export default function HomePage() {
                         ...constructOdooDomain({
                             'workflow_id.name': { operator: 'ilike', value: f.workflow },
                             'ticket_type_id.name': { operator: 'ilike', value: f.ticketType },
-                            'triplet_active_phase_id.name': { operator: 'ilike', value: f.activePhase },
+                            'triplet_active_phase_id.name': {
+                                operator: 'ilike',
+                                value: f.activePhase,
+                            },
                             name: { operator: 'ilike', value: f.name },
                             is_close: { operator: '=', value: f.is_close },
                         }),

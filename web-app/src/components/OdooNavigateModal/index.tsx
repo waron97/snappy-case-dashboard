@@ -12,9 +12,13 @@ function parseOdooUrl(raw: string): { model: string; id: number } | null {
         const params = new URLSearchParams(hash);
         const model = params.get('model');
         const idStr = params.get('id');
-        if (!model || !idStr) { return null; }
+        if (!model || !idStr) {
+            return null;
+        }
         const id = parseInt(idStr, 10);
-        if (isNaN(id)) { return null; }
+        if (isNaN(id)) {
+            return null;
+        }
         return { model, id };
     } catch {
         return null;
@@ -70,7 +74,9 @@ export default function OdooNavigateModal() {
                         setError(null);
                     }}
                     onKeyDown={(e) => {
-                        if (e.key === 'Enter') { handleSubmit(); }
+                        if (e.key === 'Enter') {
+                            handleSubmit();
+                        }
                     }}
                     error={error}
                 />

@@ -1,9 +1,9 @@
 import { useState } from 'react';
+import { odooSearchRead, odooWrite } from '@app/api';
 import { IconChevronDown } from '@tabler/icons-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { Button, Menu } from '@mantine/core';
-import { odooSearchRead, odooWrite } from '@app/api';
 
 type Props = {
     caseId: number;

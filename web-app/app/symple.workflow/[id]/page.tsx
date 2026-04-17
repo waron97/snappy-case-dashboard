@@ -5,9 +5,9 @@ import { useParams } from 'next/navigation';
 import { IconCode } from '@tabler/icons-react';
 import { Anchor, Button, Container, Group, Space, Tabs, Title } from '@mantine/core';
 import { WorkflowContext } from './context';
+import PhasesAndResults from './tabs/PhasesAndResults';
 import useActions from './useActions';
 import useData from './useData';
-import PhasesAndResults from './tabs/PhasesAndResults';
 
 // -------------------------------------
 // Component

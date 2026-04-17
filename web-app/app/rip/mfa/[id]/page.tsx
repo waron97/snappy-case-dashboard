@@ -3,10 +3,22 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { IconCode } from '@tabler/icons-react';
 import { odooRead } from '@app/api';
+import { IconCode } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
-import { Anchor, Button, Center, Container, Grid, Group, Loader, Space, Stack, Text, Title } from '@mantine/core';
+import {
+    Anchor,
+    Button,
+    Center,
+    Container,
+    Grid,
+    Group,
+    Loader,
+    Space,
+    Stack,
+    Text,
+    Title,
+} from '@mantine/core';
 import MfaCode from '@/components/MfaCode';
 import MfaMetadata from '@/components/MfaMetadata';
 import MfaRecentCalls from '@/components/MfaRecentCalls';
