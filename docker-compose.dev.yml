@@ -22,10 +22,62 @@ services:
     restart: unless-stopped
     env_file:
       - ./.env
+    environment:
+      - TESTRUNNER_API_URL=http://auto-testrunner:8765
+      - RESULTS_DIR=/results
+      - REDIS_URL=redis://redis:6379
     volumes:
       - ./web-app/app:/app/app
       - ./web-app/src:/app/src
+      - test_results:/results
 
   lsp-server:
     build: ./lsp-server
     restart: unless-stopped
+
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+      POSTGRES_DB: odoo_base
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo -d odoo_base"]
+      interval: 10s
+      timeout: 2s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+
+  redis-ui:
+    image: rediscommander/redis-commander:latest
+    environment:
+      REDIS_HOSTS: redis
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+
+  auto-testrunner:
+    build: ./auto-testrunner
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    env_file:
+      - ./.env
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RESULTS_DIR=/results
+    volumes:
+      - test_results:/results
+      - addons_repo:/opt/repo
+
+volumes:
+  postgres_test_data:
+  addons_repo:
+  test_results:
