@@ -121,19 +121,60 @@ def map_odoo_type_to_python(field_type: str, relation: str, typed_models: Set[st
         return "Any"
 
 
-def get_model_methods(model_class, skip: Set[str]) -> List[Tuple[str, str]]:
-    """Return [(method_name, signature_str)] for custom methods on model_class."""
+def _safe_default_str(value) -> str:
+    """Return a stub-safe string representation of a default value."""
+    if value is None:
+        return "None"
+    if isinstance(value, bool):
+        return repr(value)
+    if isinstance(value, (int, float, str)):
+        return repr(value)
+    if isinstance(value, (list, dict, tuple)) and not value:
+        return repr(value)
+    if isinstance(value, type):
+        return value.__name__
+    return "..."
+
+
+def sanitize_sig(sig) -> str:
+    """Build a stub-safe signature string, replacing complex defaults with ..."""
+    parts = []
+    for name, param in sig.parameters.items():
+        if param.kind == inspect.Parameter.VAR_POSITIONAL:
+            parts.append(f"*{name}")
+        elif param.kind == inspect.Parameter.VAR_KEYWORD:
+            parts.append(f"**{name}")
+        elif param.default is inspect.Parameter.empty:
+            parts.append(name)
+        else:
+            parts.append(f"{name}={_safe_default_str(param.default)}")
+    return f"({', '.join(parts)})"
+
+
+def get_model_methods(model_class, skip: Set[str], model_name: str) -> List[Tuple[str, str]]:
+    """Return [(method_name, signature_str)] for methods defined directly on model_class.
+
+    Only includes methods whose defining class has _name == model_name, which
+    excludes inherited mixin methods (mail.thread, web.grid, bit2publish, etc.)
+    while keeping methods added by the model's own modules.
+    """
     results = []
     for name, obj in inspect.getmembers(model_class, predicate=inspect.isroutine):
         if name.startswith("__"):
             continue
         if name in skip:
             continue
-        try:
-            sig = str(inspect.signature(obj))
-        except (ValueError, TypeError):
-            sig = "(self, *args, **kwargs)"
-        results.append((name, sig))
+        # Walk MRO to find the class that first defines this method
+        for cls in model_class.__mro__:
+            if name in cls.__dict__:
+                # Only keep if defined by a class that "owns" this model
+                if getattr(cls, '_name', None) == model_name:
+                    try:
+                        sig = sanitize_sig(inspect.signature(obj))
+                    except (ValueError, TypeError):
+                        sig = "(self, *args, **kwargs)"
+                    results.append((name, sig))
+                break
     return results
 
 
@@ -309,7 +350,7 @@ def main():
 
             model_class = env.registry.get(model)
             if model_class is not None:
-                methods: List[Tuple[str, str]] = get_model_methods(model_class, base_skip)
+                methods: List[Tuple[str, str]] = get_model_methods(model_class, base_skip, model)
             else:
                 methods = []
 

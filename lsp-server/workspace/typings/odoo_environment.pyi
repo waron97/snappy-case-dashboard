@@ -112,24 +112,24 @@ from odoo_records import _SymphonyConfigMetodoPagamento, _SymphonyConfigRivaluta
 from odoo_records import _SymphonyOpenfiberCommunication, _SymphonyOrderManagement, _SymphonyPointOrderManagement, _SymphonyTaskOrderManagement, _SymphonyWalletDashboard, _SymphonyWebcomponentDashboardBlacklist
 from odoo_records import _SymphonyWebcomponentDashboardCreditCheck, _SymphonyWebcomponentDashboardFiberCoverage, _SymphonyWebcomponentDashboardFiberUpselling, _SymphonyWebcomponentDashboardIntegrationFlow, _SympleAiAutomation, _SympleAiTag
 from odoo_records import _SympleAiTagConfidence, _SympleAiTagConfidenceHistory, _SympleAiTagMixin, _SympleCluster, _SympleDmsFolder, _SympleDmsServer
-from odoo_records import _SympleDmsToken, _SympleImporterImportCase, _SympleImporterLine, _SympleInboundMessageRegistry, _SympleInteraction, _SympleInteractionCancelReason
-from odoo_records import _SympleMail, _SympleMailImportMailMail, _SympleMailReport, _SympleMessageRegistry, _SympleMessageRegistryMixin, _SympleOutboundMessageRegistry
-from odoo_records import _SymplePbInstanceKey, _SymplePbInstanceKeyMixin, _SymplePbLauncher, _SymplePbProcess, _SymplePbProcessData, _SymplePbProcessElement
-from odoo_records import _SymplePbSummaryLauncher, _SymplePbWebcomponent, _SymplePbWebcomponentEvent, _SymplePdfUtils, _SympleRcu, _SympleRcuCancelCaseWizard
-from odoo_records import _SympleRcuCheckWorkWizard, _SympleRcuCommodityOperation, _SympleRcuCreateCaseWizard, _SympleRcuForceResolvedWizard, _SympleRcuLine, _SympleRcuMassiveProcedureResultFcVatWizard
-from odoo_records import _SympleRcuMassiveProcedureWizard, _SympleRcuOperation, _SympleRcuOperationType, _SympleRcuOperationTypeCode, _SympleRcuPmax, _SympleRcuRefreshDeactivationWizard
-from odoo_records import _SympleRcuResolvedOkWizard, _SympleRcuResolvedWorkWizard, _SympleRcuSendingResolvedWizard, _SympleRcuSendingWorkWizard, _SympleRcuShowErrorMessageCaseWizard, _SympleRcuWorkCheckWizard
-from odoo_records import _SympleRcuWorkSendingWizard, _SympleRefunderAx, _SympleRefunderAxLine, _SympleRefunderDoxee, _SympleRefunderDoxeeLine, _SympleRefunderImportWizard
-from odoo_records import _SympleRefunderLine, _SympleRefunderLineMixin, _SympleRefunderMixin, _SympleRefunderProcessWizard, _SympleRefunderResult, _SympleRefunderUpdate
-from odoo_records import _SympleRefunderUpdateLine, _SympleSlideoutMenu, _SympleTripletPhase, _SympleTripletPhaseHistory, _SympleTripletPhaseResult, _SympleTripletPhaseType
-from odoo_records import _SympleTripletSubtype, _SympleTripletType, _SympleTripletType, _SympleTripletUnsuccessReason, _SympleWorkflow, _TabVisibility
-from odoo_records import _TaxAdjustmentsWizard, _TemporaryClient, _Trader, _TraderImportWizard, _TransportNetworkMapManagement, _TransportNetworkMapManagementHistory
-from odoo_records import _TransporterDistributorMixin, _UnexecutedFile, _UnexecutedRecord, _Unknown, _UomCategory, _UomUom
-from odoo_records import _UpdateCadastreData, _UtmCampaign, _UtmMedium, _UtmMixin, _UtmSource, _UtmStage
-from odoo_records import _UtmTag, _ValidateAccountMove, _VulnerabilityHistory, _WalletImportWizard, _WalletManagementLine, _WatchlistAddWizard
-from odoo_records import _WatchlistDownloadWizard, _WatchlistRemoveWizard, _WebEditorAssets, _WebEditorConverterTest, _WebEditorConverterTestSub, _WebTourTour
-from odoo_records import _WizardIrModelMenuCreate, _X, _XCcq, _XMktCom, _XPod, _XPrecheck
-from odoo_records import _XTopny, _XmlgeneratorDataAggregator, _XmlgeneratorDataField, _XmlgeneratorDataModel
+from odoo_records import _SympleDmsToken, _SympleEventInteractionMixin, _SympleImporterImportCase, _SympleImporterLine, _SympleInboundMessageRegistry, _SympleInteraction
+from odoo_records import _SympleInteractionCancelReason, _SympleMail, _SympleMailImportMailMail, _SympleMailReport, _SympleMessageRegistry, _SympleMessageRegistryMixin
+from odoo_records import _SympleOutboundMessageRegistry, _SymplePbInstanceKey, _SymplePbInstanceKeyMixin, _SymplePbLauncher, _SymplePbProcess, _SymplePbProcessData
+from odoo_records import _SymplePbProcessElement, _SymplePbSummaryLauncher, _SymplePbWebcomponent, _SymplePbWebcomponentEvent, _SymplePdfUtils, _SympleRcu
+from odoo_records import _SympleRcuCancelCaseWizard, _SympleRcuCheckWorkWizard, _SympleRcuCommodityOperation, _SympleRcuCreateCaseWizard, _SympleRcuForceResolvedWizard, _SympleRcuLine
+from odoo_records import _SympleRcuMassiveProcedureResultFcVatWizard, _SympleRcuMassiveProcedureWizard, _SympleRcuOperation, _SympleRcuOperationType, _SympleRcuOperationTypeCode, _SympleRcuPmax
+from odoo_records import _SympleRcuRefreshDeactivationWizard, _SympleRcuResolvedOkWizard, _SympleRcuResolvedWorkWizard, _SympleRcuSendingResolvedWizard, _SympleRcuSendingWorkWizard, _SympleRcuShowErrorMessageCaseWizard
+from odoo_records import _SympleRcuWorkCheckWizard, _SympleRcuWorkSendingWizard, _SympleRefunderAx, _SympleRefunderAxLine, _SympleRefunderDoxee, _SympleRefunderDoxeeLine
+from odoo_records import _SympleRefunderImportWizard, _SympleRefunderLine, _SympleRefunderLineMixin, _SympleRefunderMixin, _SympleRefunderProcessWizard, _SympleRefunderResult
+from odoo_records import _SympleRefunderUpdate, _SympleRefunderUpdateLine, _SympleSlideoutMenu, _SympleTripletPhase, _SympleTripletPhaseHistory, _SympleTripletPhaseResult
+from odoo_records import _SympleTripletPhaseType, _SympleTripletSubtype, _SympleTripletType, _SympleTripletType, _SympleTripletUnsuccessReason, _SympleWorkflow
+from odoo_records import _TabVisibility, _TaxAdjustmentsWizard, _TemporaryClient, _Trader, _TraderImportWizard, _TransportNetworkMapManagement
+from odoo_records import _TransportNetworkMapManagementHistory, _TransporterDistributorMixin, _UnexecutedFile, _UnexecutedRecord, _Unknown, _UomCategory
+from odoo_records import _UomUom, _UpdateCadastreData, _UtmCampaign, _UtmMedium, _UtmMixin, _UtmSource
+from odoo_records import _UtmStage, _UtmTag, _ValidateAccountMove, _VulnerabilityHistory, _WalletImportWizard, _WalletManagementLine
+from odoo_records import _WatchlistAddWizard, _WatchlistDownloadWizard, _WatchlistRemoveWizard, _WebEditorAssets, _WebEditorConverterTest, _WebEditorConverterTestSub
+from odoo_records import _WebTourTour, _WizardIrModelMenuCreate, _X, _XCcq, _XMktCom, _XPod
+from odoo_records import _XPrecheck, _XTopny, _XmlgeneratorDataAggregator, _XmlgeneratorDataField, _XmlgeneratorDataModel
 
 
 class OdooEnvironment:
@@ -1604,6 +1604,8 @@ class OdooEnvironment:
     def __getitem__(self, model_name: Literal["symple.dms.server"]) -> _SympleDmsServer: ...
     @overload
     def __getitem__(self, model_name: Literal["symple.dms.token"]) -> _SympleDmsToken: ...
+    @overload
+    def __getitem__(self, model_name: Literal["symple.event.interaction.mixin"]) -> _SympleEventInteractionMixin: ...
     @overload
     def __getitem__(self, model_name: Literal["symple.importer.import.case"]) -> _SympleImporterImportCase: ...
     @overload
