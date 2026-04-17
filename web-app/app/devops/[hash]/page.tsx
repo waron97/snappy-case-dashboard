@@ -63,12 +63,14 @@ export default function PrDetailPage() {
         queryKey: ['devops', 'log', hash, 'install'],
         queryFn: () => readLog(hash, 'install'),
         refetchInterval: isActive ? 1_000 : false,
+        gcTime: 0,
     });
 
     const { data: testLog } = useQuery<string | null>({
         queryKey: ['devops', 'log', hash, 'test'],
         queryFn: () => readLog(hash, 'test'),
         refetchInterval: isActive ? 1_000 : false,
+        gcTime: 0,
     });
 
     async function handleRecheck() {

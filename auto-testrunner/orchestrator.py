@@ -49,7 +49,7 @@ def fetch_open_prs():
     url = (
         f"https://dev.azure.com/{DEVOPS_ORG}/{DEVOPS_PROJECT}"
         f"/_apis/git/repositories/{DEVOPS_REPO}/pullrequests"
-        f"?searchCriteria.status=active&api-version=7.0"
+        f"?searchCriteria.status=active&searchCriteria.targetRefName=refs/heads/15.0-dev&api-version=7.0"
     )
     resp = requests.get(url, headers=ado_headers(), timeout=30)
     resp.raise_for_status()
@@ -57,13 +57,13 @@ def fetch_open_prs():
 
 
 def result_exists(commit_hash):
-    return (
-        (RESULTS_DIR / f"{commit_hash}.install.log").exists() or
-        (RESULTS_DIR / f"{commit_hash}.test.log").exists()
-    )
+    return (RESULTS_DIR / f"{commit_hash}.install.log").exists() or (
+        RESULTS_DIR / f"{commit_hash}.test.log"
+    ).exists()
 
 
 _RUNNER_RE = re.compile(r"odoo\.tests\.runner: (\d+) failed, (\d+) error\(s\)")
+
 
 def parse_test_result(commit_hash):
     """Read last 200 lines of test.log, find runner summary. Returns 'passed', 'failed', or 'done'."""
@@ -106,7 +106,9 @@ def do_poll():
     with _poll_lock:
         prs = fetch_open_prs()
         log.info(f"Found {len(prs)} open PRs")
-        active = {pr.get("lastMergeSourceCommit", {}).get("commitId") for pr in prs} - {None}
+        active = {pr.get("lastMergeSourceCommit", {}).get("commitId") for pr in prs} - {
+            None
+        }
         vacuum(active)
         enqueued = []
         for commit in active:
@@ -139,10 +141,12 @@ def api_discover():
 def api_status():
     current = rdb.get(CURRENT_KEY)
     queue = rdb.lrange(QUEUE_KEY, 0, -1)
-    return jsonify({
-        "current": current.decode() if current else None,
-        "queue": [h.decode() if isinstance(h, bytes) else h for h in queue],
-    })
+    return jsonify(
+        {
+            "current": current.decode() if current else None,
+            "queue": [h.decode() if isinstance(h, bytes) else h for h in queue],
+        }
+    )
 
 
 @app.route("/prs", methods=["GET"])
@@ -165,14 +169,17 @@ def api_prs():
             status = "queued"
         else:
             status = "pending"
-        result.append({
-            "id": pr.get("pullRequestId"),
-            "title": pr.get("title"),
-            "author": pr.get("createdBy", {}).get("displayName"),
-            "sourceBranch": pr.get("sourceRefName", "").replace("refs/heads/", ""),
-            "commitId": commit,
-            "status": status,
-        })
+        result.append(
+            {
+                "id": pr.get("pullRequestId"),
+                "title": pr.get("title"),
+                "author": pr.get("createdBy", {}).get("displayName"),
+                "sourceBranch": pr.get("sourceRefName", "").replace("refs/heads/", ""),
+                "commitId": commit,
+                "status": status,
+                "isDraft": pr.get("isDraft", False),
+            }
+        )
     return jsonify(result)
 
 
@@ -183,6 +190,12 @@ def api_recheck(commit_hash):
         f = RESULTS_DIR / f"{commit_hash}.{suffix}"
         if f.exists():
             f.unlink()
+
+    db_name = f"odoo_{commit_hash[:12]}"
+    subprocess.run(
+        ["dropdb", "-h", DB_HOST, "-U", DB_USER, "--if-exists", db_name],
+        env={**os.environ, **pg_env()},
+    )
     # Remove from queue if already pending, then push to front
     rdb.lrem(QUEUE_KEY, 0, commit_hash)
     rdb.lpush(QUEUE_KEY, commit_hash)
@@ -194,7 +207,9 @@ def run_cmd(cmd, env_extra=None, log_file=None):
     merged_env = {**os.environ, **(env_extra or {})}
     if log_file:
         with open(log_file, "ab") as f:
-            return subprocess.run(cmd, env=merged_env, stdout=f, stderr=subprocess.STDOUT).returncode
+            return subprocess.run(
+                cmd, env=merged_env, stdout=f, stderr=subprocess.STDOUT
+            ).returncode
     return subprocess.run(cmd, env=merged_env).returncode
 
 
@@ -221,9 +236,13 @@ def run_test(commit_hash):
     # Sync repo → addons dir; symple_addons excluded (baked at /opt/odoo/symple_addons/)
     subprocess.run(
         [
-            "rsync", "-a", "--delete",
-            "--exclude=.git", "--exclude=symple_addons",
-            str(REPO_DIR) + "/", str(ADDONS_DIR) + "/",
+            "rsync",
+            "-a",
+            "--delete",
+            "--exclude=.git",
+            "--exclude=symple_addons",
+            str(REPO_DIR) + "/",
+            str(ADDONS_DIR) + "/",
         ],
         check=True,
     )
@@ -251,9 +270,16 @@ def run_test(commit_hash):
         log.info(f"[{commit_hash[:8]}] Initializing base module...")
         subprocess.run(
             [
-                "python3", ODOO_BIN, "-c", ODOO_CONF,
-                "-d", db_name, "-i", "base",
-                "--stop-after-init", "--log-level=info",
+                "python3",
+                ODOO_BIN,
+                "-c",
+                ODOO_CONF,
+                "-d",
+                db_name,
+                "-i",
+                "base",
+                "--stop-after-init",
+                "--log-level=info",
             ],
             check=True,
         )
@@ -273,19 +299,33 @@ def run_test(commit_hash):
         # Discover addons via manifestoo
         depends_raw = subprocess.run(
             [
-                "manifestoo", "--select-addons-dir", "/opt/odoo/addons",
-                "--select-exclude", EXCLUDE, "list-depends", "--separator=,",
+                "manifestoo",
+                "--select-addons-dir",
+                "/opt/odoo/addons",
+                "--select-exclude",
+                EXCLUDE,
+                "list-depends",
+                "--separator=,",
             ],
-            capture_output=True, text=True, check=True,
+            capture_output=True,
+            text=True,
+            check=True,
         ).stdout.strip()
         depends_list = remove_from_csv(depends_raw, "base")
 
         addons_raw = subprocess.run(
             [
-                "manifestoo", "--select-addons-dir", "/opt/odoo/addons",
-                "--select-exclude", EXCLUDE, "list", "--separator=,",
+                "manifestoo",
+                "--select-addons-dir",
+                "/opt/odoo/addons",
+                "--select-exclude",
+                EXCLUDE,
+                "list",
+                "--separator=,",
             ],
-            capture_output=True, text=True, check=True,
+            capture_output=True,
+            text=True,
+            check=True,
         ).stdout.strip()
         addons_list = remove_from_csv(addons_raw, "base")
 
@@ -296,9 +336,16 @@ def run_test(commit_hash):
             log.info(f"[{commit_hash[:8]}] Installing dependencies...")
             run_cmd(
                 [
-                    "python3", ODOO_BIN, "-c", ODOO_CONF,
-                    "-d", db_name, "-i", depends_list,
-                    "--stop-after-init", "--log-level=info",
+                    "python3",
+                    ODOO_BIN,
+                    "-c",
+                    ODOO_CONF,
+                    "-d",
+                    db_name,
+                    "-i",
+                    depends_list,
+                    "--stop-after-init",
+                    "--log-level=info",
                 ],
                 log_file=install_log,
             )
@@ -308,9 +355,17 @@ def run_test(commit_hash):
             log.info(f"[{commit_hash[:8]}] Running tests...")
             run_cmd(
                 [
-                    "python3", ODOO_BIN, "-c", ODOO_CONF,
-                    "-d", db_name, "-i", addons_list,
-                    "--stop-after-init", "--log-level=info", "--test-enable",
+                    "python3",
+                    ODOO_BIN,
+                    "-c",
+                    ODOO_CONF,
+                    "-d",
+                    db_name,
+                    "-i",
+                    addons_list,
+                    "--stop-after-init",
+                    "--log-level=info",
+                    "--test-enable",
                 ],
                 log_file=test_log,
             )
@@ -356,7 +411,8 @@ if __name__ == "__main__":
 
     t_api = threading.Thread(
         target=lambda: app.run(host="0.0.0.0", port=8765, use_reloader=False),
-        daemon=True, name="api",
+        daemon=True,
+        name="api",
     )
     t_api.start()
     log.info("API started on :8080")

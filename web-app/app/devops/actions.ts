@@ -25,6 +25,7 @@ export type PrRecord = {
     sourceBranch: string;
     commitId: string;
     status: PrStatus;
+    isDraft: boolean;
 };
 
 export async function fetchPrs(): Promise<PrRecord[]> {

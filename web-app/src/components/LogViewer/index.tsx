@@ -37,6 +37,7 @@ export default function LogViewer({ content, height = '700px' }: Props) {
     return (
         <ReactCodeMirror
             readOnly
+            value={content}
             theme={vscodeDark}
             height={height}
             onCreateEditor={(view) => {

@@ -83,15 +83,20 @@ export default function PrListPage() {
                         {prs.map((pr) => (
                             <Table.Tr key={pr.id}>
                                 <Table.Td>
-                                    {pr.commitId ? (
-                                        <Anchor href={`/devops/${pr.commitId}`}>
-                                            <Text size="sm" c="cyan">
-                                                {pr.title}
-                                            </Text>
-                                        </Anchor>
-                                    ) : (
-                                        <Text size="sm">{pr.title}</Text>
-                                    )}
+                                    <Group gap="xs" wrap="nowrap">
+                                        {pr.isDraft && (
+                                            <Badge color="gray" variant="outline" size="xs">Draft</Badge>
+                                        )}
+                                        {pr.commitId ? (
+                                            <Anchor href={`/devops/${pr.commitId}`}>
+                                                <Text size="sm" c="cyan">
+                                                    {pr.title}
+                                                </Text>
+                                            </Anchor>
+                                        ) : (
+                                            <Text size="sm">{pr.title}</Text>
+                                        )}
+                                    </Group>
                                 </Table.Td>
                                 <Table.Td>
                                     <Text size="sm" c="dimmed">

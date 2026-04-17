@@ -33,6 +33,8 @@ export const metadata: Metadata = {
     description: 'Case management dashboard',
 };
 
+const showDevops = process.env.ENABLE_DEVOPS === 'true';
+
 export default async function RootLayout({ children }: { children: any }) {
     const credentials = await getCredentials();
 
@@ -75,7 +77,7 @@ export default async function RootLayout({ children }: { children: any }) {
                                                 />
                                             </a>
                                         </Group>
-                                        <HeaderNav />
+                                        <HeaderNav showDevops={showDevops} />
                                         <Group justify="flex-end">
                                             <CredentialsModal currentValues={credentials} />
                                         </Group>
