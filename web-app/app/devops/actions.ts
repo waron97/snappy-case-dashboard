@@ -51,6 +51,13 @@ export async function triggerRecheck(hash: string): Promise<void> {
     }
 }
 
+export async function triggerRecheckByPrId(prId: number): Promise<void> {
+    const res = await fetch(`${TESTRUNNER}/recheck/pr/${prId}`, { method: 'POST', cache: 'no-store' });
+    if (!res.ok) {
+        throw new Error(`/recheck/pr returned ${res.status}`);
+    }
+}
+
 export async function getRunningHash(): Promise<string | null> {
     const val = await getRedis().get('test:current');
     return val ?? null;

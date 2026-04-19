@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge, Button, Container, Group, Space, Tabs, Text, Title } from '@mantine/core';
 import LogViewer from '@/components/LogViewer';
-import { fetchPrs, getRunningHash, PrRecord, PrStatus, readLog, triggerRecheck } from '../actions';
+import { fetchPrs, getRunningHash, PrRecord, PrStatus, readLog, triggerRecheck, triggerRecheckByPrId } from '../actions';
 
 const STATUS_COLOR: Record<PrStatus, string> = {
     passed: 'green',
@@ -76,7 +76,11 @@ export default function PrDetailPage() {
     async function handleRecheck() {
         setRechecking(true);
         try {
-            await triggerRecheck(hash);
+            if (pr) {
+                await triggerRecheckByPrId(pr.id);
+            } else {
+                await triggerRecheck(hash);
+            }
             await queryClient.invalidateQueries({ queryKey: ['devops', 'prs'] });
         } finally {
             setRechecking(false);

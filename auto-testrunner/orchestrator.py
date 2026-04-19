@@ -29,7 +29,7 @@ ODOO_CONF = "/opt/odoo/odoo.conf"
 POLL_INTERVAL = 300  # 5 minutes
 QUEUE_KEY = "test:queue"
 CURRENT_KEY = "test:current"
-EXCLUDE = "symple_address_city_and_province_it,symple_contacts_default_data,sorgenia_imperex_metadata"
+EXCLUDE = "symple_address_city_and_province_it,symple_contacts_default_data,sorgenia_imperex_metadata,sorgenia_ml_install_all"
 
 DB_HOST = "postgres"
 DB_USER = "odoo"
@@ -203,6 +203,35 @@ def api_recheck(commit_hash):
     return jsonify({"queued": commit_hash})
 
 
+@app.route("/recheck/pr/<int:pr_id>", methods=["POST"])
+def api_recheck_pr(pr_id):
+    url = (
+        f"https://dev.azure.com/{DEVOPS_ORG}/{DEVOPS_PROJECT}"
+        f"/_apis/git/repositories/{DEVOPS_REPO}/pullrequests/{pr_id}"
+        f"?api-version=7.0"
+    )
+    resp = requests.get(url, headers=ado_headers(), timeout=30)
+    resp.raise_for_status()
+    commit_hash = resp.json().get("lastMergeSourceCommit", {}).get("commitId")
+    if not commit_hash:
+        return jsonify({"error": "could not determine latest commit"}), 400
+
+    for suffix in ("install.log", "test.log"):
+        f = RESULTS_DIR / f"{commit_hash}.{suffix}"
+        if f.exists():
+            f.unlink()
+
+    db_name = f"odoo_{commit_hash[:12]}"
+    subprocess.run(
+        ["dropdb", "-h", DB_HOST, "-U", DB_USER, "--if-exists", db_name],
+        env={**os.environ, **pg_env()},
+    )
+    rdb.lrem(QUEUE_KEY, 0, commit_hash)
+    rdb.lpush(QUEUE_KEY, commit_hash)
+    log.info(f"Force-rechecked PR#{pr_id} → {commit_hash[:8]}, moved to front of queue")
+    return jsonify({"queued": commit_hash})
+
+
 def run_cmd(cmd, env_extra=None, log_file=None):
     merged_env = {**os.environ, **(env_extra or {})}
     if log_file:
@@ -234,6 +263,7 @@ def run_test(commit_hash):
     subprocess.run(["git", "-C", str(REPO_DIR), "fetch", "--all"], check=True)
     subprocess.run(["git", "-C", str(REPO_DIR), "checkout", commit_hash], check=True)
     # Sync repo → addons dir; symple_addons excluded (baked at /opt/odoo/symple_addons/)
+    # Nested dirs (config/, OCA/) are kept so odoo.conf addons_path can resolve deps.
     subprocess.run(
         [
             "rsync",

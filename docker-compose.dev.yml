@@ -26,6 +26,7 @@ services:
       - TESTRUNNER_API_URL=http://auto-testrunner:8765
       - RESULTS_DIR=/results
       - REDIS_URL=redis://redis:6379
+      - ENABLE_DEVOPS=true
     volumes:
       - ./web-app/app:/app/app
       - ./web-app/src:/app/src
