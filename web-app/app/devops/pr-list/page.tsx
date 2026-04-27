@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Anchor, Badge, Button, Container, Group, Space, Table, Text, Title } from '@mantine/core';
-import { fetchPrs, PrRecord, PrStatus, triggerDiscover } from '../actions';
+import { fetchPrs, PreCommitStatus, PrRecord, PrStatus, triggerDiscover } from '../actions';
 
 const STATUS_COLOR: Record<PrStatus, string> = {
     passed: 'green',
@@ -23,6 +23,16 @@ const STATUS_LABEL: Record<PrStatus, string> = {
     running: 'Running',
     queued: 'Queued',
     pending: 'Pending',
+};
+
+const PRE_COMMIT_COLOR: Record<PreCommitStatus, string> = {
+    ok: 'green',
+    ko: 'red',
+};
+
+const PRE_COMMIT_LABEL: Record<PreCommitStatus, string> = {
+    ok: 'pre-commit OK',
+    ko: 'pre-commit KO',
 };
 
 export default function PrListPage() {
@@ -112,13 +122,24 @@ export default function PrListPage() {
                                     </Text>
                                 </Table.Td>
                                 <Table.Td>
-                                    <Badge
-                                        color={STATUS_COLOR[pr.status]}
-                                        variant="light"
-                                        size="sm"
-                                    >
-                                        {STATUS_LABEL[pr.status]}
-                                    </Badge>
+                                    <Group gap="xs" wrap="nowrap">
+                                        <Badge
+                                            color={STATUS_COLOR[pr.status]}
+                                            variant="light"
+                                            size="sm"
+                                        >
+                                            {STATUS_LABEL[pr.status]}
+                                        </Badge>
+                                        {pr.preCommitStatus && (
+                                            <Badge
+                                                color={PRE_COMMIT_COLOR[pr.preCommitStatus]}
+                                                variant="outline"
+                                                size="sm"
+                                            >
+                                                {PRE_COMMIT_LABEL[pr.preCommitStatus]}
+                                            </Badge>
+                                        )}
+                                    </Group>
                                 </Table.Td>
                             </Table.Tr>
                         ))}

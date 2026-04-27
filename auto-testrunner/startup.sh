@@ -18,4 +18,7 @@ fi
 echo "Initialising submodules..."
 git -C /opt/repo submodule update --init --recursive || echo "Warning: some submodules failed to init, continuing"
 
+echo "Installing pre-commit..."
+pip install --quiet pre-commit
+
 exec python3 /opt/orchestrator.py

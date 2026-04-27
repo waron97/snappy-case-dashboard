@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge, Button, Container, Group, Space, Tabs, Text, Title } from '@mantine/core';
 import LogViewer from '@/components/LogViewer';
-import { fetchPrs, getRunningHash, PrRecord, PrStatus, readLog, triggerRecheck, triggerRecheckByPrId } from '../actions';
+import { fetchPrs, getRunningHash, PreCommitStatus, PrRecord, PrStatus, readLog, readPreCommitLog, triggerRecheck, triggerRecheckByPrId } from '../actions';
 
 const STATUS_COLOR: Record<PrStatus, string> = {
     passed: 'green',
@@ -25,6 +25,16 @@ const STATUS_LABEL: Record<PrStatus, string> = {
     running: 'Running',
     queued: 'Queued',
     pending: 'Pending',
+};
+
+const PRE_COMMIT_COLOR: Record<PreCommitStatus, string> = {
+    ok: 'green',
+    ko: 'red',
+};
+
+const PRE_COMMIT_LABEL: Record<PreCommitStatus, string> = {
+    ok: 'pre-commit OK',
+    ko: 'pre-commit KO',
 };
 
 export default function PrDetailPage() {
@@ -73,6 +83,13 @@ export default function PrDetailPage() {
         gcTime: 0,
     });
 
+    const { data: preCommitLog } = useQuery<string | null>({
+        queryKey: ['devops', 'log', hash, 'precommit'],
+        queryFn: () => readPreCommitLog(hash),
+        refetchInterval: isActive ? 1_000 : false,
+        gcTime: 0,
+    });
+
     async function handleRecheck() {
         setRechecking(true);
         try {
@@ -95,6 +112,14 @@ export default function PrDetailPage() {
                     <Badge color={STATUS_COLOR[status]} variant="light">
                         {STATUS_LABEL[status]}
                     </Badge>
+                    {pr?.preCommitStatus && (
+                        <Badge
+                            color={PRE_COMMIT_COLOR[pr.preCommitStatus]}
+                            variant="outline"
+                        >
+                            {PRE_COMMIT_LABEL[pr.preCommitStatus]}
+                        </Badge>
+                    )}
                 </Group>
                 <Group gap="sm">
                     {pr?.sourceBranch && (
@@ -119,6 +144,7 @@ export default function PrDetailPage() {
                 <Tabs.List>
                     <Tabs.Tab value="install">Install Log</Tabs.Tab>
                     <Tabs.Tab value="test">Test Log</Tabs.Tab>
+                    <Tabs.Tab value="precommit">Pre-commit Log</Tabs.Tab>
                 </Tabs.List>
 
                 <Tabs.Panel value="install" pt="md">
@@ -127,6 +153,10 @@ export default function PrDetailPage() {
 
                 <Tabs.Panel value="test" pt="md">
                     <LogViewer content={testLog ?? null} />
+                </Tabs.Panel>
+
+                <Tabs.Panel value="precommit" pt="md">
+                    <LogViewer content={preCommitLog ?? null} />
                 </Tabs.Panel>
             </Tabs>
         </Container>

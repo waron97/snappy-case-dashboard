@@ -63,6 +63,7 @@ def result_exists(commit_hash):
 
 
 _RUNNER_RE = re.compile(r"odoo\.tests\.runner: (\d+) failed, (\d+) error\(s\)")
+_PRE_COMMIT_RE = re.compile(r"PRE_COMMIT_STATUS: (OK|KO)")
 
 
 def parse_test_result(commit_hash):
@@ -83,6 +84,23 @@ def parse_test_result(commit_hash):
     except OSError:
         pass
     return "unknown"
+
+
+def parse_pre_commit_result(commit_hash):
+    """Read last 1 KB of precommit.log for PRE_COMMIT_STATUS sentinel. Returns 'ok', 'ko', or None."""
+    precommit_log = RESULTS_DIR / f"{commit_hash}.precommit.log"
+    if not precommit_log.exists():
+        return None
+    try:
+        with open(precommit_log, "rb") as f:
+            f.seek(max(0, precommit_log.stat().st_size - 1024))
+            tail = f.read().decode("utf-8", errors="replace")
+        m = _PRE_COMMIT_RE.search(tail)
+        if m:
+            return m.group(1).lower()
+    except OSError:
+        pass
+    return None
 
 
 def enqueue(commit_hash):
@@ -169,6 +187,8 @@ def api_prs():
             status = "queued"
         else:
             status = "pending"
+        precommit_log_exists = bool(commit and (RESULTS_DIR / f"{commit}.precommit.log").exists())
+        pre_commit_status = parse_pre_commit_result(commit) if precommit_log_exists else None
         result.append(
             {
                 "id": pr.get("pullRequestId"),
@@ -177,6 +197,7 @@ def api_prs():
                 "sourceBranch": pr.get("sourceRefName", "").replace("refs/heads/", ""),
                 "commitId": commit,
                 "status": status,
+                "preCommitStatus": pre_commit_status,
                 "isDraft": pr.get("isDraft", False),
             }
         )
@@ -186,7 +207,7 @@ def api_prs():
 @app.route("/recheck/<commit_hash>", methods=["POST"])
 def api_recheck(commit_hash):
     # Delete existing result files
-    for suffix in ("install.log", "test.log"):
+    for suffix in ("install.log", "test.log", "precommit.log"):
         f = RESULTS_DIR / f"{commit_hash}.{suffix}"
         if f.exists():
             f.unlink()
@@ -216,7 +237,7 @@ def api_recheck_pr(pr_id):
     if not commit_hash:
         return jsonify({"error": "could not determine latest commit"}), 400
 
-    for suffix in ("install.log", "test.log"):
+    for suffix in ("install.log", "test.log", "precommit.log"):
         f = RESULTS_DIR / f"{commit_hash}.{suffix}"
         if f.exists():
             f.unlink()
@@ -232,14 +253,27 @@ def api_recheck_pr(pr_id):
     return jsonify({"queued": commit_hash})
 
 
-def run_cmd(cmd, env_extra=None, log_file=None):
+def run_cmd(cmd, env_extra=None, log_file=None, cwd=None):
     merged_env = {**os.environ, **(env_extra or {})}
     if log_file:
         with open(log_file, "ab") as f:
             return subprocess.run(
-                cmd, env=merged_env, stdout=f, stderr=subprocess.STDOUT
+                cmd, env=merged_env, stdout=f, stderr=subprocess.STDOUT, cwd=cwd
             ).returncode
-    return subprocess.run(cmd, env=merged_env).returncode
+    return subprocess.run(cmd, env=merged_env, cwd=cwd).returncode
+
+
+def run_pre_commit(commit_hash):
+    precommit_log = RESULTS_DIR / f"{commit_hash}.precommit.log"
+    rc = run_cmd(
+        ["pre-commit", "run", "--all-files"],
+        log_file=precommit_log,
+        cwd=str(REPO_DIR),
+    )
+    status = "OK" if rc == 0 else "KO"
+    with open(precommit_log, "ab") as f:
+        f.write(f"\nPRE_COMMIT_STATUS: {status}\n".encode())
+    return status.lower()
 
 
 def pg_env():
@@ -401,6 +435,16 @@ def run_test(commit_hash):
             )
 
         log.info(f"[{commit_hash[:8]}] Test run complete")
+
+        log.info(f"[{commit_hash[:8]}] Running pre-commit checks...")
+        try:
+            result = run_pre_commit(commit_hash)
+            log.info(f"[{commit_hash[:8]}] Pre-commit: {result}")
+        except Exception as pre_err:
+            log.error(f"[{commit_hash[:8]}] Pre-commit error: {pre_err}")
+            precommit_log = RESULTS_DIR / f"{commit_hash}.precommit.log"
+            with open(precommit_log, "ab") as f:
+                f.write(f"\nPRE_COMMIT_ERROR: {pre_err}\nPRE_COMMIT_STATUS: KO\n".encode())
 
     except Exception as e:
         log.error(f"[{commit_hash[:8]}] Test run failed: {e}")

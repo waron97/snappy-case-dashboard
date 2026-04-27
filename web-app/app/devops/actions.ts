@@ -18,6 +18,8 @@ function getRedis(): Redis {
 
 export type PrStatus = 'passed' | 'failed' | 'unknown' | 'done' | 'running' | 'queued' | 'pending';
 
+export type PreCommitStatus = 'ok' | 'ko';
+
 export type PrRecord = {
     id: number;
     title: string;
@@ -25,6 +27,7 @@ export type PrRecord = {
     sourceBranch: string;
     commitId: string;
     status: PrStatus;
+    preCommitStatus: PreCommitStatus | null;
     isDraft: boolean;
 };
 
@@ -65,6 +68,18 @@ export async function getRunningHash(): Promise<string | null> {
 
 export async function readLog(hash: string, type: 'install' | 'test'): Promise<string | null> {
     const filePath = path.join(RESULTS, `${hash}.${type}.log`);
+    try {
+        return await fs.readFile(filePath, 'utf-8');
+    } catch (e: unknown) {
+        if ((e as NodeJS.ErrnoException).code === 'ENOENT') {
+            return null;
+        }
+        throw e;
+    }
+}
+
+export async function readPreCommitLog(hash: string): Promise<string | null> {
+    const filePath = path.join(RESULTS, `${hash}.precommit.log`);
     try {
         return await fs.readFile(filePath, 'utf-8');
     } catch (e: unknown) {
