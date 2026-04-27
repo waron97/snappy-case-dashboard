@@ -22,6 +22,7 @@ services:
       - ./.env
     environment:
       - ENABLE_DEVOPS=true
+      - ENABLE_PER_USER_AUTH=1
       - TESTRUNNER_API_URL=http://auto-testrunner:8765
       - RESULTS_DIR=/results
       - REDIS_URL=redis://redis:6379

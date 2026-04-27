@@ -27,6 +27,7 @@ services:
       - RESULTS_DIR=/results
       - REDIS_URL=redis://redis:6379
       - ENABLE_DEVOPS=true
+      - ENABLE_PER_USER_AUTH=1
     volumes:
       - ./web-app/app:/app/app
       - ./web-app/src:/app/src

@@ -20,6 +20,8 @@ services:
     restart: unless-stopped
     env_file:
       - ./.env.test-01
+    environment:
+      - ENABLE_PER_USER_AUTH=1
 
   lsp-server:
     build: ./lsp-server

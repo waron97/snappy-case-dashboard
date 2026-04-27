@@ -9,7 +9,7 @@ export default withBundleAnalyzer({
     output: 'standalone',
     experimental: {
         serverActions: {
-            allowedOrigins: ['snappy.aronwinkler.com'],
+            allowedOrigins: ['snappy.aronwinkler.com', 'bbtucg.instatunnel.my'],
         },
     },
     env: {

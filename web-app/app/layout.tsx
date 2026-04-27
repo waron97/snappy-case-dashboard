@@ -34,6 +34,7 @@ export const metadata: Metadata = {
 };
 
 const showDevops = process.env.ENABLE_DEVOPS === 'true';
+const perUserAuth = process.env.ENABLE_PER_USER_AUTH !== '0';
 
 export default async function RootLayout({ children }: { children: any }) {
     const credentials = await getCredentials();
@@ -79,7 +80,7 @@ export default async function RootLayout({ children }: { children: any }) {
                                         </Group>
                                         <HeaderNav showDevops={showDevops} />
                                         <Group justify="flex-end">
-                                            <CredentialsModal currentValues={credentials} />
+                                            {perUserAuth && <CredentialsModal currentValues={credentials} />}
                                         </Group>
                                     </div>
                                 </Container>
