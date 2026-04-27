@@ -89,3 +89,10 @@ export async function readPreCommitLog(hash: string): Promise<string | null> {
         throw e;
     }
 }
+
+export async function triggerNotify(hash: string): Promise<void> {
+    const res = await fetch(`${TESTRUNNER}/notify/${hash}`, { method: 'POST', cache: 'no-store' });
+    if (!res.ok) {
+        throw new Error(`/notify returned ${res.status}`);
+    }
+}

@@ -128,6 +128,13 @@ def do_poll():
             None
         }
         vacuum(active)
+        for pr in prs:
+            commit = pr.get("lastMergeSourceCommit", {}).get("commitId")
+            pr_id = pr.get("pullRequestId")
+            if commit and pr_id:
+                ttl = 14 * 24 * 3600
+                rdb.setex(f"test:pr_id:{commit}", ttl, str(pr_id))
+                rdb.setex(f"test:pr_desc:{commit}", ttl, (pr.get("description") or ""))
         enqueued = []
         for commit in active:
             before = rdb.llen(QUEUE_KEY)
@@ -253,6 +260,144 @@ def api_recheck_pr(pr_id):
     return jsonify({"queued": commit_hash})
 
 
+@app.route("/notify/<commit_hash>", methods=["POST"])
+def api_notify(commit_hash):
+    try:
+        notify_pr(commit_hash, force=True)
+        return jsonify({"notified": commit_hash})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# --- Notification helpers ---
+
+def get_pr_id_for_commit(commit_hash):
+    val = rdb.get(f"test:pr_id:{commit_hash}")
+    return int(val) if val else None
+
+
+def get_pr_desc_for_commit(commit_hash):
+    val = rdb.get(f"test:pr_desc:{commit_hash}")
+    return val.decode() if val else ""
+
+
+def has_notified(commit_hash):
+    return bool(rdb.get(f"test:notified:{commit_hash}"))
+
+
+def mark_notified(commit_hash):
+    rdb.setex(f"test:notified:{commit_hash}", 14 * 24 * 3600, "1")
+
+
+def comment_exists_for_commit(pr_id, commit_hash):
+    url = (
+        f"https://dev.azure.com/{DEVOPS_ORG}/{DEVOPS_PROJECT}"
+        f"/_apis/git/repositories/{DEVOPS_REPO}/pullrequests/{pr_id}/threads"
+        f"?api-version=7.0"
+    )
+    resp = requests.get(url, headers=ado_headers(), timeout=30)
+    resp.raise_for_status()
+    marker = f"[HEAD {commit_hash[:8]}]"
+    for thread in resp.json().get("value", []):
+        for comment in thread.get("comments", []):
+            if marker in (comment.get("content") or ""):
+                return True
+    return False
+
+
+def upload_pr_attachment(pr_id, filename, file_path):
+    url = (
+        f"https://dev.azure.com/{DEVOPS_ORG}/{DEVOPS_PROJECT}"
+        f"/_apis/git/repositories/{DEVOPS_REPO}/pullrequests/{pr_id}"
+        f"/attachments/{filename}?api-version=7.1"
+    )
+    headers = {**ado_headers(), "Content-Type": "application/octet-stream"}
+    with open(file_path, "rb") as f:
+        resp = requests.post(url, data=f, headers=headers, timeout=60)
+    resp.raise_for_status()
+    return resp.json().get("url")
+
+
+def post_pr_comment(pr_id, content):
+    url = (
+        f"https://dev.azure.com/{DEVOPS_ORG}/{DEVOPS_PROJECT}"
+        f"/_apis/git/repositories/{DEVOPS_REPO}/pullrequests/{pr_id}"
+        f"/threads?api-version=7.0"
+    )
+    body = {"comments": [{"content": content, "commentType": 1}], "status": 1}
+    resp = requests.post(url, json=body, headers=ado_headers(), timeout=30)
+    resp.raise_for_status()
+
+
+_TEST_STATUS_LABEL = {
+    "passed": "All tests passed",
+    "failed": "Test failures detected",
+    "unknown": "Unknown failure",
+    "done": "Done",
+}
+
+
+def notify_pr(commit_hash, force=False):
+    if not force and has_notified(commit_hash):
+        return
+
+    pr_id = get_pr_id_for_commit(commit_hash)
+    if not pr_id:
+        log.warning(f"[{commit_hash[:8]}] No PR ID cached, skipping notification")
+        return
+
+    if not force:
+        desc = get_pr_desc_for_commit(commit_hash)
+        if "!test" not in desc:
+            return
+
+    if not force and comment_exists_for_commit(pr_id, commit_hash):
+        log.info(f"[{commit_hash[:8]}] Comment already exists on PR#{pr_id}, skipping notification")
+        mark_notified(commit_hash)
+        return
+
+    test_status = parse_test_result(commit_hash)
+    pre_commit_status = parse_pre_commit_result(commit_hash)
+    pre_label = pre_commit_status.upper() if pre_commit_status else "N/A"
+
+    lines = [
+        f"[HEAD {commit_hash[:8]}]",
+        f"Pre-commit: {pre_label}",
+        f"Tests: {_TEST_STATUS_LABEL.get(test_status, test_status)}",
+    ]
+
+    attachment_lines = []
+
+    if test_status in ("failed", "unknown"):
+        test_log = RESULTS_DIR / f"{commit_hash}.test.log"
+        if test_log.exists():
+            try:
+                att_url = upload_pr_attachment(pr_id, f"{commit_hash[:8]}.test.txt", test_log)
+                if att_url:
+                    attachment_lines.append(f"[Test log]({att_url})")
+            except Exception as e:
+                resp_body = getattr(getattr(e, "response", None), "text", None)
+                log.warning(f"[{commit_hash[:8]}] Could not upload test log: {e} | response: {resp_body}")
+
+    if pre_commit_status == "ko":
+        pc_log = RESULTS_DIR / f"{commit_hash}.precommit.log"
+        if pc_log.exists():
+            try:
+                att_url = upload_pr_attachment(pr_id, f"{commit_hash[:8]}.precommit.txt", pc_log)
+                if att_url:
+                    attachment_lines.append(f"[Pre-commit log]({att_url})")
+            except Exception as e:
+                resp_body = getattr(getattr(e, "response", None), "text", None)
+                log.warning(f"[{commit_hash[:8]}] Could not upload pre-commit log: {e} | response: {resp_body}")
+
+    if attachment_lines:
+        lines.append("\n**Logs:** " + " | ".join(attachment_lines))
+
+    post_pr_comment(pr_id, "\n".join(lines))
+    mark_notified(commit_hash)
+    log.info(f"[{commit_hash[:8]}] Posted test result comment on PR#{pr_id}")
+
+
 def run_cmd(cmd, env_extra=None, log_file=None, cwd=None):
     merged_env = {**os.environ, **(env_extra or {})}
     if log_file:
@@ -266,7 +411,7 @@ def run_cmd(cmd, env_extra=None, log_file=None, cwd=None):
 def run_pre_commit(commit_hash):
     precommit_log = RESULTS_DIR / f"{commit_hash}.precommit.log"
     rc = run_cmd(
-        ["pre-commit", "run", "--all-files"],
+        ["python3", "-m", "pre_commit", "run", "--all-files"],
         log_file=precommit_log,
         cwd=str(REPO_DIR),
     )
@@ -471,6 +616,10 @@ def worker():
                 log.info(f"Skipping {commit_hash[:8]}, results already exist")
                 continue
             run_test(commit_hash)
+            try:
+                notify_pr(commit_hash)
+            except Exception as notify_err:
+                log.error(f"[{commit_hash[:8]}] Notification error: {notify_err}")
         except Exception as e:
             log.error(f"Worker error: {e}")
             time.sleep(5)

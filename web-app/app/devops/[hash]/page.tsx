@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge, Button, Container, Group, Space, Tabs, Text, Title } from '@mantine/core';
 import LogViewer from '@/components/LogViewer';
-import { fetchPrs, getRunningHash, PreCommitStatus, PrRecord, PrStatus, readLog, readPreCommitLog, triggerRecheck, triggerRecheckByPrId } from '../actions';
+import { fetchPrs, getRunningHash, PreCommitStatus, PrRecord, PrStatus, readLog, readPreCommitLog, triggerNotify, triggerRecheck, triggerRecheckByPrId } from '../actions';
 
 const STATUS_COLOR: Record<PrStatus, string> = {
     passed: 'green',
@@ -42,6 +42,7 @@ export default function PrDetailPage() {
     const hash = params.hash as string;
     const queryClient = useQueryClient();
     const [rechecking, setRechecking] = useState(false);
+    const [notifying, setNotifying] = useState(false);
 
     const { data: prs = [] } = useQuery<PrRecord[]>({
         queryKey: ['devops', 'prs'],
@@ -90,6 +91,15 @@ export default function PrDetailPage() {
         gcTime: 0,
     });
 
+    async function handleNotify() {
+        setNotifying(true);
+        try {
+            await triggerNotify(hash);
+        } finally {
+            setNotifying(false);
+        }
+    }
+
     async function handleRecheck() {
         setRechecking(true);
         try {
@@ -126,6 +136,11 @@ export default function PrDetailPage() {
                         <Text size="sm" c="dimmed" ff="monospace">
                             {pr.sourceBranch}
                         </Text>
+                    )}
+                    {!['pending', 'queued', 'running'].includes(status) && (
+                        <Button loading={notifying} onClick={handleNotify} variant="default">
+                            Force Notify
+                        </Button>
                     )}
                     <Button loading={rechecking} onClick={handleRecheck}>
                         Force Recheck
