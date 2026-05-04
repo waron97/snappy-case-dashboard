@@ -42,7 +42,7 @@ export default function PrListPage() {
     const { data: prs = [], isLoading } = useQuery<PrRecord[]>({
         queryKey: ['devops', 'prs'],
         queryFn: fetchPrs,
-        refetchInterval: 10_000,
+        refetchInterval: false,
     });
 
     async function handleDiscover() {

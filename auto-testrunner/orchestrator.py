@@ -3,6 +3,7 @@ import logging
 import os
 import re
 import subprocess
+import tempfile
 import threading
 import time
 from pathlib import Path
@@ -26,7 +27,7 @@ ADDONS_DIR = Path("/opt/odoo/addons")
 ODOO_BIN = "/opt/odoo/base/odoo-bin"
 ODOO_CONF = "/opt/odoo/odoo.conf"
 
-POLL_INTERVAL = 300  # 5 minutes
+POLL_INTERVAL = 60  # 1 minute
 QUEUE_KEY = "test:queue"
 CURRENT_KEY = "test:current"
 EXCLUDE = "symple_address_city_and_province_it,symple_contacts_default_data,sorgenia_imperex_metadata,sorgenia_ml_install_all"
@@ -233,14 +234,7 @@ def api_recheck(commit_hash):
 
 @app.route("/recheck/pr/<int:pr_id>", methods=["POST"])
 def api_recheck_pr(pr_id):
-    url = (
-        f"https://dev.azure.com/{DEVOPS_ORG}/{DEVOPS_PROJECT}"
-        f"/_apis/git/repositories/{DEVOPS_REPO}/pullrequests/{pr_id}"
-        f"?api-version=7.0"
-    )
-    resp = requests.get(url, headers=ado_headers(), timeout=30)
-    resp.raise_for_status()
-    commit_hash = resp.json().get("lastMergeSourceCommit", {}).get("commitId")
+    commit_hash = fetch_pr_head_commit(pr_id)
     if not commit_hash:
         return jsonify({"error": "could not determine latest commit"}), 400
 
@@ -270,6 +264,37 @@ def api_notify(commit_hash):
 
 
 # --- Notification helpers ---
+
+def _build_combined_log(install_log_path, test_log_path):
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".txt")
+    try:
+        tmp.write(b"--- INSTALL.LOG ---\n")
+        if install_log_path.exists():
+            with open(install_log_path, "rb") as f:
+                tmp.write(f.read())
+        else:
+            tmp.write(b"(not found)\n")
+        tmp.write(b"\n--- TEST.LOG ---\n")
+        if test_log_path.exists():
+            with open(test_log_path, "rb") as f:
+                tmp.write(f.read())
+        else:
+            tmp.write(b"(not found)\n")
+    finally:
+        tmp.close()
+    return Path(tmp.name)
+
+
+def fetch_pr_head_commit(pr_id):
+    url = (
+        f"https://dev.azure.com/{DEVOPS_ORG}/{DEVOPS_PROJECT}"
+        f"/_apis/git/repositories/{DEVOPS_REPO}/pullrequests/{pr_id}"
+        f"?api-version=7.0"
+    )
+    resp = requests.get(url, headers=ado_headers(), timeout=30)
+    resp.raise_for_status()
+    return resp.json().get("lastMergeSourceCommit", {}).get("commitId")
+
 
 def get_pr_id_for_commit(commit_hash):
     val = rdb.get(f"test:pr_id:{commit_hash}")
@@ -329,10 +354,17 @@ def post_pr_comment(pr_id, content):
     resp.raise_for_status()
 
 
+_TEST_ICON = {
+    "passed": "✅",
+    "failed": "❌",
+    "unknown": "❌",
+    "done": "ℹ️",
+}
+_PRE_COMMIT_ICON = {"ok": "✅", "ko": "❌"}
 _TEST_STATUS_LABEL = {
     "passed": "All tests passed",
     "failed": "Test failures detected",
-    "unknown": "Unknown failure",
+    "unknown": "Test failures detected",
     "done": "Done",
 }
 
@@ -346,38 +378,56 @@ def notify_pr(commit_hash, force=False):
         log.warning(f"[{commit_hash[:8]}] No PR ID cached, skipping notification")
         return
 
-    if not force:
-        desc = get_pr_desc_for_commit(commit_hash)
-        if "!test" not in desc:
-            return
 
     if not force and comment_exists_for_commit(pr_id, commit_hash):
         log.info(f"[{commit_hash[:8]}] Comment already exists on PR#{pr_id}, skipping notification")
         mark_notified(commit_hash)
         return
 
+    if not force:
+        current_head = fetch_pr_head_commit(pr_id)
+        if current_head != commit_hash:
+            log.info(
+                f"[{commit_hash[:8]}] PR#{pr_id} HEAD is now {(current_head or 'unknown')[:8]}, skipping stale notification"
+            )
+            return
+
     test_status = parse_test_result(commit_hash)
     pre_commit_status = parse_pre_commit_result(commit_hash)
     pre_label = pre_commit_status.upper() if pre_commit_status else "N/A"
+    pre_icon = (_PRE_COMMIT_ICON.get(pre_commit_status, "") + " ") if pre_commit_status else ""
+    test_icon = _TEST_ICON.get(test_status, "")
+    test_label = _TEST_STATUS_LABEL.get(test_status, test_status)
 
     lines = [
-        f"[HEAD {commit_hash[:8]}]",
-        f"Pre-commit: {pre_label}",
-        f"Tests: {_TEST_STATUS_LABEL.get(test_status, test_status)}",
+        f"### Automated Test Report [HEAD {commit_hash[:8]}]",
+        "",
+        "| Check | Result |",
+        "|---|---|",
+        f"| Pre-commit | {pre_icon}{pre_label} |",
+        f"| Tests | {test_icon} {test_label} |",
     ]
 
     attachment_lines = []
 
     if test_status in ("failed", "unknown"):
         test_log = RESULTS_DIR / f"{commit_hash}.test.log"
-        if test_log.exists():
+        install_log = RESULTS_DIR / f"{commit_hash}.install.log"
+        if test_status == "unknown":
+            upload_path = _build_combined_log(install_log, test_log)
+        else:
+            upload_path = test_log if test_log.exists() else None
+        if upload_path and upload_path.exists():
             try:
-                att_url = upload_pr_attachment(pr_id, f"{commit_hash[:8]}.test.txt", test_log)
+                att_url = upload_pr_attachment(pr_id, f"{commit_hash[:8]}.test.txt", upload_path)
                 if att_url:
                     attachment_lines.append(f"[Test log]({att_url})")
             except Exception as e:
                 resp_body = getattr(getattr(e, "response", None), "text", None)
                 log.warning(f"[{commit_hash[:8]}] Could not upload test log: {e} | response: {resp_body}")
+            finally:
+                if test_status == "unknown":
+                    upload_path.unlink(missing_ok=True)
 
     if pre_commit_status == "ko":
         pc_log = RESULTS_DIR / f"{commit_hash}.precommit.log"
@@ -391,7 +441,12 @@ def notify_pr(commit_hash, force=False):
                 log.warning(f"[{commit_hash[:8]}] Could not upload pre-commit log: {e} | response: {resp_body}")
 
     if attachment_lines:
-        lines.append("\n**Logs:** " + " | ".join(attachment_lines))
+        lines.append("")
+        lines.append("**Logs:** " + " | ".join(attachment_lines))
+
+    lines.append("")
+    lines.append("---")
+    lines.append("*Automated comment by snappy-case-dashboard*")
 
     post_pr_comment(pr_id, "\n".join(lines))
     mark_notified(commit_hash)
@@ -440,7 +495,8 @@ def run_test(commit_hash):
 
     # Checkout commit and sync to addons dir (preserve baked-in submodule dirs)
     subprocess.run(["git", "-C", str(REPO_DIR), "fetch", "--all"], check=True)
-    subprocess.run(["git", "-C", str(REPO_DIR), "checkout", commit_hash], check=True)
+    subprocess.run(["git", "-C", str(REPO_DIR), "reset", "--hard", "HEAD"], check=True)
+    subprocess.run(["git", "-C", str(REPO_DIR), "checkout", "-f", commit_hash], check=True)
     # Sync repo → addons dir; symple_addons excluded (baked at /opt/odoo/symple_addons/)
     # Nested dirs (config/, OCA/) are kept so odoo.conf addons_path can resolve deps.
     subprocess.run(
