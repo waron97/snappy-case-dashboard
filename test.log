@@ -1,0 +1,1060 @@
+2026-04-28 12:48:24,449 18837 INFO ? odoo: Odoo version 15.0 
+2026-04-28 12:48:24,449 18837 INFO ? odoo: Using configuration file at /opt/odoo/odoo.conf 
+2026-04-28 12:48:24,449 18837 INFO ? odoo: addons paths: ['/opt/odoo/base/odoo/addons', '/home/odoo/.local/share/Odoo/addons/15.0', '/opt/odoo/symple_addons/OCA/server-auth', '/opt/odoo/symple_addons/OCA/reporting-engine', '/opt/odoo/symple_addons/OCA/queue', '/opt/odoo/symple_addons/OCA/connector', '/opt/odoo/symple_addons/saydigital/crm', '/opt/odoo/symple_addons/saydigital/odoo-extra-tools', '/opt/odoo/symple_addons/saydigital/platform_common', '/opt/odoo/symple_addons/saydigital/platform_crm', '/opt/odoo/symple_addons/saydigital/platform_document', '/opt/odoo/symple_addons/saydigital/platform_document/OCA/server-tools', '/opt/odoo/symple_addons/saydigital/platform_inbound_outbound', '/opt/odoo/symple_addons/saydigital/platform_report', '/opt/odoo/symple_addons/saydigital/platform_marketing', '/opt/odoo/symple_addons/saydigital/utilities', '/opt/odoo/symple_addons/l10n_it_ateco', '/opt/odoo/symple_addons/setup', '/opt/odoo/symple_addons', '/opt/odoo/addons/config', '/opt/odoo/addons/OCA/partner-contact', '/opt/odoo/addons/OCA/web', '/opt/odoo/addons/OCA', '/opt/odoo/addons', '/opt/odoo/enterprise', '/opt/odoo/base/addons'] 
+2026-04-28 12:48:24,450 18837 INFO ? odoo: database: odoo@postgres:5432 
+2026-04-28 12:48:24,511 18837 INFO ? odoo.addons.base.models.ir_actions_report: You need Wkhtmltopdf to print a pdf version of the reports. 
+2026-04-28 12:48:24,590 18837 INFO ? odoo.service.server: HTTP service (werkzeug) running on 2da1301d087e:8069 
+2026-04-28 12:48:24,596 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading 1 modules... 
+2026-04-28 12:48:24,599 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: 1 modules loaded in 0.00s, 0 queries (+0 extra) 
+2026-04-28 12:48:24,609 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: updating modules list 
+2026-04-28 12:48:24,611 18837 INFO odoo_19347ae3bbe5 odoo.addons.base.models.ir_module: ALLOW access to module.update_list on [] to user __system__ #1 via n/a 
+2026-04-28 12:48:25,982 18837 INFO odoo_19347ae3bbe5 odoo.addons.base.models.ir_module: ALLOW access to module.button_install on ['Sorgenia', 'Sorgenia - Case Dashboard', 'Sorgenia CTI Genesys', 'Template Mail', 'Sorgenia Flusso F', 'Sorgenia Gestione Contratto', 'Sorgenia Importer', 'Sorgenia Infocamere', 'Sorgenia Interaction', 'Sorgenia ml Warranty', 'Sorgenia - Penalty Management', 'Sorgenia - Physical Bonus', 'Sorgenia - Pricelist Management', 'Sorgenia - Canone Rai', 'Sorgenia - Social Bonus', 'Sorgenia - Vulnerabily', 'Symple - CRM For Utilities', 'Symple - Dashboard Visibility & Permissions', 'Symple Importer', 'Symple RCU', 'Symple Refunder', 'Dynamic Binary Field attachment in e-Mail', 'Scheduled Report Emails', 'Sorgenia Activation', 'Sorgenia Agency', 'Sorgenia AI Tag', 'Sorgenia Automatic Email', 'Sorgenia Automatic Postalizer', 'Sorgenia - Blacklist', 'Sorgenia BPMN Helpdesk', 'Sorgenia - Case Form Visibility', 'Sorgenia - Communication Dashboard', 'Sorgenia - Contacts', 'Sorgenia - Contracts', 'Sorgenia - Webcomponent - Credit check', 'Sorgenia Customer Segment', 'Sorgenia - Cadastral Data', 'Sorgenia Documents', 'Sorgenia Encrypter', 'Sorgenia Evolutive Privacy', 'Sorgenia - Fiber Coverage', 'Sorgenia - Fiber Upselling', 'Sorgenia - File Decomposer', 'Sorgenia Helpdesk', 'Sorgenia Helpdesk SLA', 'Sorgenia Helpdesk SLAs', 'Sorgenia Helpdesk Ticket', 'Sorgenia - Index', 'Sorgenia - Intensive Consumer', 'Sorgenia - Invoices from External Services', 'Sorgenia - Invoices from External Services Free Market', 'Sorgenia - Jolly Index', 'Sorgenia - Loyalty', 'Sorgenia Mail Composer', 'Sorgenia - Market Communication', 'Sorgenia - Marketing Automation', 'Sorgenia MDM', 'Sorgenia - Sorgenia Migration Mecoms', 'Sorgenia - Migrations', 'Sorgenia - Sorgenia ML Decoupling', 'Contacts Extension for Distributors and Transporters', 'Sorgenia ML - Antifraud', 'Sorgenia - Cessazioni', 'Sorgenia - Sorgenia ML Fiber', 'Sorgenia ML IFS', 'Sorgenia - Sorgenia ML Iva Rate', 'Algoritmi Stima ML ELE/GAS', 'Sorgenia - Sorgenia ML PA', 'PCS API Integration', 'Sorgenia - Sorgenia ML Rate Plan', 'RFID Card (DB Only)', 'Sorgenia - Sorgenia ML Tax Rate', 'Sorgenia ML TIRV and EXTRA TIRV', 'Sorgenia - Sorgenia MUSE Apparound', 'Sorgenia - Natural Disasters', 'Sorgenia - Order Management', 'Sorgenia - Symple Partner Team', 'Sorgenia - Payment Structure', 'Sorgenia - Payment Terms', 'Sorgenia - PdP', 'Sorgenia Postalizer', 'Sorgenia Protection Service', 'Sorgenia - Refunder', 'Sorgenia - Reports', 'Sorgenia - SDD', 'Sorgenia - Service Point', 'Sorgenia - Short Prescription', 'Sorgenia - Tableau', 'Sorgenia - Territorial Bonus', 'Sorgenia - TIMOE TIMG', 'Sorgenia - TIS', 'Sorgenia - TISG', 'Sorgenia - Tools', 'Sorgenia - Translations', 'Transport network map management', 'Sorgenia - M2C Client Status Update', 'Sorgenia - UPSA', 'Sorgenia - Wallet Dashboard', 'Sorgenia - Webcomponent - Dashboard Flow', 'Symple - Address', 'Symple BPMN Helpdesk', 'Symple - Contacts', 'Symple - Contacts - Party Model', 'Symple GIN Indexes', 'Symple - Infocamere', 'Symple Interaction', 'Symple - Payment System', 'Symple - PDF Utilities', 'Symple - PdP', 'Symple - PdP / Payment Structure', 'Symple - Privacy', 'Symple - Service Point', 'Symple SMS Integration'] to user __system__ #1 via n/a 
+2026-04-28 12:48:26,003 18837 INFO odoo_19347ae3bbe5 odoo.modules.module: python external dependency on 'stdnum' does not appear to be a valid PyPI package. Using a PyPI package name is recommended. 
+2026-04-28 12:48:26,018 18837 INFO odoo_19347ae3bbe5 odoo.modules.module: python external dependency on 'stdnum' does not appear to be a valid PyPI package. Using a PyPI package name is recommended. 
+2026-04-28 12:48:26,051 18837 INFO odoo_19347ae3bbe5 odoo.modules.module: python external dependency on 'stdnum' does not appear to be a valid PyPI package. Using a PyPI package name is recommended. 
+2026-04-28 12:48:26,069 18837 INFO odoo_19347ae3bbe5 odoo.modules.module: python external dependency on 'io' does not appear to be a valid PyPI package. Using a PyPI package name is recommended. 
+2026-04-28 12:48:26,076 18837 INFO odoo_19347ae3bbe5 odoo.modules.module: python external dependency on 'base64' does not appear to be a valid PyPI package. Using a PyPI package name is recommended. 
+2026-04-28 12:48:26,110 18837 INFO odoo_19347ae3bbe5 odoo.modules.module: python external dependency on 'stdnum' does not appear to be a valid PyPI package. Using a PyPI package name is recommended. 
+2026-04-28 12:48:26,118 18837 INFO odoo_19347ae3bbe5 odoo.modules.module: python external dependency on 'stdnum' does not appear to be a valid PyPI package. Using a PyPI package name is recommended. 
+2026-04-28 12:48:26,250 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading 126 modules... 
+2026-04-28 12:48:26,304 18837 WARNING odoo_19347ae3bbe5 odoo.addons.attachment_indexation.models.ir_attachment: Attachment indexation of PDF documents is unavailable because the 'pdfminer' Python library cannot be found on the system. You may install it from https://pypi.org/project/pdfminer.six/ (e.g. `pip3 install pdfminer.six`) 
+2026-04-28 12:48:26,344 18837 WARNING odoo_19347ae3bbe5 py.warnings: /home/odoo/.local/lib/python3.9/site-packages/openpyxl/compat/numbers.py:41: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  File "/opt/odoo/base/odoo-bin", line 8, in <module>
+    odoo.cli.main()
+  File "/opt/odoo/base/odoo/cli/command.py", line 61, in main
+    o.run(args)
+  File "/opt/odoo/base/odoo/cli/server.py", line 184, in run
+    main(args)
+  File "/opt/odoo/base/odoo/cli/server.py", line 178, in main
+    rc = odoo.service.server.start(preload=preload, stop=stop)
+  File "/opt/odoo/base/odoo/service/server.py", line 1356, in start
+    rc = server.run(preload, stop)
+  File "/opt/odoo/base/odoo/service/server.py", line 557, in run
+    rc = preload_registries(preload)
+  File "/opt/odoo/base/odoo/service/server.py", line 1260, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "/opt/odoo/base/odoo/modules/registry.py", line 88, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/opt/odoo/base/odoo/modules/loading.py", line 470, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/opt/odoo/base/odoo/modules/loading.py", line 363, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/opt/odoo/base/odoo/modules/loading.py", line 179, in load_module_graph
+    load_openerp_module(package.name)
+  File "/opt/odoo/base/odoo/modules/module.py", line 407, in load_openerp_module
+    __import__('odoo.addons.' + module_name)
+  File "/opt/odoo/base/addons/base_import/__init__.py", line 5, in <module>
+    from . import models
+  File "/opt/odoo/base/addons/base_import/models/__init__.py", line 4, in <module>
+    from . import base_import
+  File "/opt/odoo/base/addons/base_import/models/base_import.py", line 60, in <module>
+    from openpyxl import load_workbook
+  File "/home/odoo/.local/lib/python3.9/site-packages/openpyxl/__init__.py", line 4, in <module>
+    from openpyxl.compat.numbers import NUMPY, PANDAS
+  File "/home/odoo/.local/lib/python3.9/site-packages/openpyxl/compat/__init__.py", line 3, in <module>
+    from .numbers import NUMERIC_TYPES
+  File "/home/odoo/.local/lib/python3.9/site-packages/openpyxl/compat/numbers.py", line 41, in <module>
+    numpy.float,
+ 
+2026-04-28 12:48:26,513 18837 INFO odoo_19347ae3bbe5 xmlschema: Resource 'XMLSchema.xsd' is already loaded 
+2026-04-28 12:48:27,031 18837 WARNING odoo_19347ae3bbe5 odoo.models: The model interaction.channel has no _description 
+2026-04-28 12:48:27,034 18837 WARNING odoo_19347ae3bbe5 odoo.models: The model symple.mail.report has no _description 
+2026-04-28 12:48:27,073 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: 126 modules loaded in 0.82s, 0 queries (+0 extra) 
+2026-04-28 12:48:27,128 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading 239 modules... 
+2026-04-28 12:48:27,128 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_migrations (3/239) 
+2026-04-28 12:48:27,289 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field res.partner.pod.copy.default_payment_method_id with unknown comodel_name 'res.partner.payment' 
+2026-04-28 12:48:27,289 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field res.partner.pod.copy.payment_method_id with unknown comodel_name 'res.partner.payment' 
+2026-04-28 12:48:27,289 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field res.partner.pod.copy.technical_toponym_id with unknown comodel_name 'res.toponym' 
+2026-04-28 12:48:27,333 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module sorgenia_migrations: creating or updating database tables 
+2026-04-28 12:48:27,340 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_city_id, technical_city) of res.partner.pod.copy() have the same label: Technical City. 
+2026-04-28 12:48:27,466 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_migrations: loading demo 
+2026-04-28 12:48:27,469 18837 WARNING odoo_19347ae3bbe5 odoo.modules.loading: The models ['res.partner.pod.copy'] have no access rules in module sorgenia_migrations, consider adding some, like:
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+sorgenia_migrations.access_res_partner_pod_copy,access_res_partner_pod_copy,sorgenia_migrations.model_res_partner_pod_copy,base.group_user,1,0,0,0 
+2026-04-28 12:48:27,630 18837 INFO odoo_19347ae3bbe5 odoo.http: HTTP Configuring static files 
+2026-04-28 12:48:27,635 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_migrations loaded in 0.51s, 83 queries 
+2026-04-28 12:48:27,635 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_encrypter (10/239) 
+2026-04-28 12:48:27,819 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_encrypter: loading demo 
+2026-04-28 12:48:27,906 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_encrypter loaded in 0.27s, 20 queries 
+2026-04-28 12:48:27,906 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_file_decomposer (11/239) 
+2026-04-28 12:48:28,084 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module sorgenia_file_decomposer: creating or updating database tables 
+2026-04-28 12:48:28,096 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_file_decomposer: loading demo 
+2026-04-28 12:48:28,146 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_file_decomposer loaded in 0.24s, 38 queries 
+2026-04-28 12:48:28,146 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_penalty_management (12/239) 
+2026-04-28 12:48:28,370 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module sorgenia_penalty_management: creating or updating database tables 
+2026-04-28 12:48:28,440 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_penalty_management/security/security.xml 
+2026-04-28 12:48:28,476 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_penalty_management/security/ir.model.access.csv 
+2026-04-28 12:48:28,481 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_penalty_management/wizards/penalty_import_wizard.xml 
+2026-04-28 12:48:28,485 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_penalty_management/views/penalty_management_views.xml 
+2026-04-28 12:48:28,490 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_penalty_management/views/menuitem.xml 
+2026-04-28 12:48:28,499 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_penalty_management: loading demo 
+2026-04-28 12:48:28,505 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_penalty_management loaded in 0.36s, 256 queries 
+2026-04-28 12:48:28,505 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_transport_network_map_management (13/239) 
+2026-04-28 12:48:28,686 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module sorgenia_transport_network_map_management: creating or updating database tables 
+2026-04-28 12:48:28,807 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_transport_network_map_management: loading demo 
+2026-04-28 12:48:28,810 18837 WARNING odoo_19347ae3bbe5 odoo.modules.loading: The models ['transport.network.map.management', 'transport.network.map.management.history'] have no access rules in module sorgenia_transport_network_map_management, consider adding some, like:
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+sorgenia_transport_network_map_management.access_transport_network_map_management,access_transport_network_map_management,sorgenia_transport_network_map_management.model_transport_network_map_management,base.group_user,1,0,0,0
+sorgenia_transport_network_map_management.access_transport_network_map_management_history,access_transport_network_map_management_history,sorgenia_transport_network_map_management.model_transport_network_map_management_history,base.group_user,1,0,0,0 
+2026-04-28 12:48:28,812 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_transport_network_map_management loaded in 0.31s, 66 queries 
+2026-04-28 12:48:28,812 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module symple_pdf_utilities (17/239) 
+2026-04-28 12:48:28,992 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module symple_pdf_utilities: creating or updating database tables 
+2026-04-28 12:48:29,045 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module symple_pdf_utilities: loading demo 
+2026-04-28 12:48:29,050 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module symple_pdf_utilities loaded in 0.24s, 33 queries 
+2026-04-28 12:48:29,050 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_tableau (31/239) 
+2026-04-28 12:48:29,184 18837 WARNING odoo_19347ae3bbe5 odoo.models: The model symphony.webcomponent.dashboard.tableau has no _description 
+2026-04-28 12:48:29,274 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module sorgenia_tableau: creating or updating database tables 
+2026-04-28 12:48:29,334 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_tableau/webcomponents/ir.model.access.csv 
+2026-04-28 12:48:29,339 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_tableau/webcomponents/webcomponent.xml 
+2026-04-28 12:48:29,351 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_tableau: loading demo 
+2026-04-28 12:48:29,357 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_tableau loaded in 0.31s, 105 queries 
+2026-04-28 12:48:29,357 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_mail_composer (69/239) 
+2026-04-28 12:48:29,541 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module sorgenia_mail_composer: creating or updating database tables 
+2026-04-28 12:48:29,601 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (channel, channel_id) of symple.interaction() have the same label: Channel. 
+2026-04-28 12:48:29,601 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (ticket_ids, child_ticket_ids) of symple.interaction() have the same label: Tickets. 
+2026-04-28 12:48:29,692 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_mail_composer/data/mail_templates.xml 
+2026-04-28 12:48:29,738 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_mail_composer: loading demo 
+2026-04-28 12:48:29,743 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_mail_composer loaded in 0.39s, 337 queries 
+2026-04-28 12:48:29,743 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_ml_rfid_card (83/239) 
+2026-04-28 12:48:29,925 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module sorgenia_ml_rfid_card: creating or updating database tables 
+2026-04-28 12:48:30,052 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_ml_rfid_card/security/ir.model.access.csv 
+2026-04-28 12:48:30,057 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_ml_rfid_card: loading demo 
+2026-04-28 12:48:30,062 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_ml_rfid_card loaded in 0.32s, 129 queries 
+2026-04-28 12:48:30,062 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module symple_address (84/239) 
+2026-04-28 12:48:30,247 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module symple_address: creating or updating database tables 
+2026-04-28 12:48:30,270 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_type, type) of res.partner() have the same label: Address Type. 
+2026-04-28 12:48:30,270 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_type, type) of res.users() have the same label: Address Type. 
+2026-04-28 12:48:30,349 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_address/views/res_toponym.xml 
+2026-04-28 12:48:30,353 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_address/views/res_city_istat.xml 
+2026-04-28 12:48:30,355 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_address/views/menuitem.xml 
+2026-04-28 12:48:30,363 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_address/security/ir.model.access.csv 
+2026-04-28 12:48:30,369 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module symple_address: loading demo 
+2026-04-28 12:48:30,379 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_address.tests.test_res_city_istat: Starting TestResCityIstat.test_name_padding_on_create ... 
+2026-04-28 12:48:30,379 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_address.tests.test_res_city_istat: Starting TestResCityIstat.test_name_padding_on_write ... 
+2026-04-28 12:48:30,381 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_address.tests.test_res_city_istat: Starting TestResCityIstat.test_name_padding_on_write_no_change ... 
+2026-04-28 12:48:30,476 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_address.tests.test_res_country_state: Starting TestResCountryState.test_name_get ... 
+2026-04-28 12:48:30,573 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module symple_address loaded in 0.51s (incl. 0.19s test), 254 queries (+24 test) 
+2026-04-28 12:48:30,573 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module dynamic_binary_field_attachment_email (113/239) 
+2026-04-28 12:48:30,667 18837 WARNING odoo_19347ae3bbe5 odoo.models: The model mail.template.attachment has no _description 
+2026-04-28 12:48:30,667 18837 WARNING odoo_19347ae3bbe5 odoo.models: The model mail.template.attachment.wizard has no _description 
+2026-04-28 12:48:30,758 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module dynamic_binary_field_attachment_email: creating or updating database tables 
+2026-04-28 12:48:30,886 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading dynamic_binary_field_attachment_email/security/ir.model.access.csv 
+2026-04-28 12:48:30,893 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading dynamic_binary_field_attachment_email/views/helpdesk.xml 
+2026-04-28 12:48:30,898 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading dynamic_binary_field_attachment_email/views/mail_template.xml 
+2026-04-28 12:48:30,902 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading dynamic_binary_field_attachment_email/views/mail_attach_template.xml 
+2026-04-28 12:48:30,905 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module dynamic_binary_field_attachment_email: loading demo 
+2026-04-28 12:48:30,911 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module dynamic_binary_field_attachment_email loaded in 0.34s, 174 queries 
+2026-04-28 12:48:30,911 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_documents (120/239) 
+2026-04-28 12:48:31,101 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_documents/data/folders.xml 
+2026-04-28 12:48:31,147 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_documents/views/document_views.xml 
+2026-04-28 12:48:31,150 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_documents: loading demo 
+2026-04-28 12:48:31,155 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_documents loaded in 0.24s, 36 queries 
+2026-04-28 12:48:31,155 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_email_template (132/239) 
+2026-04-28 12:48:31,339 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module sorgenia_email_template: creating or updating database tables 
+2026-04-28 12:48:31,451 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_email_template/security/groups.xml 
+2026-04-28 12:48:31,518 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_email_template/views/menuitem.xml 
+2026-04-28 12:48:31,524 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_email_template/views/create_email_template.xml 
+2026-04-28 12:48:31,531 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_email_template: loading demo 
+2026-04-28 12:48:31,538 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_email_template loaded in 0.38s, 241 queries 
+2026-04-28 12:48:31,538 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_webcomponent_dashboard_flow (133/239) 
+2026-04-28 12:48:31,633 18837 WARNING odoo_19347ae3bbe5 odoo.models: The model symphony.webcomponent.dashboard.integration.flow has no _description 
+2026-04-28 12:48:31,725 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module sorgenia_webcomponent_dashboard_flow: creating or updating database tables 
+2026-04-28 12:48:31,833 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_webcomponent_dashboard_flow/security/groups.xml 
+2026-04-28 12:48:31,884 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_webcomponent_dashboard_flow/webcomponents/ir.model.access.csv 
+2026-04-28 12:48:31,887 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_webcomponent_dashboard_flow/webcomponents/webcomponent.xml 
+2026-04-28 12:48:31,897 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_webcomponent_dashboard_flow: loading demo 
+2026-04-28 12:48:31,903 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_webcomponent_dashboard_flow loaded in 0.37s, 251 queries 
+2026-04-28 12:48:31,904 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module symple_contacts (138/239) 
+2026-04-28 12:48:32,108 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module symple_contacts: creating or updating database tables 
+2026-04-28 12:48:32,166 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_type, type) of res.partner() have the same label: Address Type. 
+2026-04-28 12:48:32,166 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (company_group, company_type) of res.partner() have the same label: Company Type. 
+2026-04-28 12:48:32,166 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (job_position_id, title) of res.partner() have the same label: Title. 
+2026-04-28 12:48:32,166 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_province_name, state_code) of res.partner() have the same label: State Code. 
+2026-04-28 12:48:32,166 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_location_name, name) of res.partner() have the same label: Name. 
+2026-04-28 12:48:32,166 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_ids, child_ids) of res.partner() have the same label: Contact. 
+2026-04-28 12:48:32,166 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_payment_ids, client_payment_ids) of res.partner() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:32,166 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_payment_ids, client_payment_ids) of res.partner() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:32,166 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_type, type) of res.users() have the same label: Address Type. 
+2026-04-28 12:48:32,166 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (company_group, company_type) of res.users() have the same label: Company Type. 
+2026-04-28 12:48:32,166 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (job_position_id, title) of res.users() have the same label: Title. 
+2026-04-28 12:48:32,166 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_province_name, state_code) of res.users() have the same label: State Code. 
+2026-04-28 12:48:32,166 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_location_name, name) of res.users() have the same label: Name. 
+2026-04-28 12:48:32,166 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_ids, child_ids) of res.users() have the same label: Contact. 
+2026-04-28 12:48:32,166 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_payment_ids, client_payment_ids) of res.users() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:32,166 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_payment_ids, client_payment_ids) of res.users() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:32,166 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (parent_client_id, client_id) of res.partner.payment() have the same label: Client. 
+2026-04-28 12:48:32,200 18837 INFO odoo_19347ae3bbe5 odoo.models: Storing computed values of res.partner.is_client 
+2026-04-28 12:48:32,200 18837 INFO odoo_19347ae3bbe5 odoo.models: Storing computed values of res.partner.is_individual_client 
+2026-04-28 12:48:32,201 18837 ERROR odoo_19347ae3bbe5 odoo.schema: Table 'res_company': unable to set NOT NULL on column 'anonymous_client_id' 
+2026-04-28 12:48:32,201 18837 ERROR odoo_19347ae3bbe5 odoo.schema: Table 'res_company': unable to set NOT NULL on column 'anonymous_contact_id' 
+2026-04-28 12:48:32,202 18837 ERROR odoo_19347ae3bbe5 odoo.schema: Table 'res_company': unable to set NOT NULL on column 'sii_contact_id' 
+2026-04-28 12:48:32,202 18837 ERROR odoo_19347ae3bbe5 odoo.schema: Table 'res_company': unable to set NOT NULL on column 'crm_contact_id' 
+2026-04-28 12:48:32,352 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/data/ir_sequence.xml 
+2026-04-28 12:48:32,357 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/data/system_parameters.xml 
+2026-04-28 12:48:32,359 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/data/res_country_records.xml 
+2026-04-28 12:48:32,363 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/data/ir_cron.xml 
+2026-04-28 12:48:32,367 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/security/res_groups.xml 
+2026-04-28 12:48:32,511 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/views/job_titles.xml 
+2026-04-28 12:48:32,513 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/views/res_partner.xml 
+2026-04-28 12:48:32,518 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_ui_view: Error-prone use of @class in view res.partner.symple.view.form.inherited (): use the hasclass(*classes) function to filter elements by their classes 
+2026-04-28 12:48:32,612 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/views/res_users.xml 
+2026-04-28 12:48:32,617 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/views/res_partner_payment.xml 
+2026-04-28 12:48:32,621 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/views/res_partner_ateco.xml 
+2026-04-28 12:48:32,630 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/views/res_partner_distributor.xml 
+2026-04-28 12:48:32,635 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/views/res_partner_supplier.xml 
+2026-04-28 12:48:32,640 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/views/distributor_code_view.xml 
+2026-04-28 12:48:32,642 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/views/res_config_settings.xml 
+2026-04-28 12:48:32,667 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/views/res_partner_toll_free_number.xml 
+2026-04-28 12:48:32,671 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/views/ateco_category.xml 
+2026-04-28 12:48:32,674 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/views/letter_of_intent.xml 
+2026-04-28 12:48:32,682 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/views/correction_invoice.xml 
+2026-04-28 12:48:32,686 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/views/res_partner_abi_cab_view.xml 
+2026-04-28 12:48:32,688 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/views/menuitem.xml 
+2026-04-28 12:48:32,693 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted ir.model.data records with IDs: [16664] 
+2026-04-28 12:48:32,693 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted ir.actions.act_window.view records with IDs: [31] 
+2026-04-28 12:48:32,725 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/wizard/sms_composer_view.xml 
+2026-04-28 12:48:32,729 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/wizard/invoices_view.xml 
+2026-04-28 12:48:32,731 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/wizard/deposits_view.xml 
+2026-04-28 12:48:32,734 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/security/ir.model.access.csv 
+2026-04-28 12:48:32,748 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts/data/default_contacts.xml 
+2026-04-28 12:48:32,798 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module symple_contacts: loading demo 
+2026-04-28 12:48:32,831 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts.tests.test_letter_of_intent: Starting TestLetterOfIntent.test__check_unique_name ... 
+2026-04-28 12:48:32,841 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts.tests.test_letter_of_intent: Starting TestLetterOfIntent.test_compute_active ... 
+2026-04-28 12:48:32,843 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts.tests.test_letter_of_intent: Starting TestLetterOfIntent.test_cron_expired_letter ... 
+2026-04-28 12:48:33,474 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts.tests.test_res_partner: Starting TestInteraction.test__compute_address_id ... 
+2026-04-28 12:48:33,491 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts.tests.test_res_partner: Starting TestInteraction.test__compute_istat_code ... 
+2026-04-28 12:48:33,501 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts.tests.test_res_partner: Starting TestInteraction.test__compute_type ... 
+2026-04-28 12:48:33,525 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts.tests.test_res_partner: Starting TestInteraction.test_check_couple_uniqueness_logic ... 
+2026-04-28 12:48:33,570 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts.tests.test_res_partner: Starting TestInteraction.test_check_fiscal_code ... 
+2026-04-28 12:48:33,599 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts.tests.test_res_partner: Starting TestInteraction.test_check_if_write_allowed ... 
+2026-04-28 12:48:33,614 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts.tests.test_res_partner: Starting TestInteraction.test_unlink ... 
+2026-04-28 12:48:33,629 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted mail.message records with IDs: [280] 
+2026-04-28 12:48:33,646 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted res.partner records with IDs: [52] 
+2026-04-28 12:48:33,648 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted mail.followers records with IDs: [314] 
+2026-04-28 12:48:33,650 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts.tests.test_res_partner: Starting TestPhoneMobileValidation.test_validate_mobile_exists ... 
+2026-04-28 12:48:33,653 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts.tests.test_res_partner: Starting TestPhoneMobileValidation.test_validate_phone_exists ... 
+2026-04-28 12:48:33,656 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts.tests.test_res_partner: Starting TestPhoneMobileValidation.test_validate_phone_mobile_available ... 
+2026-04-28 12:48:33,656 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts.tests.test_res_partner: Starting TestPhoneMobileValidation.test_validate_phone_mobile_exists ... 
+2026-04-28 12:48:33,690 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts.tests.test_res_partner_payment: Starting TestPaymentMethod.test_check_sdd_iban ... 
+2026-04-28 12:48:33,703 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts.tests.test_res_partner_payment: Starting TestPaymentMethod.test_create ... 
+2026-04-28 12:48:33,706 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts.tests.test_res_partner_payment: Starting TestPaymentMethod.test_invoice_frequency ... 
+2026-04-28 12:48:33,710 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts.tests.test_res_partner_payment: Starting TestPaymentMethod.test_validate_abi_cab ... 
+2026-04-28 12:48:33,721 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module symple_contacts loaded in 1.82s (incl. 0.90s test), 1742 queries (+1311 test) 
+2026-04-28 12:48:33,721 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module symple_dashboard_visibility (139/239) 
+2026-04-28 12:48:33,975 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module symple_dashboard_visibility: creating or updating database tables 
+2026-04-28 12:48:33,999 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_type, type) of res.users() have the same label: Address Type. 
+2026-04-28 12:48:33,999 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (company_group, company_type) of res.users() have the same label: Company Type. 
+2026-04-28 12:48:33,999 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (job_position_id, title) of res.users() have the same label: Title. 
+2026-04-28 12:48:33,999 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_province_name, state_code) of res.users() have the same label: State Code. 
+2026-04-28 12:48:33,999 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_location_name, name) of res.users() have the same label: Name. 
+2026-04-28 12:48:33,999 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_ids, child_ids) of res.users() have the same label: Contact. 
+2026-04-28 12:48:33,999 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_payment_ids, client_payment_ids) of res.users() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:33,999 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_payment_ids, client_payment_ids) of res.users() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:34,087 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_dashboard_visibility/data/dashboard_tabs.xml 
+2026-04-28 12:48:34,092 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_dashboard_visibility/data/dashboard_permissions.xml 
+2026-04-28 12:48:34,106 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_dashboard_visibility/security/ir.model.access.csv 
+2026-04-28 12:48:34,113 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_dashboard_visibility/views/dashboard_tab.xml 
+2026-04-28 12:48:34,119 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_dashboard_visibility/views/dashboard_type.xml 
+2026-04-28 12:48:34,122 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_dashboard_visibility/views/dashboard_permissions.xml 
+2026-04-28 12:48:34,126 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_dashboard_visibility/views/dashboard_visibility.xml 
+2026-04-28 12:48:34,132 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_dashboard_visibility/views/dashboard_permissions_table.xml 
+2026-04-28 12:48:34,137 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_dashboard_visibility/views/security_role.xml 
+2026-04-28 12:48:34,162 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_dashboard_visibility/views/menuitems.xml 
+2026-04-28 12:48:34,170 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module symple_dashboard_visibility: loading demo 
+2026-04-28 12:48:34,221 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_dashboard_visibility.tests.test_res_user: Starting TestDashboardVisibility.test_dashboard_visibility ... 
+2026-04-28 12:48:34,237 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_dashboard_visibility.tests.test_res_user: Starting TestDashboardVisibility.test_manager_permissions ... 
+2026-04-28 12:48:34,248 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_dashboard_visibility.tests.test_res_user: Starting TestDashboardVisibility.test_no_role_assigned ... 
+2026-04-28 12:48:34,250 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_dashboard_visibility.tests.test_res_user: Starting TestDashboardVisibility.test_no_tabs ... 
+2026-04-28 12:48:34,251 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_dashboard_visibility.tests.test_res_user: Starting TestDashboardVisibility.test_overriding_tab_value ... 
+2026-04-28 12:48:34,264 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_dashboard_visibility.tests.test_res_user: Starting TestDashboardVisibility.test_permission_not_configured ... 
+2026-04-28 12:48:34,276 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_dashboard_visibility.tests.test_res_user: Starting TestDashboardVisibility.test_unknown_dashboard_type ... 
+2026-04-28 12:48:34,287 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_dashboard_visibility.tests.test_res_user: Starting TestDashboardVisibility.test_viewer_permissions ... 
+2026-04-28 12:48:34,510 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module symple_dashboard_visibility loaded in 0.79s (incl. 0.24s test), 480 queries (+492 test) 
+2026-04-28 12:48:34,510 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_mdm (143/239) 
+2026-04-28 12:48:34,717 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module sorgenia_mdm: creating or updating database tables 
+2026-04-28 12:48:34,736 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_type, type) of res.partner() have the same label: Address Type. 
+2026-04-28 12:48:34,736 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (company_group, company_type) of res.partner() have the same label: Company Type. 
+2026-04-28 12:48:34,736 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (job_position_id, title) of res.partner() have the same label: Title. 
+2026-04-28 12:48:34,736 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_province_name, state_code) of res.partner() have the same label: State Code. 
+2026-04-28 12:48:34,736 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_location_name, name) of res.partner() have the same label: Name. 
+2026-04-28 12:48:34,736 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_ids, child_ids) of res.partner() have the same label: Contact. 
+2026-04-28 12:48:34,736 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_payment_ids, client_payment_ids) of res.partner() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:34,736 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_payment_ids, client_payment_ids) of res.partner() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:34,737 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_type, type) of res.users() have the same label: Address Type. 
+2026-04-28 12:48:34,737 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (company_group, company_type) of res.users() have the same label: Company Type. 
+2026-04-28 12:48:34,737 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (job_position_id, title) of res.users() have the same label: Title. 
+2026-04-28 12:48:34,737 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_province_name, state_code) of res.users() have the same label: State Code. 
+2026-04-28 12:48:34,737 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_location_name, name) of res.users() have the same label: Name. 
+2026-04-28 12:48:34,737 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_ids, child_ids) of res.users() have the same label: Contact. 
+2026-04-28 12:48:34,737 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_payment_ids, client_payment_ids) of res.users() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:34,737 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_payment_ids, client_payment_ids) of res.users() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:34,814 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_mdm/security/ir.model.access.csv 
+2026-04-28 12:48:34,819 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_mdm/data/ir_config_parameter.xml 
+2026-04-28 12:48:34,822 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_mdm/views/res_config_settings_views.xml 
+2026-04-28 12:48:34,851 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_mdm/views/res_partner_views.xml 
+2026-04-28 12:48:34,879 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_mdm/views/res_partner_distributor.xml 
+2026-04-28 12:48:34,882 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_mdm/views/res_partner_supplier.xml 
+2026-04-28 12:48:34,886 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_mdm/wizard/sorgenia_mdm_gdpr_views.xml 
+2026-04-28 12:48:34,888 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_mdm: loading demo 
+2026-04-28 12:48:34,916 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:34,919 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.tests.test_res_partner: Starting TestResPartner.test__create_partner ... 
+2026-04-28 12:48:34,924 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.tests.test_res_partner: Starting TestResPartner.test__get_ateco_category_id ... 
+2026-04-28 12:48:34,926 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.tests.test_res_partner: Starting TestResPartner.test__get_city_id ... 
+2026-04-28 12:48:34,927 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.tests.test_res_partner: Starting TestResPartner.test__normalize_address ... 
+2026-04-28 12:48:35,123 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_mdm loaded in 0.61s (incl. 0.18s test), 247 queries (+99 test) 
+2026-04-28 12:48:35,123 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_muse_apparound (144/239) 
+2026-04-28 12:48:35,271 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:35,321 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module sorgenia_muse_apparound: creating or updating database tables 
+2026-04-28 12:48:35,460 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_muse_apparound/security/groups.xml 
+2026-04-28 12:48:35,530 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_muse_apparound/security/ir.model.access.csv 
+2026-04-28 12:48:35,536 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_muse_apparound/data/import_trader_cron.xml 
+2026-04-28 12:48:35,542 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_muse_apparound/wizard/import_trader_wizard_views.xml 
+2026-04-28 12:48:35,545 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_muse_apparound/views/consortiums.xml 
+2026-04-28 12:48:35,548 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_muse_apparound/views/rip_model_function_access.xml 
+2026-04-28 12:48:35,552 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_muse_apparound/views/trader.xml 
+2026-04-28 12:48:35,555 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_muse_apparound/views/remi_table.xml 
+2026-04-28 12:48:35,559 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_muse_apparound/views/menuitems.xml 
+2026-04-28 12:48:35,568 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_muse_apparound: loading demo 
+2026-04-28 12:48:35,571 18837 WARNING odoo_19347ae3bbe5 odoo.modules.loading: The models ['temporary.client'] have no access rules in module sorgenia_muse_apparound, consider adding some, like:
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+sorgenia_muse_apparound.access_temporary_client,access_temporary_client,sorgenia_muse_apparound.model_temporary_client,base.group_user,1,0,0,0 
+2026-04-28 12:48:35,575 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_muse_apparound loaded in 0.45s, 555 queries 
+2026-04-28 12:48:35,575 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_wallet_dashboard (145/239) 
+2026-04-28 12:48:35,623 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:35,675 18837 WARNING odoo_19347ae3bbe5 odoo.models: The model symphony.wallet.dashboard has no _description 
+2026-04-28 12:48:35,722 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:35,772 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module sorgenia_wallet_dashboard: creating or updating database tables 
+2026-04-28 12:48:35,882 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_wallet_dashboard/security/res_groups.xml 
+2026-04-28 12:48:35,972 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_wallet_dashboard/security/ir.model.access.csv 
+2026-04-28 12:48:35,976 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_wallet_dashboard/webcomponents/webcomponent.xml 
+2026-04-28 12:48:35,980 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_wallet_dashboard/views/res_partner.xml 
+2026-04-28 12:48:35,991 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_wallet_dashboard/views/menuitem.xml 
+2026-04-28 12:48:35,998 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_wallet_dashboard: loading demo 
+2026-04-28 12:48:36,005 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_wallet_dashboard loaded in 0.43s, 410 queries 
+2026-04-28 12:48:36,005 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module symple_interaction (146/239) 
+2026-04-28 12:48:36,057 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:36,167 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:36,219 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module symple_interaction: creating or updating database tables 
+2026-04-28 12:48:36,288 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (channel, channel_id) of symple.interaction() have the same label: Channel. 
+2026-04-28 12:48:36,288 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (ticket_ids, child_ticket_ids) of symple.interaction() have the same label: Tickets. 
+2026-04-28 12:48:36,288 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_type, type) of res.partner() have the same label: Address Type. 
+2026-04-28 12:48:36,288 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (company_group, company_type) of res.partner() have the same label: Company Type. 
+2026-04-28 12:48:36,288 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (job_position_id, title) of res.partner() have the same label: Title. 
+2026-04-28 12:48:36,288 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_province_name, state_code) of res.partner() have the same label: State Code. 
+2026-04-28 12:48:36,288 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_location_name, name) of res.partner() have the same label: Name. 
+2026-04-28 12:48:36,288 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_ids, child_ids) of res.partner() have the same label: Contact. 
+2026-04-28 12:48:36,288 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_payment_ids, client_payment_ids) of res.partner() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:36,288 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_payment_ids, client_payment_ids) of res.partner() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:36,289 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_type, type) of res.users() have the same label: Address Type. 
+2026-04-28 12:48:36,289 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (company_group, company_type) of res.users() have the same label: Company Type. 
+2026-04-28 12:48:36,289 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (job_position_id, title) of res.users() have the same label: Title. 
+2026-04-28 12:48:36,289 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_province_name, state_code) of res.users() have the same label: State Code. 
+2026-04-28 12:48:36,289 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_location_name, name) of res.users() have the same label: Name. 
+2026-04-28 12:48:36,289 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_ids, child_ids) of res.users() have the same label: Contact. 
+2026-04-28 12:48:36,289 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_payment_ids, client_payment_ids) of res.users() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:36,289 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_payment_ids, client_payment_ids) of res.users() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:36,396 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_interaction/security/ir.model.access.csv 
+2026-04-28 12:48:36,402 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_interaction/data/mail_data.xml 
+2026-04-28 12:48:36,404 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_interaction/data/ir_sequence.xml 
+2026-04-28 12:48:36,407 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_interaction/views/symple_interaction_views.xml 
+2026-04-28 12:48:36,410 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_ui_view: Error-prone use of @class in view symple.interaction.form (): use the hasclass(*classes) function to filter elements by their classes 
+2026-04-28 12:48:36,410 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_ui_view: Error-prone use of @class in view symple.interaction.form (): use the hasclass(*classes) function to filter elements by their classes 
+2026-04-28 12:48:36,410 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_ui_view: Error-prone use of @class in view symple.interaction.form (): use the hasclass(*classes) function to filter elements by their classes 
+2026-04-28 12:48:36,422 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_interaction/views/res_partner_views.xml 
+2026-04-28 12:48:36,434 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_interaction/wizards/cancel_interaction.xml 
+2026-04-28 12:48:36,437 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_interaction/report/helpdesk_interaction_analysis_views.xml 
+2026-04-28 12:48:36,444 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_interaction/views/menu_views.xml 
+2026-04-28 12:48:36,447 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module symple_interaction: loading demo 
+2026-04-28 12:48:36,474 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:36,481 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:36,487 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:36,508 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:36,523 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:36,528 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Write: PATCHing to MDM with force_mdm_create False 
+2026-04-28 12:48:36,610 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_interaction.tests.test_symple_interaction: Starting TestInteraction.test__compute_protocol_identification ... 
+2026-04-28 12:48:36,613 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_interaction.tests.test_symple_interaction: Starting TestInteraction.test__compute_ticket_count ... 
+2026-04-28 12:48:36,615 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_interaction.tests.test_symple_interaction: Starting TestInteraction.test__onchange_channel ... 
+2026-04-28 12:48:36,648 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_interaction.tests.test_symple_interaction: Starting TestInteraction.test__onchange_email_phone_email_pec ... 
+2026-04-28 12:48:36,715 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_interaction.tests.test_symple_interaction: Starting TestInteraction.test__onchange_email_phone_phone ... 
+2026-04-28 12:48:36,801 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_interaction.tests.test_symple_interaction: Starting TestInteraction.test_assign_interaction_to_self ... 
+2026-04-28 12:48:36,807 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted mail.followers records with IDs: [325] 
+2026-04-28 12:48:36,813 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted mail.followers records with IDs: [327] 
+2026-04-28 12:48:36,816 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_interaction.tests.test_symple_interaction: Starting TestInteraction.test_close_interaction ... 
+2026-04-28 12:48:36,820 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_interaction.tests.test_symple_interaction: Starting TestInteraction.test_complaint_start_date_preserved_on_direct_create ... 
+2026-04-28 12:48:36,837 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_interaction.tests.test_symple_interaction: Starting TestInteraction.test_complaint_start_date_preserved_on_form_save ... 
+2026-04-28 12:48:36,910 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_interaction.tests.test_symple_interaction: Starting TestInteraction.test_create ... 
+2026-04-28 12:48:36,958 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted mail.followers records with IDs: [338] 
+2026-04-28 12:48:36,974 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted mail.followers records with IDs: [341] 
+2026-04-28 12:48:36,978 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_interaction.tests.test_symple_interaction: Starting TestInteraction.test_create_name ... 
+2026-04-28 12:48:36,980 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_interaction.tests.test_symple_interaction: Starting TestInteraction.test_onchange_customer_id ... 
+2026-04-28 12:48:37,008 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_interaction.tests.test_symple_interaction: Starting TestInteraction.test_write ... 
+2026-04-28 12:48:37,017 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted mail.followers records with IDs: [343] 
+2026-04-28 12:48:37,025 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted mail.followers records with IDs: [344] 
+2026-04-28 12:48:37,030 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted mail.followers records with IDs: [325] 
+2026-04-28 12:48:37,132 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:37,251 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:37,274 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:37,298 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_interaction.tests.test_symple_res_partner: Starting TestInteraction.test__compute_interaction_count ... 
+2026-04-28 12:48:37,308 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module symple_interaction loaded in 1.30s (incl. 0.85s test), 526 queries (+1543 test) 
+2026-04-28 12:48:37,308 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module symple_service_point (147/239) 
+2026-04-28 12:48:37,358 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:37,460 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:37,513 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module symple_service_point: creating or updating database tables 
+2026-04-28 12:48:37,530 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_type, type) of res.partner() have the same label: Address Type. 
+2026-04-28 12:48:37,530 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (company_group, company_type) of res.partner() have the same label: Company Type. 
+2026-04-28 12:48:37,530 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (job_position_id, title) of res.partner() have the same label: Title. 
+2026-04-28 12:48:37,531 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_province_name, state_code) of res.partner() have the same label: State Code. 
+2026-04-28 12:48:37,531 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_location_name, name) of res.partner() have the same label: Name. 
+2026-04-28 12:48:37,531 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_ids, child_ids) of res.partner() have the same label: Contact. 
+2026-04-28 12:48:37,531 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_payment_ids, client_payment_ids) of res.partner() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:37,531 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_payment_ids, client_payment_ids) of res.partner() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:37,531 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_type, type) of res.users() have the same label: Address Type. 
+2026-04-28 12:48:37,531 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (company_group, company_type) of res.users() have the same label: Company Type. 
+2026-04-28 12:48:37,531 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (job_position_id, title) of res.users() have the same label: Title. 
+2026-04-28 12:48:37,531 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_province_name, state_code) of res.users() have the same label: State Code. 
+2026-04-28 12:48:37,531 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_location_name, name) of res.users() have the same label: Name. 
+2026-04-28 12:48:37,531 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_ids, child_ids) of res.users() have the same label: Contact. 
+2026-04-28 12:48:37,531 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_payment_ids, client_payment_ids) of res.users() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:37,531 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_payment_ids, client_payment_ids) of res.users() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:37,546 18837 INFO odoo_19347ae3bbe5 odoo.models: Storing computed values of res.partner.service_point_codes 
+2026-04-28 12:48:37,662 18837 WARNING odoo_19347ae3bbe5 odoo.modules.registry: service.point: inconsistent 'compute_sudo' for computed fields: service, service_model_id 
+2026-04-28 12:48:37,678 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_service_point/security/ir.model.access.csv 
+2026-04-28 12:48:37,681 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_service_point/views/service_point.xml 
+2026-04-28 12:48:37,689 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_service_point/views/res_partner.xml 
+2026-04-28 12:48:37,702 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_service_point/views/menuitem.xml 
+2026-04-28 12:48:37,711 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_service_point/data/sequence.xml 
+2026-04-28 12:48:37,713 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module symple_service_point: loading demo 
+2026-04-28 12:48:37,719 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module symple_service_point loaded in 0.41s, 256 queries 
+2026-04-28 12:48:37,719 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_ai_tag (148/239) 
+2026-04-28 12:48:37,770 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:37,873 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:37,926 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module sorgenia_ai_tag: creating or updating database tables 
+2026-04-28 12:48:37,929 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (channel, channel_id) of symple.interaction() have the same label: Channel. 
+2026-04-28 12:48:37,929 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (ticket_ids, child_ticket_ids) of symple.interaction() have the same label: Tickets. 
+2026-04-28 12:48:37,938 18837 WARNING odoo_19347ae3bbe5 odoo.modules.registry: service.point: inconsistent 'compute_sudo' for computed fields: service, service_model_id 
+2026-04-28 12:48:37,940 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_ai_tag/data/system_parameters.xml 
+2026-04-28 12:48:38,034 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_ai_tag/views/symple_interaction.xml 
+2026-04-28 12:48:38,043 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_ai_tag: loading demo 
+2026-04-28 12:48:38,048 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_ai_tag loaded in 0.33s, 70 queries 
+2026-04-28 12:48:38,048 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module symple_contacts_party_model (149/239) 
+2026-04-28 12:48:38,097 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:38,203 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:38,255 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module symple_contacts_party_model: creating or updating database tables 
+2026-04-28 12:48:38,278 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_type, type) of res.partner() have the same label: Address Type. 
+2026-04-28 12:48:38,278 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (company_group, company_type) of res.partner() have the same label: Company Type. 
+2026-04-28 12:48:38,278 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (job_position_id, title) of res.partner() have the same label: Title. 
+2026-04-28 12:48:38,278 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_province_name, state_code) of res.partner() have the same label: State Code. 
+2026-04-28 12:48:38,278 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_location_name, name) of res.partner() have the same label: Name. 
+2026-04-28 12:48:38,278 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_ids, child_ids) of res.partner() have the same label: Contact. 
+2026-04-28 12:48:38,278 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_payment_ids, client_payment_ids) of res.partner() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:38,278 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_payment_ids, client_payment_ids) of res.partner() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:38,278 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_type, type) of res.users() have the same label: Address Type. 
+2026-04-28 12:48:38,278 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (company_group, company_type) of res.users() have the same label: Company Type. 
+2026-04-28 12:48:38,278 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (job_position_id, title) of res.users() have the same label: Title. 
+2026-04-28 12:48:38,278 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_province_name, state_code) of res.users() have the same label: State Code. 
+2026-04-28 12:48:38,278 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_location_name, name) of res.users() have the same label: Name. 
+2026-04-28 12:48:38,278 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_ids, child_ids) of res.users() have the same label: Contact. 
+2026-04-28 12:48:38,278 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_payment_ids, client_payment_ids) of res.users() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:38,278 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_payment_ids, client_payment_ids) of res.users() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:38,357 18837 WARNING odoo_19347ae3bbe5 odoo.modules.registry: service.point: inconsistent 'compute_sudo' for computed fields: service, service_model_id 
+2026-04-28 12:48:38,364 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts_party_model/security/ir.model.access.csv 
+2026-04-28 12:48:38,371 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts_party_model/views/party_type.xml 
+2026-04-28 12:48:38,376 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts_party_model/views/party_relation.xml 
+2026-04-28 12:48:38,379 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts_party_model/views/res_partner.xml 
+2026-04-28 12:48:38,392 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_contacts_party_model/views/menuitem.xml 
+2026-04-28 12:48:38,401 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module symple_contacts_party_model: loading demo 
+2026-04-28 12:48:38,405 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_relation: Starting TestPartyRelation.test_check_date_consistency_error ... 
+2026-04-28 12:48:38,424 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,428 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,440 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_relation: Starting TestPartyRelation.test_check_date_consistency_no_error ... 
+2026-04-28 12:48:38,455 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,460 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,461 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_relation: Starting TestPartyRelation.test_check_partner_presence_and_coherence_error ... 
+2026-04-28 12:48:38,475 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,480 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,491 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_relation: Starting TestPartyRelation.test_check_partner_presence_and_coherence_no_error ... 
+2026-04-28 12:48:38,505 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,509 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,511 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_relation: Starting TestPartyRelation.test_check_partner_presence_and_coherence_unlink ... 
+2026-04-28 12:48:38,524 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,529 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,540 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted party.relation records with IDs: [5] 
+2026-04-28 12:48:38,540 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_relation: Starting TestPartyRelation.test_check_party_type_requirements_error ... 
+2026-04-28 12:48:38,555 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,560 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,571 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_relation: Starting TestPartyRelation.test_check_party_type_requirements_no_error ... 
+2026-04-28 12:48:38,585 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,589 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,595 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_relation: Starting TestPartyRelation.test_compute_relation_to_string_asymmetrical ... 
+2026-04-28 12:48:38,609 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,613 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,615 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_relation: Starting TestPartyRelation.test_compute_relation_to_string_symmetrical ... 
+2026-04-28 12:48:38,630 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,634 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,636 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_relation: Starting TestPartyRelation.test_compute_service_point_codes ... 
+2026-04-28 12:48:38,650 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,655 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,660 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_relation: Starting TestPartyRelation.test_onchange_partner_domain ... 
+2026-04-28 12:48:38,675 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,679 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,782 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:38,835 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_type: Starting TestPartyType.test_constrains_hide_requires_coherence ... 
+2026-04-28 12:48:38,886 18837 WARNING odoo_19347ae3bbe5 odoo.modules.registry: service.point: inconsistent 'compute_sudo' for computed fields: service, service_model_id 
+2026-04-28 12:48:38,889 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_type: Starting TestPartyType.test_constrains_symmetrical_relation_string ... 
+2026-04-28 12:48:38,892 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_type: Starting TestPartyType.test_constrains_to_string_filling ... 
+2026-04-28 12:48:38,896 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_type: Starting TestPartyType.test_constrains_to_string_filling_no_error ... 
+2026-04-28 12:48:38,897 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_type: Starting TestPartyType.test_create_party_type ... 
+2026-04-28 12:48:38,899 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_type: Starting TestPartyType.test_create_symmetrical_party_type ... 
+2026-04-28 12:48:38,900 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_type: Starting TestPartyType.test_unlink_party_type ... 
+2026-04-28 12:48:38,902 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted party.type records with IDs: [18] 
+2026-04-28 12:48:38,903 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_type: Starting TestPartyType.test_unlink_symmetrical_party_type ... 
+2026-04-28 12:48:38,905 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted party.type records with IDs: [19] 
+2026-04-28 12:48:38,905 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_type: Starting TestPartyType.test_write_to_string_filling ... 
+2026-04-28 12:48:38,909 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_party_type: Starting TestPartyType.test_write_to_string_filling_no_error ... 
+2026-04-28 12:48:38,911 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_res_partner: Starting TestResPartner.test_compute_party_where_present ... 
+2026-04-28 12:48:38,929 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,934 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,938 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,945 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,946 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_res_partner: Starting TestResPartner.test_compute_party_where_present_clear_relations ... 
+2026-04-28 12:48:38,960 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,965 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,969 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,974 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:38,988 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted party.relation records with IDs: [13] 
+2026-04-28 12:48:38,990 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted party.relation records with IDs: [14] 
+2026-04-28 12:48:38,991 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_res_partner: Starting TestResPartner.test_compute_party_where_present_no_relations ... 
+2026-04-28 12:48:39,005 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:39,009 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:39,013 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:39,019 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:39,019 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_res_partner: Starting TestResPartner.test_compute_party_where_present_unlink_relations ... 
+2026-04-28 12:48:39,034 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:39,038 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:39,042 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:39,048 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:39,060 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted party.relation records with IDs: [17] 
+2026-04-28 12:48:39,063 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted party.relation records with IDs: [18] 
+2026-04-28 12:48:39,064 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_contacts_party_model.tests.test_res_partner: Starting TestResPartner.test_compute_party_where_present_update_relations ... 
+2026-04-28 12:48:39,078 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:39,082 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:39,086 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:39,091 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:39,104 18837 INFO odoo_19347ae3bbe5 odoo.models.unlink: User #1 deleted party.relation records with IDs: [19] 
+2026-04-28 12:48:39,110 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module symple_contacts_party_model loaded in 1.06s (incl. 0.70s test), 248 queries (+1514 test) 
+2026-04-28 12:48:39,110 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module symple_payment_structure (150/239) 
+2026-04-28 12:48:39,161 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:39,268 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:39,322 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module symple_payment_structure: creating or updating database tables 
+2026-04-28 12:48:39,341 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_type, type) of res.partner() have the same label: Address Type. 
+2026-04-28 12:48:39,341 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (company_group, company_type) of res.partner() have the same label: Company Type. 
+2026-04-28 12:48:39,341 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (job_position_id, title) of res.partner() have the same label: Title. 
+2026-04-28 12:48:39,341 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_province_name, state_code) of res.partner() have the same label: State Code. 
+2026-04-28 12:48:39,341 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_location_name, name) of res.partner() have the same label: Name. 
+2026-04-28 12:48:39,341 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_ids, child_ids) of res.partner() have the same label: Contact. 
+2026-04-28 12:48:39,341 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_payment_ids, client_payment_ids) of res.partner() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:39,341 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_payment_ids, client_payment_ids) of res.partner() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:39,341 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_type, type) of res.users() have the same label: Address Type. 
+2026-04-28 12:48:39,341 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (company_group, company_type) of res.users() have the same label: Company Type. 
+2026-04-28 12:48:39,341 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (job_position_id, title) of res.users() have the same label: Title. 
+2026-04-28 12:48:39,341 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_province_name, state_code) of res.users() have the same label: State Code. 
+2026-04-28 12:48:39,341 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_location_name, name) of res.users() have the same label: Name. 
+2026-04-28 12:48:39,341 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_ids, child_ids) of res.users() have the same label: Contact. 
+2026-04-28 12:48:39,341 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_payment_ids, client_payment_ids) of res.users() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:39,341 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_payment_ids, client_payment_ids) of res.users() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:39,473 18837 WARNING odoo_19347ae3bbe5 odoo.modules.registry: service.point: inconsistent 'compute_sudo' for computed fields: service, service_model_id 
+2026-04-28 12:48:39,481 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_payment_structure/security/ir.model.access.csv 
+2026-04-28 12:48:39,486 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_payment_structure/data/sequence.xml 
+2026-04-28 12:48:39,489 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_payment_structure/views/payment_method.xml 
+2026-04-28 12:48:39,495 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_payment_structure/views/billing_profile.xml 
+2026-04-28 12:48:39,500 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_payment_structure/views/res_partner.xml 
+2026-04-28 12:48:39,514 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_payment_structure/views/menuitem.xml 
+2026-04-28 12:48:39,522 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module symple_payment_structure: loading demo 
+2026-04-28 12:48:39,530 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module symple_payment_structure loaded in 0.42s, 251 queries 
+2026-04-28 12:48:39,530 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module symple_pdp (151/239) 
+2026-04-28 12:48:39,581 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:39,690 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.supply_state: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:39,691 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.pod_use: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:39,691 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.phase_tension: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:39,691 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.tariff_code: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:39,703 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:39,761 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module symple_pdp: creating or updating database tables 
+2026-04-28 12:48:39,799 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (new_value_boolean, new_value_integer) of mail.tracking.value() have the same label: New Value Integer. 
+2026-04-28 12:48:39,799 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (supply_state, state) of res.partner.pdp.mixin() have the same label: Supply Status. 
+2026-04-28 12:48:39,799 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (client_id, client_ids) of res.partner.pdp.mixin() have the same label: Client. 
+2026-04-28 12:48:39,799 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (temp_client_id, client_ids) of res.partner.pdp.mixin() have the same label: Client. 
+2026-04-28 12:48:39,799 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_street, technical_address) of res.partner.pdp.mixin() have the same label: Address. 
+2026-04-28 12:48:39,799 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_street2, technical_address) of res.partner.pdp.mixin() have the same label: Address. 
+2026-04-28 12:48:39,799 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_city, technical_city_id) of res.partner.pdp.mixin() have the same label: City. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (supply_state, state) of res.partner.pod() have the same label: Supply Status. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (client_id, client_ids) of res.partner.pod() have the same label: Client. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (temp_client_id, client_ids) of res.partner.pod() have the same label: Client. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_street, technical_address) of res.partner.pod() have the same label: Address. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_street2, technical_address) of res.partner.pod() have the same label: Address. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_city, technical_city_id) of res.partner.pod() have the same label: City. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (supply_state, state) of res.partner.pdr() have the same label: Supply Status. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (client_id, client_ids) of res.partner.pdr() have the same label: Client. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (temp_client_id, client_ids) of res.partner.pdr() have the same label: Client. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_street, technical_address) of res.partner.pdr() have the same label: Address. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_street2, technical_address) of res.partner.pdr() have the same label: Address. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_city, technical_city_id) of res.partner.pdr() have the same label: City. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (pdr_code, pod_code) of res.partner.meter() have the same label: Code. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (parent_pod_id, pod_id) of res.partner.meter() have the same label: POD. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_street2, technical_street) of res.partner.meter() have the same label: Address. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_city_id, technical_city) of res.partner.meter() have the same label: City. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_type, type) of res.partner() have the same label: Address Type. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (company_group, company_type) of res.partner() have the same label: Company Type. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (job_position_id, title) of res.partner() have the same label: Title. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_province_name, state_code) of res.partner() have the same label: State Code. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_location_name, name) of res.partner() have the same label: Name. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_ids, child_ids) of res.partner() have the same label: Contact. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_payment_ids, client_payment_ids) of res.partner() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_payment_ids, client_payment_ids) of res.partner() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (pdr_ids, pod_ids) of res.partner() have the same label: Supply Locations. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_type, type) of res.users() have the same label: Address Type. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (company_group, company_type) of res.users() have the same label: Company Type. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (job_position_id, title) of res.users() have the same label: Title. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_province_name, state_code) of res.users() have the same label: State Code. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_location_name, name) of res.users() have the same label: Name. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_ids, child_ids) of res.users() have the same label: Contact. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_payment_ids, client_payment_ids) of res.users() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_payment_ids, client_payment_ids) of res.users() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:39,800 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (pdr_ids, pod_ids) of res.users() have the same label: Supply Locations. 
+2026-04-28 12:48:39,849 18837 INFO odoo_19347ae3bbe5 odoo.models: Storing computed values of res.partner.pod_codes 
+2026-04-28 12:48:39,849 18837 INFO odoo_19347ae3bbe5 odoo.models: Storing computed values of res.partner.pdr_codes 
+2026-04-28 12:48:40,028 18837 WARNING odoo_19347ae3bbe5 odoo.modules.registry: service.point: inconsistent 'compute_sudo' for computed fields: service, service_model_id 
+2026-04-28 12:48:40,061 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_pdp/security/res_groups.xml 
+2026-04-28 12:48:40,165 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_pdp/wizard/self_reading.xml 
+2026-04-28 12:48:40,168 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_pdp/views/res_partner_pod.xml 
+2026-04-28 12:48:40,175 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_pdp/views/res_partner_meter.xml 
+2026-04-28 12:48:40,180 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_pdp/views/meter_readings.xml 
+2026-04-28 12:48:40,184 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_pdp/views/res_partner.xml 
+2026-04-28 12:48:40,203 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_pdp/views/service_point.xml 
+2026-04-28 12:48:40,206 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_pdp/views/menuitem.xml 
+2026-04-28 12:48:40,221 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading symple_pdp/security/ir.model.access.csv 
+2026-04-28 12:48:40,228 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module symple_pdp: loading demo 
+2026-04-28 12:48:40,241 18837 WARNING odoo_19347ae3bbe5 odoo.models: method res.partner.pod._check_not_negative_power: @constrains parameter 'available_power_raw' is not writeable 
+2026-04-28 12:48:40,258 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_meter_readings: Starting TestMeterReading.test__compute_name ... 
+2026-04-28 12:48:40,303 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.supply_state: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:40,304 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.pod_use: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:40,304 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.phase_tension: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:40,304 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.tariff_code: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:40,316 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:40,374 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_pdp_mixin: Starting TestPickupPointsMixin.test__compute_distributor_annual_usage_history_ids ... 
+2026-04-28 12:48:40,434 18837 WARNING odoo_19347ae3bbe5 odoo.modules.registry: service.point: inconsistent 'compute_sudo' for computed fields: service, service_model_id 
+2026-04-28 12:48:40,448 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:40,453 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:40,455 18837 WARNING odoo_19347ae3bbe5 odoo.models: method res.partner.pod._check_not_negative_power: @constrains parameter 'available_power_raw' is not writeable 
+2026-04-28 12:48:40,474 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_pdp_mixin: Starting TestPickupPointsMixin.test__compute_distributor_toll_free_number ... 
+2026-04-28 12:48:40,491 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:40,496 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:40,518 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:40,530 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:40,548 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_pdp_mixin: Starting TestPickupPointsMixin.test__compute_istat_code ... 
+2026-04-28 12:48:40,609 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:40,614 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:40,632 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_pdp_mixin: Starting TestPickupPointsMixin.test__compute_region ... 
+2026-04-28 12:48:40,649 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:40,654 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:40,673 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_pdp_mixin: Starting TestPickupPointsMixin.test__compute_user_data ... 
+2026-04-28 12:48:40,688 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:40,692 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:40,725 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:40,755 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_res_partner: Starting TestResPartnerPdr.test__compute_pod_pdr_codes ... 
+2026-04-28 12:48:40,781 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:40,787 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:40,789 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_res_partner_meter: Starting TestResPartnerMeter.test__compute_meter_type ... 
+2026-04-28 12:48:40,813 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_res_partner_meter: Starting TestResPartnerMeter.test__compute_name ... 
+2026-04-28 12:48:40,833 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_res_partner_meter: Starting TestResPartnerMeter.test__compute_tariff_type ... 
+2026-04-28 12:48:40,856 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_res_partner_meter: Starting TestResPartnerMeter.test__create ... 
+2026-04-28 12:48:40,879 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_res_partner_meter: Starting TestResPartnerMeter.test__deactivate_meters ... 
+2026-04-28 12:48:40,898 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_res_partner_meter: Starting TestResPartnerMeter.test__write ... 
+2026-04-28 12:48:40,920 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_res_partner_meter: Starting TestResPartnerMeter.test_check_meter_number ... 
+2026-04-28 12:48:40,943 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_res_partner_meter: Starting TestResPartnerMeter.test_check_meter_type_coerence_with_type ... 
+2026-04-28 12:48:40,978 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_res_partner_pdr: Starting TestResPartnerPdr.test__compute_name ... 
+2026-04-28 12:48:40,980 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_res_partner_pod: Starting TestResPartnerPod.test__check_not_negative_power ... 
+2026-04-28 12:48:40,995 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:41,027 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_res_partner_pod: Starting TestResPartnerPod.test__compute_distributor_id ... 
+2026-04-28 12:48:41,041 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:41,069 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:41,070 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_res_partner_pod: Starting TestResPartnerPod.test__compute_is_not_disconnectable_history_ids ... 
+2026-04-28 12:48:41,084 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:41,106 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_res_partner_pod: Starting TestResPartnerPod.test__compute_name ... 
+2026-04-28 12:48:41,120 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:41,138 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_service_point: Starting TestServicePoint.test_compute_high_tension_tariff_code ... 
+2026-04-28 12:48:41,152 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:41,162 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_service_point: Starting TestServicePoint.test_compute_low_tension_tariff_code ... 
+2026-04-28 12:48:41,176 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:41,189 18837 INFO odoo_19347ae3bbe5 odoo.addons.symple_pdp.tests.test_service_point: Starting TestServicePoint.test_compute_medium_tension_tariff_code_mtip ... 
+2026-04-28 12:48:41,203 18837 INFO odoo_19347ae3bbe5 odoo.addons.sorgenia_mdm.models.res_partner: Create: PATCHing to MDM 
+2026-04-28 12:48:41,218 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module symple_pdp loaded in 1.69s (incl. 0.98s test), 1010 queries (+2370 test) 
+2026-04-28 12:48:41,218 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_blacklist (152/239) 
+2026-04-28 12:48:41,260 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.supply_state: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:41,260 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.pod_use: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:41,260 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.phase_tension: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:41,260 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.tariff_code: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:41,273 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:41,333 18837 WARNING odoo_19347ae3bbe5 odoo.models: The model symphony.webcomponent.dashboard.blacklist has no _description 
+2026-04-28 12:48:41,371 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.supply_state: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:41,371 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.pod_use: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:41,371 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.phase_tension: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:41,371 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.tariff_code: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:41,384 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:41,441 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module sorgenia_blacklist: creating or updating database tables 
+2026-04-28 12:48:41,502 18837 WARNING odoo_19347ae3bbe5 odoo.modules.registry: service.point: inconsistent 'compute_sudo' for computed fields: service, service_model_id 
+2026-04-28 12:48:41,507 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_blacklist/data/ir_cron.xml 
+2026-04-28 12:48:41,514 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_blacklist/security/groups.xml 
+2026-04-28 12:48:41,613 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_blacklist/security/ir.model.access.csv 
+2026-04-28 12:48:41,620 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_blacklist/webcomponents/ir.model.access.csv 
+2026-04-28 12:48:41,625 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_blacklist/webcomponents/webcomponent.xml 
+2026-04-28 12:48:41,636 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_blacklist: loading demo 
+2026-04-28 12:48:41,642 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_blacklist loaded in 0.42s, 460 queries 
+2026-04-28 12:48:41,642 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_credit_check (153/239) 
+2026-04-28 12:48:41,731 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.supply_state: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:41,731 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.pod_use: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:41,731 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.phase_tension: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:41,732 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.tariff_code: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:41,743 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:41,803 18837 WARNING odoo_19347ae3bbe5 odoo.models: The model symphony.webcomponent.dashboard.credit.check has no _description 
+2026-04-28 12:48:41,842 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.supply_state: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:41,842 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.pod_use: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:41,842 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.phase_tension: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:41,842 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.tariff_code: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:41,854 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:41,911 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module sorgenia_credit_check: creating or updating database tables 
+2026-04-28 12:48:41,973 18837 WARNING odoo_19347ae3bbe5 odoo.modules.registry: service.point: inconsistent 'compute_sudo' for computed fields: service, service_model_id 
+2026-04-28 12:48:41,978 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_credit_check/data/ir_cron.xml 
+2026-04-28 12:48:41,982 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_credit_check/security/groups.xml 
+2026-04-28 12:48:42,081 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_credit_check/security/ir.model.access.csv 
+2026-04-28 12:48:42,086 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_credit_check/webcomponents/ir.model.access.csv 
+2026-04-28 12:48:42,091 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_credit_check/webcomponents/webcomponent.xml 
+2026-04-28 12:48:42,101 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_credit_check: loading demo 
+2026-04-28 12:48:42,107 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_credit_check loaded in 0.47s, 442 queries 
+2026-04-28 12:48:42,108 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_fiber_coverage (154/239) 
+2026-04-28 12:48:42,149 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.supply_state: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:42,149 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.pod_use: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:42,149 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.phase_tension: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:42,149 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.tariff_code: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:42,161 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:42,220 18837 WARNING odoo_19347ae3bbe5 odoo.models: The model symphony.webcomponent.dashboard.fiber.coverage has no _description 
+2026-04-28 12:48:42,261 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.supply_state: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:42,261 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.pod_use: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:42,261 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.phase_tension: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:42,261 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.tariff_code: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:42,327 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:42,384 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module sorgenia_fiber_coverage: creating or updating database tables 
+2026-04-28 12:48:42,446 18837 WARNING odoo_19347ae3bbe5 odoo.modules.registry: service.point: inconsistent 'compute_sudo' for computed fields: service, service_model_id 
+2026-04-28 12:48:42,451 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_fiber_coverage/security/groups.xml 
+2026-04-28 12:48:42,526 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_fiber_coverage/security/ir.model.access.csv 
+2026-04-28 12:48:42,530 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_fiber_coverage/webcomponents/ir.model.access.csv 
+2026-04-28 12:48:42,534 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_fiber_coverage/webcomponents/webcomponent.xml 
+2026-04-28 12:48:42,544 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_fiber_coverage: loading demo 
+2026-04-28 12:48:42,551 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_fiber_coverage loaded in 0.44s, 365 queries 
+2026-04-28 12:48:42,551 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_fiber_upselling (155/239) 
+2026-04-28 12:48:42,592 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.supply_state: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:42,593 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.pod_use: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:42,593 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.phase_tension: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:42,593 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.tariff_code: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:42,605 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:42,670 18837 WARNING odoo_19347ae3bbe5 odoo.models: The model symphony.webcomponent.dashboard.fiber.upselling has no _description 
+2026-04-28 12:48:42,710 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.supply_state: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:42,710 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.pod_use: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:42,710 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.phase_tension: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:42,710 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.tariff_code: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:42,723 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:42,783 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module sorgenia_fiber_upselling: creating or updating database tables 
+2026-04-28 12:48:42,896 18837 WARNING odoo_19347ae3bbe5 odoo.modules.registry: service.point: inconsistent 'compute_sudo' for computed fields: service, service_model_id 
+2026-04-28 12:48:42,901 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_fiber_upselling/data/ir_cron.xml 
+2026-04-28 12:48:42,905 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_fiber_upselling/security/groups.xml 
+2026-04-28 12:48:42,986 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_fiber_upselling/security/ir.model.access.csv 
+2026-04-28 12:48:42,990 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_fiber_upselling/webcomponents/ir.model.access.csv 
+2026-04-28 12:48:42,994 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_fiber_upselling/webcomponents/webcomponent.xml 
+2026-04-28 12:48:43,004 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_fiber_upselling: loading demo 
+2026-04-28 12:48:43,010 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Module sorgenia_fiber_upselling loaded in 0.46s, 382 queries 
+2026-04-28 12:48:43,011 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: Loading module sorgenia_helpdesk (156/239) 
+2026-04-28 12:48:43,054 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.supply_state: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:43,055 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.pod_use: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:43,055 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.phase_tension: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:43,055 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.tariff_code: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:43,068 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:43,163 18837 WARNING odoo_19347ae3bbe5 odoo.models: The model interaction.channel has no _description 
+2026-04-28 12:48:43,214 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.supply_state: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:43,214 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.pod_use: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:43,214 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.phase_tension: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:43,215 18837 WARNING odoo_19347ae3bbe5 odoo.fields: res.partner.pod.tariff_code: selection attribute will be ignored as the field is related 
+2026-04-28 12:48:43,229 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field temporary.client.user_sequence: unknown parameter 'tracking', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:43,229 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field result.type.name: unknown parameter 'unique', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:43,229 18837 WARNING odoo_19347ae3bbe5 odoo.fields: Field result.type.technical_name: unknown parameter 'unique', if this is an actual parameter you may want to override the method _valid_field_parameter on the relevant model in order to allow it 
+2026-04-28 12:48:43,293 18837 INFO odoo_19347ae3bbe5 odoo.modules.registry: module sorgenia_helpdesk: creating or updating database tables 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (bottom_image_mail_id, bottom_image_mail) of res.company() have the same label: Bottom Image Mail. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (channel_result_selector, code_result_configurator) of symple.triplet.phase() have the same label: Phase Result Table. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (triplet_result_selector, code_result_configurator) of symple.triplet.phase() have the same label: Phase Result Table. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (automatic_email_template_ids, automatic_template_id) of symple.triplet.phase() have the same label: Automatic Email Template. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (triplet_subtype_id, triplet_type_subtype_ids) of symple.triplet.phase() have the same label: Subtype. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (channel_id, channel_origin) of helpdesk.ticket() have the same label: Channel. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (ml_refund_amount, refund_amount) of helpdesk.ticket() have the same label: Indemnity Amount. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (complaint_reception_date, complaint_start_date) of helpdesk.ticket() have the same label: Complaint Start Date. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (pod_code, pod_ids) of helpdesk.ticket() have the same label: POD. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (pdr_code, pdr_ids) of helpdesk.ticket() have the same label: PDR. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (sla_status_deadline_ids, sla_status_ids) of helpdesk.ticket() have the same label: SLA Status. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (resultative_refund_date, refund_payment_date) of helpdesk.ticket() have the same label: Refund Payment Date. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (resultative_refund_amount, billing_refund_amount) of helpdesk.ticket() have the same label: Refund Amount. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (resolutive_billing_correction, is_billing_correction) of helpdesk.ticket() have the same label: Is Billing Correction. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (dl_request_ids, resultative_dl_request_ids) of helpdesk.ticket() have the same label: Dl Request. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (voltura_outgoing_client_code, customer_code) of helpdesk.ticket() have the same label: Univocal Client Code. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (voltura_outgoing_client_name, ma26_name) of helpdesk.ticket() have the same label: Name. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_type, type) of res.partner() have the same label: Address Type. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (company_group, company_type) of res.partner() have the same label: Company Type. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (job_position_id, title) of res.partner() have the same label: Title. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_province_name, state_code) of res.partner() have the same label: State Code. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_location_name, name) of res.partner() have the same label: Name. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_ids, child_ids) of res.partner() have the same label: Contact. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_payment_ids, client_payment_ids) of res.partner() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_payment_ids, client_payment_ids) of res.partner() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (pdr_ids, pod_ids) of res.partner() have the same label: Supply Locations. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (channel, channel_id) of symple.interaction() have the same label: Channel. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (ticket_ids, child_ticket_ids) of symple.interaction() have the same label: Tickets. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (triplet_type_subtype_ids, triplet_subtype_id) of create.case.mixin() have the same label: Subtype. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (triplet_type_subtype_ids, triplet_subtype_id) of create.case() have the same label: Subtype. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (parent_case_id, parent_case_ids) of create.case() have the same label: Parent Case. 
+2026-04-28 12:48:43,508 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (triplet_type_subtype_ids, triplet_subtype_id) of create.child.case() have the same label: Subtype. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (triplet_subtype_id, triplet_type_subtype_ids) of connect.case() have the same label: Subtype. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_type, type) of res.users() have the same label: Address Type. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (company_group, company_type) of res.users() have the same label: Company Type. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (job_position_id, title) of res.users() have the same label: Title. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_province_name, state_code) of res.users() have the same label: State Code. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (birth_location_name, name) of res.users() have the same label: Name. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_ids, child_ids) of res.users() have the same label: Contact. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (contact_payment_ids, client_payment_ids) of res.users() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (address_payment_ids, client_payment_ids) of res.users() have the same label: Invoice Payment Methods. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (pdr_ids, pod_ids) of res.users() have the same label: Supply Locations. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (supply_state, state) of res.partner.pod() have the same label: Supply Status. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (client_id, client_ids) of res.partner.pod() have the same label: Client. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (temp_client_id, client_ids) of res.partner.pod() have the same label: Client. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_street, technical_address) of res.partner.pod() have the same label: Address. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_street2, technical_address) of res.partner.pod() have the same label: Address. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_city, technical_city_id) of res.partner.pod() have the same label: City. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (supply_state, state) of res.partner.pdr() have the same label: Supply Status. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (client_id, client_ids) of res.partner.pdr() have the same label: Client. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (temp_client_id, client_ids) of res.partner.pdr() have the same label: Client. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_street, technical_address) of res.partner.pdr() have the same label: Address. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_street2, technical_address) of res.partner.pdr() have the same label: Address. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_city, technical_city_id) of res.partner.pdr() have the same label: City. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (pdr_code, pod_code) of res.partner.meter() have the same label: Code. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (parent_pod_id, pod_id) of res.partner.meter() have the same label: POD. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_street2, technical_street) of res.partner.meter() have the same label: Address. 
+2026-04-28 12:48:43,509 18837 WARNING odoo_19347ae3bbe5 odoo.addons.base.models.ir_model: Two fields (technical_city_id, technical_city) of res.partner.meter() have the same label: City. 
+2026-04-28 12:48:43,616 18837 INFO odoo_19347ae3bbe5 odoo.models: Storing computed values of helpdesk.team.group_member_ids 
+2026-04-28 12:48:43,617 18837 ERROR odoo_19347ae3bbe5 odoo.schema: Table 'res_company': unable to set NOT NULL on column 'anonymous_client_id' 
+2026-04-28 12:48:43,617 18837 ERROR odoo_19347ae3bbe5 odoo.schema: Table 'res_company': unable to set NOT NULL on column 'anonymous_contact_id' 
+2026-04-28 12:48:43,617 18837 ERROR odoo_19347ae3bbe5 odoo.schema: Table 'res_company': unable to set NOT NULL on column 'sii_contact_id' 
+2026-04-28 12:48:43,617 18837 ERROR odoo_19347ae3bbe5 odoo.schema: Table 'res_company': unable to set NOT NULL on column 'crm_contact_id' 
+2026-04-28 12:48:43,618 18837 ERROR odoo_19347ae3bbe5 odoo.schema: Table 'res_company': unable to set NOT NULL on column 'system_helpdesk_team' 
+2026-04-28 12:48:43,621 18837 ERROR odoo_19347ae3bbe5 odoo.schema: Table 'helpdesk_ticket': unable to set NOT NULL on column 'ticket_type_id' 
+2026-04-28 12:48:43,622 18837 ERROR odoo_19347ae3bbe5 odoo.schema: Table 'helpdesk_ticket': unable to set NOT NULL on column 'triplet_type_id' 
+2026-04-28 12:48:43,622 18837 ERROR odoo_19347ae3bbe5 odoo.schema: Table 'helpdesk_ticket': unable to set NOT NULL on column 'triplet_subtype_id' 
+2026-04-28 12:48:43,624 18837 INFO odoo_19347ae3bbe5 odoo.models: Storing computed values of helpdesk.ticket.origin 
+2026-04-28 12:48:43,624 18837 INFO odoo_19347ae3bbe5 odoo.models: Storing computed values of helpdesk.ticket.channel_id 
+2026-04-28 12:48:43,624 18837 INFO odoo_19347ae3bbe5 odoo.models: Storing computed values of helpdesk.ticket.active_phase_note 
+2026-04-28 12:48:43,624 18837 INFO odoo_19347ae3bbe5 odoo.models: Storing computed values of helpdesk.ticket.customer_id 
+2026-04-28 12:48:43,624 18837 INFO odoo_19347ae3bbe5 odoo.models: Storing computed values of helpdesk.ticket.is_close 
+2026-04-28 12:48:43,624 18837 INFO odoo_19347ae3bbe5 odoo.models: Storing computed values of helpdesk.ticket.is_canceled 
+2026-04-28 12:48:43,624 18837 INFO odoo_19347ae3bbe5 odoo.models: Storing computed values of helpdesk.ticket.is_ko 
+2026-04-28 12:48:43,624 18837 INFO odoo_19347ae3bbe5 odoo.models: Storing computed values of helpdesk.ticket.latest_correction_invoice_issuing_date 
+2026-04-28 12:48:43,988 18837 WARNING odoo_19347ae3bbe5 odoo.modules.registry: service.point: inconsistent 'compute_sudo' for computed fields: service, service_model_id 
+2026-04-28 12:48:44,034 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/security/res_groups.xml 
+2026-04-28 12:48:44,324 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/security/ir.model.access.csv 
+2026-04-28 12:48:44,373 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/fetchmail_server.xml 
+2026-04-28 12:48:44,377 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/ir_mail_server.xml 
+2026-04-28 12:48:44,380 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/data/mail_template_encapsule.xml 
+2026-04-28 12:48:44,382 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/data/message_notification_email.xml 
+2026-04-28 12:48:44,385 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/data/interaction_channel_data.xml 
+2026-04-28 12:48:44,397 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/data/ir_config_parameter.xml 
+2026-04-28 12:48:44,401 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/wizards/mail_compose_message_view.xml 
+2026-04-28 12:48:44,406 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/data/mail_template.xml 
+2026-04-28 12:48:44,467 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/data/ir_cron.xml 
+2026-04-28 12:48:44,483 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/data/sla_records.xml 
+2026-04-28 12:48:44,486 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/data/helpdesk_team.xml 
+2026-04-28 12:48:44,526 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/data/helpdesk_ticket_rule.xml 
+2026-04-28 12:48:44,528 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/data/symple_ai_tag_data.xml 
+2026-04-28 12:48:44,547 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/res_company.xml 
+2026-04-28 12:48:44,551 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/symple_workflow_views.xml 
+2026-04-28 12:48:44,557 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/result_channel_selector.xml 
+2026-04-28 12:48:44,559 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/result_triplet_selector.xml 
+2026-04-28 12:48:44,562 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/result_code_configurator.xml 
+2026-04-28 12:48:44,564 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/symple_triplet_views.xml 
+2026-04-28 12:48:44,604 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/helpdesk_technical_check_views.xml 
+2026-04-28 12:48:44,610 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/symple_triplet_unsuccess_reason_views.xml 
+2026-04-28 12:48:44,613 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/helpdesk_ticket_views.xml 
+2026-04-28 12:48:44,646 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/helpdesk_ticket_rule_views.xml 
+2026-04-28 12:48:44,652 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/helpdesk_stage_views.xml 
+2026-04-28 12:48:44,661 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/helpdesk_sla_views.xml 
+2026-04-28 12:48:44,664 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/res_partner.xml 
+2026-04-28 12:48:44,679 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/helpdesk_team.xml 
+2026-04-28 12:48:44,683 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/correction_invoice.xml 
+2026-04-28 12:48:44,689 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/dl_request.xml 
+2026-04-28 12:48:44,694 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/report/helpdesk_export_mails.xml 
+2026-04-28 12:48:44,698 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/result_type.xml 
+2026-04-28 12:48:44,703 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/menuitems.xml 
+2026-04-28 12:48:44,747 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/wizards/cancel_case.xml 
+2026-04-28 12:48:44,750 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/wizards/create_case.xml 
+2026-04-28 12:48:44,754 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/wizards/set_phase.xml 
+2026-04-28 12:48:44,758 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/wizards/create_child_case.xml 
+2026-04-28 12:48:44,762 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/data/ir_sequence.xml 
+2026-04-28 12:48:44,765 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/data/result_type.xml 
+2026-04-28 12:48:44,799 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/res_config_settings.xml 
+2026-04-28 12:48:44,825 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/symple_interaction.xml 
+2026-04-28 12:48:44,835 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/views/symple_interaction_channel_views.xml 
+2026-04-28 12:48:44,841 18837 INFO odoo_19347ae3bbe5 odoo.modules.loading: loading sorgenia_helpdesk/data/res_groups.xml 
+2026-04-28 12:48:44,904 18837 ERROR odoo_19347ae3bbe5 odoo.tools.convert.init: Could not eval([             (4, ref('base.group_user')),             (4, ref('extended_product_pricelist_change_enablement')),             (4, ref('helpdesk.group_helpdesk_manager')),             (4, ref('symple_pb_connector.group_user')),             (4, ref('symple_roles.group_discuss_admin')),             (4, ref('sorgenia_ml_warranty.sorgenia_warranty_group_user')),             (4, ref('sorgenia_rai_fee.group_manager')),             (4, ref('sorgenia_ml_anagrafica_distributori_e_trasportatori.group_user')),             (4, ref('documents.group_documents_user')),             (4, ref('symple_roles.group_calendar_admin')),             (4, ref('helpdesk.group_use_sla')),             (4, ref('symple_contacts.group_res_partner_user')),             (4, ref('symple_contacts.group_override_view_in_res_partner_tree')),             (4, ref('sorgenia_helpdesk.group_show_helpdesk_contacts')),             ]) for group_ids in {} 
+2026-04-28 12:48:44,914 18837 WARNING odoo_19347ae3bbe5 odoo.modules.loading: Transient module states were reset 
+2026-04-28 12:48:44,914 18837 ERROR odoo_19347ae3bbe5 odoo.modules.registry: Failed to load registry 
+Traceback (most recent call last):
+  File "/opt/odoo/base/odoo/tools/cache.py", line 85, in lookup
+    r = d[key]
+  File "/opt/odoo/base/odoo/tools/func.py", line 71, in wrapper
+    return func(self, *args, **kwargs)
+  File "/opt/odoo/base/odoo/tools/lru.py", line 34, in __getitem__
+    a = self.d[obj]
+KeyError: ('ir.model.data', <function IrModelData._xmlid_lookup at 0x7fe0d9cf9af0>, 'sorgenia_ml_warranty.sorgenia_warranty_group_user')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/odoo/base/odoo/tools/safe_eval.py", line 386, in safe_eval
+    return unsafe_eval(c, globals_dict, locals_dict)
+  File "", line 1, in <module>
+  File "/opt/odoo/base/odoo/tools/convert.py", line 666, in id_get
+    res = self.model_id_get(id_str, raise_if_not_found)
+  File "/opt/odoo/base/odoo/tools/convert.py", line 672, in model_id_get
+    return self.env['ir.model.data']._xmlid_to_res_model_res_id(id_str, raise_if_not_found=raise_if_not_found)
+  File "/opt/odoo/base/odoo/addons/base/models/ir_model.py", line 1975, in _xmlid_to_res_model_res_id
+    return self._xmlid_lookup(xmlid)[1:3]
+  File "<decorator-gen-37>", line 2, in _xmlid_lookup
+  File "/opt/odoo/base/odoo/tools/cache.py", line 90, in lookup
+    value = d[key] = self.method(*args, **kwargs)
+  File "/opt/odoo/base/odoo/addons/base/models/ir_model.py", line 1968, in _xmlid_lookup
+    raise ValueError('External ID not found in the system: %s' % xmlid)
+ValueError: External ID not found in the system: sorgenia_ml_warranty.sorgenia_warranty_group_user
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/odoo/base/odoo/tools/convert.py", line 683, in _tag_root
+    f(rec)
+  File "/opt/odoo/base/odoo/tools/convert.py", line 572, in _tag_record
+    f_val = _eval_xml(self, field, env)
+  File "/opt/odoo/base/odoo/tools/convert.py", line 117, in _eval_xml
+    return safe_eval(a_eval, idref2)
+  File "/opt/odoo/base/odoo/tools/convert.py", line 39, in <lambda>
+    safe_eval = lambda expr, ctx={}: s_eval(expr, ctx, nocopy=True)
+  File "/opt/odoo/base/odoo/tools/safe_eval.py", line 402, in safe_eval
+    raise ValueError('%s: "%s" while evaluating\n%r' % (ustr(type(e)), ustr(e), expr))
+ValueError: <class 'ValueError'>: "External ID not found in the system: sorgenia_ml_warranty.sorgenia_warranty_group_user" while evaluating
+"[             (4, ref('base.group_user')),             (4, ref('extended_product_pricelist_change_enablement')),             (4, ref('helpdesk.group_helpdesk_manager')),             (4, ref('symple_pb_connector.group_user')),             (4, ref('symple_roles.group_discuss_admin')),             (4, ref('sorgenia_ml_warranty.sorgenia_warranty_group_user')),             (4, ref('sorgenia_rai_fee.group_manager')),             (4, ref('sorgenia_ml_anagrafica_distributori_e_trasportatori.group_user')),             (4, ref('documents.group_documents_user')),             (4, ref('symple_roles.group_calendar_admin')),             (4, ref('helpdesk.group_use_sla')),             (4, ref('symple_contacts.group_res_partner_user')),             (4, ref('symple_contacts.group_override_view_in_res_partner_tree')),             (4, ref('sorgenia_helpdesk.group_show_helpdesk_contacts')),             ]"
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/odoo/base/odoo/modules/registry.py", line 88, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/opt/odoo/base/odoo/modules/loading.py", line 474, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/opt/odoo/base/odoo/modules/loading.py", line 363, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/opt/odoo/base/odoo/modules/loading.py", line 222, in load_module_graph
+    load_data(cr, idref, mode, kind='data', package=package)
+  File "/opt/odoo/base/odoo/modules/loading.py", line 69, in load_data
+    tools.convert_file(cr, package.name, filename, idref, mode, noupdate, kind)
+  File "/opt/odoo/base/odoo/tools/convert.py", line 748, in convert_file
+    convert_xml_import(cr, module, fp, idref, mode, noupdate)
+  File "/opt/odoo/base/odoo/tools/convert.py", line 814, in convert_xml_import
+    obj.parse(doc.getroot())
+  File "/opt/odoo/base/odoo/tools/convert.py", line 734, in parse
+    self._tag_root(de)
+  File "/opt/odoo/base/odoo/tools/convert.py", line 696, in _tag_root
+    raise ParseError('while parsing %s:%s, somewhere inside\n%s' % (
+odoo.tools.convert.ParseError: while parsing /opt/odoo/addons/sorgenia_helpdesk/data/res_groups.xml:46, somewhere inside
+<record id="security_role_bof" model="security.role">
+        <field name="active">True</field>
+        <field name="group_ids" eval="[             (4, ref('base.group_user')),             (4, ref('extended_product_pricelist_change_enablement')),             (4, ref('helpdesk.group_helpdesk_manager')),             (4, ref('symple_pb_connector.group_user')),             (4, ref('symple_roles.group_discuss_admin')),             (4, ref('sorgenia_ml_warranty.sorgenia_warranty_group_user')),             (4, ref('sorgenia_rai_fee.group_manager')),             (4, ref('sorgenia_ml_anagrafica_distributori_e_trasportatori.group_user')),             (4, ref('documents.group_documents_user')),             (4, ref('symple_roles.group_calendar_admin')),             (4, ref('helpdesk.group_use_sla')),             (4, ref('symple_contacts.group_res_partner_user')),             (4, ref('symple_contacts.group_override_view_in_res_partner_tree')),             (4, ref('sorgenia_helpdesk.group_show_helpdesk_contacts')),             ]"/>
+        <field name="name">BOF</field>
+    </record>
+2026-04-28 12:48:44,915 18837 CRITICAL odoo_19347ae3bbe5 odoo.service.server: Failed to initialize database `odoo_19347ae3bbe5`. 
+Traceback (most recent call last):
+  File "/opt/odoo/base/odoo/tools/cache.py", line 85, in lookup
+    r = d[key]
+  File "/opt/odoo/base/odoo/tools/func.py", line 71, in wrapper
+    return func(self, *args, **kwargs)
+  File "/opt/odoo/base/odoo/tools/lru.py", line 34, in __getitem__
+    a = self.d[obj]
+KeyError: ('ir.model.data', <function IrModelData._xmlid_lookup at 0x7fe0d9cf9af0>, 'sorgenia_ml_warranty.sorgenia_warranty_group_user')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/odoo/base/odoo/tools/safe_eval.py", line 386, in safe_eval
+    return unsafe_eval(c, globals_dict, locals_dict)
+  File "", line 1, in <module>
+  File "/opt/odoo/base/odoo/tools/convert.py", line 666, in id_get
+    res = self.model_id_get(id_str, raise_if_not_found)
+  File "/opt/odoo/base/odoo/tools/convert.py", line 672, in model_id_get
+    return self.env['ir.model.data']._xmlid_to_res_model_res_id(id_str, raise_if_not_found=raise_if_not_found)
+  File "/opt/odoo/base/odoo/addons/base/models/ir_model.py", line 1975, in _xmlid_to_res_model_res_id
+    return self._xmlid_lookup(xmlid)[1:3]
+  File "<decorator-gen-37>", line 2, in _xmlid_lookup
+  File "/opt/odoo/base/odoo/tools/cache.py", line 90, in lookup
+    value = d[key] = self.method(*args, **kwargs)
+  File "/opt/odoo/base/odoo/addons/base/models/ir_model.py", line 1968, in _xmlid_lookup
+    raise ValueError('External ID not found in the system: %s' % xmlid)
+ValueError: External ID not found in the system: sorgenia_ml_warranty.sorgenia_warranty_group_user
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/odoo/base/odoo/tools/convert.py", line 683, in _tag_root
+    f(rec)
+  File "/opt/odoo/base/odoo/tools/convert.py", line 572, in _tag_record
+    f_val = _eval_xml(self, field, env)
+  File "/opt/odoo/base/odoo/tools/convert.py", line 117, in _eval_xml
+    return safe_eval(a_eval, idref2)
+  File "/opt/odoo/base/odoo/tools/convert.py", line 39, in <lambda>
+    safe_eval = lambda expr, ctx={}: s_eval(expr, ctx, nocopy=True)
+  File "/opt/odoo/base/odoo/tools/safe_eval.py", line 402, in safe_eval
+    raise ValueError('%s: "%s" while evaluating\n%r' % (ustr(type(e)), ustr(e), expr))
+ValueError: <class 'ValueError'>: "External ID not found in the system: sorgenia_ml_warranty.sorgenia_warranty_group_user" while evaluating
+"[             (4, ref('base.group_user')),             (4, ref('extended_product_pricelist_change_enablement')),             (4, ref('helpdesk.group_helpdesk_manager')),             (4, ref('symple_pb_connector.group_user')),             (4, ref('symple_roles.group_discuss_admin')),             (4, ref('sorgenia_ml_warranty.sorgenia_warranty_group_user')),             (4, ref('sorgenia_rai_fee.group_manager')),             (4, ref('sorgenia_ml_anagrafica_distributori_e_trasportatori.group_user')),             (4, ref('documents.group_documents_user')),             (4, ref('symple_roles.group_calendar_admin')),             (4, ref('helpdesk.group_use_sla')),             (4, ref('symple_contacts.group_res_partner_user')),             (4, ref('symple_contacts.group_override_view_in_res_partner_tree')),             (4, ref('sorgenia_helpdesk.group_show_helpdesk_contacts')),             ]"
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/odoo/base/odoo/service/server.py", line 1260, in preload_registries
+    registry = Registry.new(dbname, update_module=update_module)
+  File "/opt/odoo/base/odoo/modules/registry.py", line 88, in new
+    odoo.modules.load_modules(registry, force_demo, status, update_module)
+  File "/opt/odoo/base/odoo/modules/loading.py", line 474, in load_modules
+    processed_modules += load_marked_modules(cr, graph,
+  File "/opt/odoo/base/odoo/modules/loading.py", line 363, in load_marked_modules
+    loaded, processed = load_module_graph(
+  File "/opt/odoo/base/odoo/modules/loading.py", line 222, in load_module_graph
+    load_data(cr, idref, mode, kind='data', package=package)
+  File "/opt/odoo/base/odoo/modules/loading.py", line 69, in load_data
+    tools.convert_file(cr, package.name, filename, idref, mode, noupdate, kind)
+  File "/opt/odoo/base/odoo/tools/convert.py", line 748, in convert_file
+    convert_xml_import(cr, module, fp, idref, mode, noupdate)
+  File "/opt/odoo/base/odoo/tools/convert.py", line 814, in convert_xml_import
+    obj.parse(doc.getroot())
+  File "/opt/odoo/base/odoo/tools/convert.py", line 734, in parse
+    self._tag_root(de)
+  File "/opt/odoo/base/odoo/tools/convert.py", line 696, in _tag_root
+    raise ParseError('while parsing %s:%s, somewhere inside\n%s' % (
+odoo.tools.convert.ParseError: while parsing /opt/odoo/addons/sorgenia_helpdesk/data/res_groups.xml:46, somewhere inside
+<record id="security_role_bof" model="security.role">
+        <field name="active">True</field>
+        <field name="group_ids" eval="[             (4, ref('base.group_user')),             (4, ref('extended_product_pricelist_change_enablement')),             (4, ref('helpdesk.group_helpdesk_manager')),             (4, ref('symple_pb_connector.group_user')),             (4, ref('symple_roles.group_discuss_admin')),             (4, ref('sorgenia_ml_warranty.sorgenia_warranty_group_user')),             (4, ref('sorgenia_rai_fee.group_manager')),             (4, ref('sorgenia_ml_anagrafica_distributori_e_trasportatori.group_user')),             (4, ref('documents.group_documents_user')),             (4, ref('symple_roles.group_calendar_admin')),             (4, ref('helpdesk.group_use_sla')),             (4, ref('symple_contacts.group_res_partner_user')),             (4, ref('symple_contacts.group_override_view_in_res_partner_tree')),             (4, ref('sorgenia_helpdesk.group_show_helpdesk_contacts')),             ]"/>
+        <field name="name">BOF</field>
+    </record>
+2026-04-28 12:48:44,915 18837 INFO odoo_19347ae3bbe5 odoo.service.server: Initiating shutdown 
+2026-04-28 12:48:44,916 18837 INFO odoo_19347ae3bbe5 odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-04-28 12:48:45,268 18837 INFO odoo_19347ae3bbe5 odoo.sql_db: ConnectionPool(used=0/count=0/max=64): Closed 2 connections  

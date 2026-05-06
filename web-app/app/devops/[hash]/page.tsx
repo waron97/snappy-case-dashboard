@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge, Button, Container, Group, Space, Tabs, Text, Title } from '@mantine/core';
 import LogViewer from '@/components/LogViewer';
-import { fetchPrs, getRunningHash, PreCommitStatus, PrRecord, PrStatus, readLog, readPreCommitLog, triggerNotify, triggerRecheck, triggerRecheckByPrId } from '../actions';
+import { fetchPrs, getRunningHashes, PreCommitStatus, PrRecord, PrStatus, readLog, readPreCommitLog, triggerNotify, triggerRecheck, triggerRecheckByPrId } from '../actions';
 
 const STATUS_COLOR: Record<PrStatus, string> = {
     passed: 'green',
@@ -50,14 +50,14 @@ export default function PrDetailPage() {
         refetchInterval: 10_000,
     });
 
-    const { data: runningHash } = useQuery<string | null>({
+    const { data: runningHashes = [] } = useQuery<string[]>({
         queryKey: ['devops', 'running'],
-        queryFn: getRunningHash,
+        queryFn: getRunningHashes,
         refetchInterval: 1_000,
     });
 
     const pr = prs.find((p) => p.commitId === hash) ?? null;
-    const isRunning = runningHash === hash;
+    const isRunning = runningHashes.includes(hash);
     const status: PrStatus = isRunning ? 'running' : (pr?.status ?? 'pending');
     const isActive = isRunning || status === 'queued';
 

@@ -2,6 +2,7 @@ import base64
 import logging
 import os
 import re
+import socket
 import subprocess
 import tempfile
 import threading
@@ -29,7 +30,9 @@ ODOO_CONF = "/opt/odoo/odoo.conf"
 
 POLL_INTERVAL = 60  # 1 minute
 QUEUE_KEY = "test:queue"
-CURRENT_KEY = "test:current"
+WORKERS_KEY = "test:workers"      # Redis hash: {worker_id -> commit_hash}
+POLLER_LOCK_KEY = "test:poller_lock"
+WORKER_ID = socket.gethostname()  # unique per container in Docker
 EXCLUDE = "symple_address_city_and_province_it,symple_contacts_default_data,sorgenia_imperex_metadata,sorgenia_ml_install_all"
 
 DB_HOST = "postgres"
@@ -123,6 +126,9 @@ def vacuum(active_hashes):
 
 def do_poll():
     with _poll_lock:
+        lock_acquired = rdb.set(POLLER_LOCK_KEY, WORKER_ID, nx=True, ex=POLL_INTERVAL)
+        if not lock_acquired:
+            return None, []
         prs = fetch_open_prs()
         log.info(f"Found {len(prs)} open PRs")
         active = {pr.get("lastMergeSourceCommit", {}).get("commitId") for pr in prs} - {
@@ -136,6 +142,12 @@ def do_poll():
                 ttl = 14 * 24 * 3600
                 rdb.setex(f"test:pr_id:{commit}", ttl, str(pr_id))
                 rdb.setex(f"test:pr_desc:{commit}", ttl, (pr.get("description") or ""))
+        queued = [c.decode() if isinstance(c, bytes) else c for c in rdb.lrange(QUEUE_KEY, 0, -1)]
+        for commit in queued:
+            if commit not in active:
+                count = rdb.lrem(QUEUE_KEY, 0, commit)
+                if count:
+                    log.info(f"Removed stale commit {commit[:8]} from queue")
         enqueued = []
         for commit in active:
             before = rdb.llen(QUEUE_KEY)
@@ -165,11 +177,12 @@ def api_discover():
 
 @app.route("/status", methods=["GET"])
 def api_status():
-    current = rdb.get(CURRENT_KEY)
+    workers_raw = rdb.hgetall(WORKERS_KEY)
+    workers = {k.decode(): v.decode() for k, v in workers_raw.items()}
     queue = rdb.lrange(QUEUE_KEY, 0, -1)
     return jsonify(
         {
-            "current": current.decode() if current else None,
+            "workers": workers,
             "queue": [h.decode() if isinstance(h, bytes) else h for h in queue],
         }
     )
@@ -181,13 +194,13 @@ def api_prs():
         prs = fetch_open_prs()
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    current = rdb.get(CURRENT_KEY)
-    current = current.decode() if current else None
+    workers_raw = rdb.hgetall(WORKERS_KEY)
+    running_commits = {v.decode() for v in workers_raw.values()}
     result = []
     for pr in prs:
         commit = pr.get("lastMergeSourceCommit", {}).get("commitId")
         files_exist = bool(commit and result_exists(commit))
-        if commit == current:
+        if commit in running_commits:
             status = "running"
         elif files_exist:
             status = parse_test_result(commit)
@@ -490,7 +503,7 @@ def run_test(commit_hash):
     install_log = RESULTS_DIR / f"{commit_hash}.install.log"
     test_log = RESULTS_DIR / f"{commit_hash}.test.log"
 
-    rdb.set(CURRENT_KEY, commit_hash)
+    rdb.hset(WORKERS_KEY, WORKER_ID, commit_hash)
     log.info(f"Starting test run for {commit_hash}")
 
     # Checkout commit and sync to addons dir (preserve baked-in submodule dirs)
@@ -657,7 +670,7 @@ def run_test(commit_hash):
             ["dropdb", "-h", DB_HOST, "-U", DB_USER, "--if-exists", db_name],
             env={**os.environ, **pg_env()},
         )
-        rdb.delete(CURRENT_KEY)
+        rdb.hdel(WORKERS_KEY, WORKER_ID)
 
 
 def worker():

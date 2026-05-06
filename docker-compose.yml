@@ -64,9 +64,9 @@ services:
       - RESULTS_DIR=/results
     volumes:
       - test_results:/results
-      - addons_repo:/opt/repo
+    deploy:
+      replicas: 2
 
 volumes:
   postgres_test_data:
-  addons_repo:
   test_results:

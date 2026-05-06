@@ -61,9 +61,8 @@ export async function triggerRecheckByPrId(prId: number): Promise<void> {
     }
 }
 
-export async function getRunningHash(): Promise<string | null> {
-    const val = await getRedis().get('test:current');
-    return val ?? null;
+export async function getRunningHashes(): Promise<string[]> {
+    return getRedis().hvals('test:workers');
 }
 
 export async function readLog(hash: string, type: 'install' | 'test'): Promise<string | null> {
