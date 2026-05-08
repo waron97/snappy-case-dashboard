@@ -13,10 +13,18 @@ RUN chmod 600 /home/odoo/.ssh/id_rsa \
     && ssh-keyscan github.com >> /home/odoo/.ssh/known_hosts 2>/dev/null
 
 COPY ./startup.sh /opt/startup.sh
+COPY ./config.py /opt/config.py
+COPY ./ado.py /opt/ado.py
+COPY ./runner.py /opt/runner.py
+COPY ./notifier.py /opt/notifier.py
+COPY ./poller.py /opt/poller.py
+COPY ./api.py /opt/api.py
 COPY ./orchestrator.py /opt/orchestrator.py
 RUN mkdir -p /opt/repo /results \
     && chmod +x /opt/startup.sh \
-    && chown odoo:odoo /opt/startup.sh /opt/orchestrator.py /opt/repo /results \
+    && chown odoo:odoo /opt/startup.sh /opt/config.py /opt/ado.py /opt/runner.py \
+                       /opt/notifier.py /opt/poller.py /opt/api.py /opt/orchestrator.py \
+                       /opt/repo /results \
     && chown -R odoo:odoo /opt/odoo/addons
 
 USER odoo
