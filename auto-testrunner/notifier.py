@@ -9,7 +9,7 @@ from ado import (
     upload_pr_attachment,
 )
 from config import RESULTS_DIR, STATE_TTL, rdb
-from runner import all_phases_done, parse_pre_commit_result, parse_test_result
+from runner import parse_pre_commit_result, parse_test_result
 
 log = logging.getLogger(__name__)
 
@@ -75,10 +75,6 @@ def notify_pr(commit_hash, force=False):
     pr_id = get_pr_id_for_commit(commit_hash)
     if not pr_id:
         log.warning(f"[{h8}] No PR ID cached, skipping notification")
-        return
-
-    if not force and not all_phases_done(commit_hash):
-        log.info(f"[{h8}] Phases not all done yet, skipping notification")
         return
 
     if not force and comment_exists_for_commit(pr_id, commit_hash):

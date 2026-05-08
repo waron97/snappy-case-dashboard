@@ -79,9 +79,6 @@ def api_recheck(commit_hash):
         f = RESULTS_DIR / f"{commit_hash}.{suffix}"
         if f.exists():
             f.unlink()
-    # Clear phase keys so notify guard resets
-    rdb.delete(f"test:phase:{commit_hash}:tests")
-    rdb.delete(f"test:phase:{commit_hash}:precommit")
     rdb.delete(f"test:notified:{commit_hash}")
 
     db_name = f"odoo_{commit_hash[:12]}"
@@ -106,8 +103,6 @@ def api_recheck_pr(pr_id):
         f = RESULTS_DIR / f"{commit_hash}.{suffix}"
         if f.exists():
             f.unlink()
-    rdb.delete(f"test:phase:{commit_hash}:tests")
-    rdb.delete(f"test:phase:{commit_hash}:precommit")
     rdb.delete(f"test:notified:{commit_hash}")
 
     db_name = f"odoo_{commit_hash[:12]}"

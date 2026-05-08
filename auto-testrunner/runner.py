@@ -2,8 +2,6 @@ import logging
 import os
 import re
 import subprocess
-import threading
-from pathlib import Path
 
 from config import (
     ADDONS_DIR,
@@ -15,7 +13,6 @@ from config import (
     ODOO_CONF,
     REPO_DIR,
     RESULTS_DIR,
-    STATE_TTL,
     WORKER_ID,
     WORKERS_KEY,
     rdb,
@@ -69,13 +66,6 @@ def parse_pre_commit_result(commit_hash):
     return None
 
 
-def all_phases_done(commit_hash):
-    return (
-        rdb.get(f"test:phase:{commit_hash}:tests") is not None
-        and rdb.get(f"test:phase:{commit_hash}:precommit") is not None
-    )
-
-
 def vacuum(active_hashes):
     for f in RESULTS_DIR.glob("*.log"):
         h = f.name.split(".")[0]
@@ -104,31 +94,19 @@ def run_cmd(cmd, env_extra=None, log_file=None, cwd=None):
 
 
 def run_pre_commit(commit_hash):
-    """Run pre-commit checks and mark the Redis phase key. Safe to call as a thread target."""
     precommit_log = RESULTS_DIR / f"{commit_hash}.precommit.log"
-    try:
-        rc = run_cmd(
-            ["python3", "-m", "pre_commit", "run", "--all-files"],
-            log_file=precommit_log,
-            cwd=str(REPO_DIR),
-        )
-        status = "OK" if rc == 0 else "KO"
-        with open(precommit_log, "ab") as f:
-            f.write(f"\nPRE_COMMIT_STATUS: {status}\n".encode())
-        rdb.setex(f"test:phase:{commit_hash}:precommit", STATE_TTL, "done")
-        log.info(f"[{commit_hash[:8]}] Pre-commit: {status}")
-    except Exception as e:
-        log.error(f"[{commit_hash[:8]}] Pre-commit error: {e}")
-        try:
-            with open(precommit_log, "ab") as f:
-                f.write(f"\nPRE_COMMIT_ERROR: {e}\nPRE_COMMIT_STATUS: KO\n".encode())
-        except OSError:
-            pass
-        rdb.setex(f"test:phase:{commit_hash}:precommit", STATE_TTL, "error")
+    rc = run_cmd(
+        ["python3", "-m", "pre_commit", "run", "--all-files"],
+        log_file=precommit_log,
+        cwd=str(REPO_DIR),
+    )
+    status = "OK" if rc == 0 else "KO"
+    with open(precommit_log, "ab") as f:
+        f.write(f"\nPRE_COMMIT_STATUS: {status}\n".encode())
+    return status.lower()
 
 
 def _run_odoo_tests(commit_hash):
-    """Run DB setup + Odoo tests and mark the Redis phase key. Safe to call as a thread target."""
     db_name = f"odoo_{commit_hash[:12]}"
     install_log = RESULTS_DIR / f"{commit_hash}.install.log"
     test_log = RESULTS_DIR / f"{commit_hash}.test.log"
@@ -202,7 +180,6 @@ def _run_odoo_tests(commit_hash):
             )
 
         log.info(f"[{commit_hash[:8]}] Test run complete")
-        rdb.setex(f"test:phase:{commit_hash}:tests", STATE_TTL, "done")
 
     except Exception as e:
         log.error(f"[{commit_hash[:8]}] Odoo tests failed: {e}")
@@ -211,7 +188,7 @@ def _run_odoo_tests(commit_hash):
                 f.write(f"\n\nORCHESTRATOR ERROR: {e}\n")
         except OSError:
             pass
-        rdb.setex(f"test:phase:{commit_hash}:tests", STATE_TTL, "error")
+        raise
     finally:
         subprocess.run(
             ["dropdb", "-h", DB_HOST, "-U", DB_USER, "--if-exists", db_name],
@@ -224,7 +201,6 @@ def run_test(commit_hash):
     log.info(f"Starting test run for {commit_hash}")
 
     try:
-        # Serial setup: repo must be checked out before either thread starts
         subprocess.run(["git", "-C", str(REPO_DIR), "fetch", "--all"], check=True)
         subprocess.run(["git", "-C", str(REPO_DIR), "reset", "--hard", "HEAD"], check=True)
         subprocess.run(["git", "-C", str(REPO_DIR), "checkout", "-f", commit_hash], check=True)
@@ -245,34 +221,20 @@ def run_test(commit_hash):
             check=True,
         )
 
-        # Tests and pre-commit run in parallel
-        t_tests = threading.Thread(
-            target=_run_odoo_tests, args=(commit_hash,), name=f"tests-{commit_hash[:8]}"
-        )
-        t_precommit = threading.Thread(
-            target=run_pre_commit, args=(commit_hash,), name=f"precommit-{commit_hash[:8]}"
-        )
-        t_tests.start()
-        t_precommit.start()
-        t_tests.join()
-        t_precommit.join()
+        _run_odoo_tests(commit_hash)
 
-        # Safety: if a thread exited without setting its key, mark as error
-        if rdb.get(f"test:phase:{commit_hash}:tests") is None:
-            rdb.setex(f"test:phase:{commit_hash}:tests", STATE_TTL, "error")
-        if rdb.get(f"test:phase:{commit_hash}:precommit") is None:
-            rdb.setex(f"test:phase:{commit_hash}:precommit", STATE_TTL, "error")
+        log.info(f"[{commit_hash[:8]}] Running pre-commit checks...")
+        try:
+            result = run_pre_commit(commit_hash)
+            log.info(f"[{commit_hash[:8]}] Pre-commit: {result}")
+        except Exception as pre_err:
+            log.error(f"[{commit_hash[:8]}] Pre-commit error: {pre_err}")
+            precommit_log = RESULTS_DIR / f"{commit_hash}.precommit.log"
+            with open(precommit_log, "ab") as f:
+                f.write(f"\nPRE_COMMIT_ERROR: {pre_err}\nPRE_COMMIT_STATUS: KO\n".encode())
 
     except Exception as e:
-        log.error(f"[{commit_hash[:8]}] Setup failed: {e}")
-        test_log = RESULTS_DIR / f"{commit_hash}.test.log"
-        try:
-            with open(test_log, "a") as f:
-                f.write(f"\n\nSETUP ERROR: {e}\n")
-        except OSError:
-            pass
-        rdb.setex(f"test:phase:{commit_hash}:tests", STATE_TTL, "error")
-        rdb.setex(f"test:phase:{commit_hash}:precommit", STATE_TTL, "error")
+        log.error(f"[{commit_hash[:8]}] Run failed: {e}")
         raise
     finally:
         rdb.hdel(WORKERS_KEY, WORKER_ID)
