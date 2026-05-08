@@ -1,3 +1,4 @@
 odoo-15-base
 .env.*
 .env
+__pycache__
