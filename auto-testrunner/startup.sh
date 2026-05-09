@@ -14,10 +14,6 @@ else
     git -C /opt/repo fetch --all
 fi
 
-# Recursively init all submodules; failures in deeply nested ones are non-fatal
-echo "Initialising submodules..."
-git -C /opt/repo submodule update --init --recursive || echo "Warning: some submodules failed to init, continuing"
-
 echo "Installing pre-commit..."
 pip install --quiet pre-commit
 
