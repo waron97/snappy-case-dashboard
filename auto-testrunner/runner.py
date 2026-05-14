@@ -211,15 +211,16 @@ def run_test(commit_hash):
             ],
             check=True,
         )
-        subprocess.run(
-            "find /opt/odoo/addons -name 'requirements.txt' -not -path '*/symple_addons/*'"
-            " -exec pip install --no-cache-dir -r {} \\; 2>/dev/null || true",
-            shell=True,
-        )
-        subprocess.run(
-            ["pip", "install", "cryptography==37.0.0", "pyopenssl==22.0.0", "paramiko<3.0"],
-            check=True,
-        )
+        # GitHub outage workaround: skip pip installs temporarily
+        # subprocess.run(
+        #     "find /opt/odoo/addons -name 'requirements.txt' -not -path '*/symple_addons/*'"
+        #     " -exec pip install --no-cache-dir -r {} \\; 2>/dev/null || true",
+        #     shell=True,
+        # )
+        # subprocess.run(
+        #     ["pip", "install", "cryptography==37.0.0", "pyopenssl==22.0.0", "paramiko<3.0"],
+        #     check=True,
+        # )
 
         _run_odoo_tests(commit_hash)
 

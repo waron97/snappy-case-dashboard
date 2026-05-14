@@ -35,6 +35,9 @@ def worker():
                 run_test(commit_hash)
             except Exception as run_err:
                 log.error(f"[{commit_hash[:8]}] Run error: {run_err}")
+            if not result_exists(commit_hash):
+                log.warning(f"[{commit_hash[:8]}] No results produced, skipping notification")
+                continue
             try:
                 notify_pr(commit_hash)
             except Exception as notify_err:
