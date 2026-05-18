@@ -8,6 +8,7 @@ from config import (
     QUEUE_KEY,
     STATE_TTL,
     WORKER_ID,
+    WORKERS_KEY,
     rdb,
 )
 from runner import result_exists, vacuum
@@ -17,8 +18,17 @@ log = logging.getLogger(__name__)
 _poll_lock = threading.Lock()
 
 
+def _is_running(commit_hash):
+    return any(
+        (v.decode() if isinstance(v, bytes) else v) == commit_hash
+        for v in rdb.hvals(WORKERS_KEY)
+    )
+
+
 def enqueue(commit_hash):
     if result_exists(commit_hash):
+        return
+    if _is_running(commit_hash):
         return
     if rdb.lpos(QUEUE_KEY, commit_hash) is not None:
         return
