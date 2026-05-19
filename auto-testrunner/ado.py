@@ -72,6 +72,6 @@ def post_pr_comment(pr_id, content):
         f"/_apis/git/repositories/{DEVOPS_REPO}/pullrequests/{pr_id}"
         f"/threads?api-version=7.0"
     )
-    body = {"comments": [{"content": content, "commentType": 1}], "status": 1}
+    body = {"comments": [{"content": content, "commentType": 1}], "status": "fixed"}
     resp = requests.post(url, json=body, headers=ado_headers(), timeout=30)
     resp.raise_for_status()
