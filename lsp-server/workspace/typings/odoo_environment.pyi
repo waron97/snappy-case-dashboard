@@ -24,26 +24,28 @@ from odoo_records import _BaseImportTestsModelsComplex, _BaseImportTestsModelsFl
 from odoo_records import _BaseImportTestsModelsO2m, _BaseImportTestsModelsO2mChild, _BaseImportTestsModelsPreview, _BaseLanguageExport, _BaseLanguageImport, _BaseLanguageInstall
 from odoo_records import _BaseModuleUninstall, _BaseModuleUpdate, _BaseModuleUpgrade, _BasePartnerMergeAutomaticWizard, _BasePartnerMergeLine, _BaseUpdateTranslations
 from odoo_records import _BillingProfile, _Bit2publishDocumentsWizard, _Bit2publishTemplate, _Bit2publishTemplateMapping, _Bit2publishTestTemplate, _Bit2publishTestTemplateResult
-from odoo_records import _BlacklistHistory, _BonusLineMixin, _BonusMixin, _BonusWizard, _BpmnFlow, _BpmnFlowLine
-from odoo_records import _BpmnHiddenResultColor, _BpmnWorkflowParams, _BusBus, _BusPresence, _CadastralInfoMixin, _CadastreData
-from odoo_records import _CadastreDataAdeReport, _CadastreDataAdeReportRow, _CadastreDataCondoImporter, _CadastreDataRowM2c, _CadastreDataRowM2cFile, _CadastreDataRowM2cImporter
-from odoo_records import _CalendarAlarm, _CalendarAlarmManager, _CalendarAttendee, _CalendarEvent, _CalendarEventType, _CalendarFilters
-from odoo_records import _CalendarRecurrence, _CancelCase, _CancelInteraction, _CaseIntegrationHistory, _CashBoxOut, _ChangePasswordUser
-from odoo_records import _ChangePasswordWizard, _ChannelAssociation, _ChargeDispatch, _CityZipGeonamesImport, _ClientAgencyData, _ConfigCcq
-from odoo_records import _ConfigCuscinetto, _ConfigMetodoDiPagamento, _ConfigRivalutazione, _ConfigVerificaCarta, _ConnectCase, _ConnectParentCase
-from odoo_records import _Consortiums, _ContractAnnulmentReason, _CorrectionInvoice, _CreateCase, _CreateCaseMixin, _CreateChildCase
-from odoo_records import _CreateInteractionClient, _CreditStatus, _CreditWizard, _CustomerServiceNumbers, _DashboardPermission, _DashboardPermissionTable
-from odoo_records import _DashboardTab, _DashboardType, _DashboardVisibilityTable, _DecimalPrecision, _DepositsWizard, _DigestDigest
-from odoo_records import _DigestTip, _DistributorCode, _DistributorDispatchZone, _DistributorPodCodeHistory, _DlAppointmentExemption, _DlRequest
-from odoo_records import _DocumentsDocument, _DocumentsFacet, _DocumentsFolder, _DocumentsLinkToRecordWizard, _DocumentsMixin, _DocumentsRequestWizard
-from odoo_records import _DocumentsShare, _DocumentsTag, _DocumentsWorkflowAction, _DocumentsWorkflowRule, _ExportMenu, _ExportRules
-from odoo_records import _FetchmailServer, _FiberAssistanceTicket, _FiberVoucherManagement, _FormatAddressMixin, _GoogleGmailMixin, _GoogleService
-from odoo_records import _HelpdeskSla, _HelpdeskSlaPolicy, _HelpdeskSlaPolicyStatus, _HelpdeskSlaReportAnalysis, _HelpdeskSlaStatus, _HelpdeskStage
-from odoo_records import _HelpdeskTag, _HelpdeskTeam, _HelpdeskTechnicalCheck, _HelpdeskTicket, _HelpdeskTicketAmounts, _HelpdeskTicketImporter
-from odoo_records import _HelpdeskTicketRcHistory, _HelpdeskTicketReportAnalysis, _HelpdeskTicketRule, _HelpdeskTicketType, _I86PaymentItem, _IapAccount
-from odoo_records import _IapAutocompleteApi, _IapEnrichApi, _ImageMixin, _ImperexExport, _ImperexExportResultWizard, _ImperexExportWizard
-from odoo_records import _ImperexImport, _ImperexImportResultWizard, _ImperexImportWizard, _ImperexImportWizardFile, _ImperexManifestProfile, _ImperexXidMixin
-from odoo_records import _ImportDistributorTransporterData, _ImportFileTisgWizard, _ImportFileUpsaWizard, _ImportHelpdeskTicket, _ImportRecordArera, _ImportSiiResponse
+from odoo_records import _BlacklistHistory, _BoardBoard, _BonusLineMixin, _BonusMixin, _BonusWizard, _BpmnFlow
+from odoo_records import _BpmnFlowLine, _BpmnHiddenResultColor, _BpmnWorkflowParams, _BusBus, _BusPresence, _CadastralInfoMixin
+from odoo_records import _CadastreData, _CadastreDataAdeReport, _CadastreDataAdeReportRow, _CadastreDataCondoImporter, _CadastreDataRowM2c, _CadastreDataRowM2cFile
+from odoo_records import _CadastreDataRowM2cImporter, _CalendarAlarm, _CalendarAlarmManager, _CalendarAttendee, _CalendarEvent, _CalendarEventType
+from odoo_records import _CalendarFilters, _CalendarRecurrence, _CancelCase, _CancelInteraction, _CaseIntegrationHistory, _CashBoxOut
+from odoo_records import _ChangePasswordUser, _ChangePasswordWizard, _ChannelAssociation, _ChargeDispatch, _CityZipGeonamesImport, _ClientAgencyData
+from odoo_records import _CollectionBase, _ComponentBuilder, _ConfigCcq, _ConfigCuscinetto, _ConfigMetodoDiPagamento, _ConfigRivalutazione
+from odoo_records import _ConfigVerificaCarta, _ConnectCase, _ConnectParentCase, _Consortiums, _ContractAnnulmentReason, _CorrectionInvoice
+from odoo_records import _CreateCase, _CreateCaseMixin, _CreateChildCase, _CreateInteractionClient, _CreditStatus, _CreditWizard
+from odoo_records import _CustomerServiceNumbers, _DashboardPermission, _DashboardPermissionTable, _DashboardTab, _DashboardType, _DashboardVisibilityTable
+from odoo_records import _DecimalPrecision, _DepositsWizard, _DigestDigest, _DigestTip, _DistributorCode, _DistributorDispatchZone
+from odoo_records import _DistributorPodCodeHistory, _DlAppointmentExemption, _DlRequest, _DocumentsDocument, _DocumentsFacet, _DocumentsFolder
+from odoo_records import _DocumentsLinkToRecordWizard, _DocumentsMixin, _DocumentsRequestWizard, _DocumentsShare, _DocumentsTag, _DocumentsWorkflowAction
+from odoo_records import _DocumentsWorkflowRule, _EventManagerAction, _EventManagerFilter, _EventManagerHandler, _EventManagerListener, _ExecutableMixin
+from odoo_records import _ExportMenu, _ExportRules, _FetchmailServer, _FiberAssistanceTicket, _FiberVoucherManagement, _FlowF
+from odoo_records import _FlowFLine, _FormatAddressMixin, _GasReadingReport, _GoogleGmailMixin, _GoogleService, _HelpdeskSla
+from odoo_records import _HelpdeskSlaPolicy, _HelpdeskSlaPolicyStatus, _HelpdeskSlaReportAnalysis, _HelpdeskSlaStatus, _HelpdeskStage, _HelpdeskTag
+from odoo_records import _HelpdeskTeam, _HelpdeskTechnicalCheck, _HelpdeskTicket, _HelpdeskTicketAmounts, _HelpdeskTicketImporter, _HelpdeskTicketRcHistory
+from odoo_records import _HelpdeskTicketReportAnalysis, _HelpdeskTicketRule, _HelpdeskTicketType, _I86PaymentItem, _IapAccount, _IapAutocompleteApi
+from odoo_records import _IapEnrichApi, _ImageMixin, _ImperexExport, _ImperexExportResultWizard, _ImperexExportWizard, _ImperexImport
+from odoo_records import _ImperexImportResultWizard, _ImperexImportWizard, _ImperexImportWizardFile, _ImperexManifestProfile, _ImperexXidMixin, _ImportDistributorTransporterData
+from odoo_records import _ImportFileTisWizard, _ImportFileTisgWizard, _ImportFileUpsaWizard, _ImportHelpdeskTicket, _ImportRecordArera, _ImportSiiResponse
 from odoo_records import _ImportSupervipLine, _IndexConfig, _IndexHistory, _InfocamereActions, _InfocamereEnv, _InfocamereMapOutput
 from odoo_records import _InfocamereRules, _InteractionChannel, _InvoicesWizard, _IrActionsActUrl, _IrActionsActWindow, _IrActionsActWindowClose
 from odoo_records import _IrActionsActWindowView, _IrActionsActions, _IrActionsClient, _IrActionsReport, _IrActionsReportAsynchronousQueue, _IrActionsServer
@@ -58,78 +60,83 @@ from odoo_records import _IrQwebFieldImage, _IrQwebFieldImageUrl, _IrQwebFieldIn
 from odoo_records import _IrQwebFieldQweb, _IrQwebFieldRelative, _IrQwebFieldSelection, _IrQwebFieldText, _IrRule, _IrSequence
 from odoo_records import _IrSequenceDateRange, _IrServerObjectLines, _IrTranslation, _IrUiMenu, _IrUiView, _IrUiViewCustom
 from odoo_records import _IvaTypeHistory, _JobTitles, _JollyIndexImportWizard, _JollyIndexLine, _JollyIndexRevisionWizard, _LetterOfIntent
-from odoo_records import _LinkTracker, _LinkTrackerClick, _LinkTrackerCode, _MailActivity, _MailActivityMixin, _MailActivityType
-from odoo_records import _MailAlias, _MailAliasMixin, _MailBlacklist, _MailBlacklistRemove, _MailBot, _MailChannel
-from odoo_records import _MailChannelPartner, _MailChannelRtcSession, _MailComposeMessage, _MailComposerMixin, _MailFollowers, _MailGuest
-from odoo_records import _MailIceServer, _MailMail, _MailMessage, _MailMessageReaction, _MailMessageSubtype, _MailNotification
-from odoo_records import _MailRenderMixin, _MailResendCancel, _MailResendMessage, _MailResendPartner, _MailShortcode, _MailTemplate
-from odoo_records import _MailTemplateAttachment, _MailTemplateAttachmentWizard, _MailTemplatePreview, _MailThread, _MailThreadBlacklist, _MailThreadCc
-from odoo_records import _MailThreadPhone, _MailTrackingValue, _MailWizardInvite, _MailingContact, _MailingContactSubscription, _MailingContactToList
-from odoo_records import _MailingList, _MailingListMerge, _MailingMailing, _MailingMailingScheduleDate, _MailingMailingTest, _MailingSmsTest
-from odoo_records import _MailingTrace, _MailingTraceReport, _MarketCommEventLog, _MarketCommEventLogCpUtenteFilter, _MarketCommEventLogDistinct, _MarketingActivity
-from odoo_records import _MarketingCampaign, _MarketingCampaignTest, _MarketingEvent, _MarketingEventType, _MarketingParticipant, _MarketingTrace
-from odoo_records import _MeterReadings, _MeterReadingsPdr, _MicrosoftOutlookMixin, _NaturalDisastersHistory, _NutsImport, _OloFiberCodes
-from odoo_records import _Paperwork, _PaperworkAnnulmentReason, _PartyRelation, _PartyType, _PaymentAcquirer, _PaymentAcquirerOnboardingWizard
-from odoo_records import _PaymentIcon, _PaymentLinkWizard, _PaymentMethod, _PaymentRefundWizard, _PaymentTerm, _PaymentToken
-from odoo_records import _PaymentTransaction, _PcsDataWizard, _PcsRecordLine, _PcsWizardHandler, _PhaseResultSelector, _PhoneBlacklist
-from odoo_records import _PhoneBlacklistRemove, _PhysicalBonus, _PhysicalBonusExpectedValue, _PhysicalBonusLine, _PortalMixin, _PortalShare
-from odoo_records import _PortalWizard, _PortalWizardUser, _PostalizerTemplate, _PrintPrenumberedChecks, _PrivacyHistory, _ProductAttribute
-from odoo_records import _ProductAttributeCustomValue, _ProductAttributeValue, _ProductCategory, _ProductLabelLayout, _ProductPackaging, _ProductPricelist
-from odoo_records import _ProductPricelistItem, _ProductProduct, _ProductSupplierinfo, _ProductTemplate, _ProductTemplateAttributeExclusion, _ProductTemplateAttributeLine
-from odoo_records import _ProductTemplateAttributeValue, _PublisherWarrantyContract, _RaiFee, _RaiFeeLine, _RaiFeeWizard, _RatingMixin
-from odoo_records import _RatingParentMixin, _RatingRating, _RefusalReason, _RemiTable, _ReportAccountReportHashIntegrity, _ReportAccountReportInvoice
-from odoo_records import _ReportAccountReportInvoiceWithPayments, _ReportAccountReportJournal, _ReportBaseReportIrmodulereference, _ReportCaseExportEmail, _ReportExportEmail, _ReportInteractionExportEmail
-from odoo_records import _ReportLayout, _ReportPaperformat, _ReportProductReportPricelist, _ReportProductReportProducttemplatelabel, _ReportProductReportProducttemplatelabelDymo, _ReportRepAgents
-from odoo_records import _ReportRepJollyErrorLines, _ReportReportCsvAbstract, _ReportReportCsvPartnerCsv, _ReportReportXlsxAbstract, _ReportReportXlsxPartnerXlsx, _ReportReportXmlAbstract
-from odoo_records import _ReportSorgeniaDatiCatastaliAdeReportTemplateTxt, _ReportSorgeniaRefunderRepErrorLine, _ReportSorgeniaRefunderRepRefundsBySorgenia, _ReportSorgeniaReportRepGdpr, _ReportSorgeniaReportRepPs003, _ReportSorgeniaReportRepPs058
-from odoo_records import _ReportSorgeniaReportRepPs058Interaction, _ReportSorgeniaReportRepPs059, _ReportSorgeniaReportRepPs085, _ReportSorgeniaReportRepRefund, _ReportSorgeniaReportRepRefundErrorRevision, _ReportSorgeniaReportRepTiqv
-from odoo_records import _ReportSorgeniaReportRepUpsa, _ResBank, _ResCity, _ResCityIstat, _ResCityZip, _ResCompany
-from odoo_records import _ResConfig, _ResConfigInstaller, _ResConfigSettings, _ResCountry, _ResCountryGroup, _ResCountryState
-from odoo_records import _ResCurrency, _ResCurrencyRate, _ResGroups, _ResLang, _ResPartner, _ResPartnerAbiCab
-from odoo_records import _ResPartnerAbiCabChunk, _ResPartnerAbiCabFile, _ResPartnerAbiCabWizard, _ResPartnerAutocompleteSync, _ResPartnerBank, _ResPartnerCategory
-from odoo_records import _ResPartnerIndustry, _ResPartnerInfocamere, _ResPartnerInfocamereLogs, _ResPartnerMeter, _ResPartnerMeterPdr, _ResPartnerNuts
-from odoo_records import _ResPartnerPa, _ResPartnerPaFile, _ResPartnerPaImporter, _ResPartnerPayment, _ResPartnerPaymentMigrationResult, _ResPartnerPdpMixin
-from odoo_records import _ResPartnerPdr, _ResPartnerPdrMunicipalitiesFile, _ResPartnerPdrMunicipalitiesImporter, _ResPartnerPdrMunicipality, _ResPartnerPersonalData, _ResPartnerPod
-from odoo_records import _ResPartnerTeam, _ResPartnerTitle, _ResPartnerTollFreeNumber, _ResPartnerTransporter, _ResToponym, _ResUsers
-from odoo_records import _ResUsersApikeys, _ResUsersApikeysDescription, _ResUsersApikeysShow, _ResUsersIdentitycheck, _ResUsersLog, _ResUsersSaml
-from odoo_records import _ResUsersSettings, _ResUsersSettingsVolumes, _ResetViewArchWizard, _ResourceCalendar, _ResourceCalendarAttendance, _ResourceCalendarLeaves
-from odoo_records import _ResourceMixin, _ResourceResource, _ResourceTest, _ResultChannelSelector, _ResultCodeConfigurator, _ResultTripletSelector
-from odoo_records import _ResultType, _RfidCard, _RipModelAccess, _RipModelAccessAlias, _RipModelAccessRule, _RipModelFunctionAccess
-from odoo_records import _RipModelSchema, _RipModelSchemaField, _RipModelSchemaIn, _RipModelSchemaInField, _RipModelSchemaOut, _RipModelSchemaOutField
-from odoo_records import _RipRequestLog, _RipTokenHandler, _SaleAreaRole, _SaleChannel, _SaleChannelUpdate, _SaleChannelUpdateImporter
-from odoo_records import _SaveSpreadsheetTemplate, _SecurityRole, _SelfReadingWizard, _SequenceMixin, _ServiceMixin, _ServicePoint
+from odoo_records import _LinkTracker, _LinkTrackerClick, _LinkTrackerCode, _M2cActivationDeactivationPayload, _MailActivity, _MailActivityMixin
+from odoo_records import _MailActivityType, _MailAlias, _MailAliasMixin, _MailBlacklist, _MailBlacklistRemove, _MailBot
+from odoo_records import _MailChannel, _MailChannelPartner, _MailChannelRtcSession, _MailComposeMessage, _MailComposerMixin, _MailFollowers
+from odoo_records import _MailGuest, _MailIceServer, _MailMail, _MailMessage, _MailMessageReaction, _MailMessageSubtype
+from odoo_records import _MailNotification, _MailRenderMixin, _MailResendCancel, _MailResendMessage, _MailResendPartner, _MailShortcode
+from odoo_records import _MailTemplate, _MailTemplateAttachment, _MailTemplateAttachmentWizard, _MailTemplatePreview, _MailThread, _MailThreadBlacklist
+from odoo_records import _MailThreadCc, _MailThreadPhone, _MailTrackingValue, _MailWizardInvite, _MailingContact, _MailingContactSubscription
+from odoo_records import _MailingContactToList, _MailingList, _MailingListMerge, _MailingMailing, _MailingMailingScheduleDate, _MailingMailingTest
+from odoo_records import _MailingSmsTest, _MailingTrace, _MailingTraceReport, _MarketCommEventLog, _MarketCommEventLogCpUtenteFilter, _MarketCommEventLogDistinct
+from odoo_records import _MarketingActivity, _MarketingCampaign, _MarketingCampaignTest, _MarketingEvent, _MarketingEventType, _MarketingParticipant
+from odoo_records import _MarketingTrace, _MeterReadings, _MeterReadingsPdr, _MicrosoftOutlookMixin, _NaturalDisastersHistory, _NutsImport
+from odoo_records import _OloFiberCodes, _Paperwork, _PaperworkAnnulmentReason, _PartyRelation, _PartyType, _PaymentAcquirer
+from odoo_records import _PaymentAcquirerOnboardingWizard, _PaymentIcon, _PaymentLinkWizard, _PaymentMethod, _PaymentRefundWizard, _PaymentTerm
+from odoo_records import _PaymentToken, _PaymentTransaction, _PcsDataWizard, _PcsRecordLine, _PcsWizardHandler, _PenaltyImportWizard
+from odoo_records import _PenaltyManagement, _PhaseResultSelector, _PhoneBlacklist, _PhoneBlacklistRemove, _PhysicalBonus, _PhysicalBonusExpectedValue
+from odoo_records import _PhysicalBonusLine, _PortalMixin, _PortalShare, _PortalWizard, _PortalWizardUser, _PostalizerTemplate
+from odoo_records import _PrintPrenumberedChecks, _PrivacyHistory, _ProductAttribute, _ProductAttributeCustomValue, _ProductAttributeValue, _ProductCategory
+from odoo_records import _ProductLabelLayout, _ProductPackaging, _ProductPricelist, _ProductPricelistItem, _ProductProduct, _ProductSupplierinfo
+from odoo_records import _ProductTemplate, _ProductTemplateAttributeExclusion, _ProductTemplateAttributeLine, _ProductTemplateAttributeValue, _PublisherWarrantyContract, _RaiFee
+from odoo_records import _RaiFeeLine, _RaiFeeWizard, _RatingMixin, _RatingParentMixin, _RatingRating, _RefusalReason
+from odoo_records import _RemiTable, _ReportAccountReportHashIntegrity, _ReportAccountReportInvoice, _ReportAccountReportInvoiceWithPayments, _ReportAccountReportJournal, _ReportBaseReportIrmodulereference
+from odoo_records import _ReportCaseExportEmail, _ReportCsea, _ReportExportEmail, _ReportInteractionExportEmail, _ReportLayout, _ReportPaperformat
+from odoo_records import _ReportProductReportPricelist, _ReportProductReportProducttemplatelabel, _ReportProductReportProducttemplatelabelDymo, _ReportRepAgents, _ReportRepJollyErrorLines, _ReportReportCsvAbstract
+from odoo_records import _ReportReportCsvPartnerCsv, _ReportReportXlsxAbstract, _ReportReportXlsxPartnerXlsx, _ReportReportXmlAbstract, _ReportSorgeniaDatiCatastaliAdeReportTemplateTxt, _ReportSorgeniaRefunderRepErrorLine
+from odoo_records import _ReportSorgeniaRefunderRepRefundsBySorgenia, _ReportSorgeniaReportRepCsea, _ReportSorgeniaReportRepGdpr, _ReportSorgeniaReportRepMecomsCopy080, _ReportSorgeniaReportRepNrc, _ReportSorgeniaReportRepPl12
+from odoo_records import _ReportSorgeniaReportRepPs003, _ReportSorgeniaReportRepPs017, _ReportSorgeniaReportRepPs058, _ReportSorgeniaReportRepPs058Interaction, _ReportSorgeniaReportRepPs059, _ReportSorgeniaReportRepPs085
+from odoo_records import _ReportSorgeniaReportRepPs21, _ReportSorgeniaReportRepPsBpo, _ReportSorgeniaReportRepRefund, _ReportSorgeniaReportRepRefundErrorRevision, _ReportSorgeniaReportRepTiqv, _ReportSorgeniaReportRepUpsa
+from odoo_records import _ResBank, _ResCity, _ResCityIstat, _ResCityZip, _ResCompany, _ResConfig
+from odoo_records import _ResConfigInstaller, _ResConfigSettings, _ResCountry, _ResCountryGroup, _ResCountryState, _ResCurrency
+from odoo_records import _ResCurrencyRate, _ResGroups, _ResLang, _ResPartner, _ResPartnerAbiCab, _ResPartnerAbiCabChunk
+from odoo_records import _ResPartnerAbiCabFile, _ResPartnerAbiCabWizard, _ResPartnerAutocompleteSync, _ResPartnerBank, _ResPartnerCategory, _ResPartnerIndustry
+from odoo_records import _ResPartnerInfocamere, _ResPartnerInfocamereLogs, _ResPartnerMeter, _ResPartnerMeterPdr, _ResPartnerNuts, _ResPartnerPa
+from odoo_records import _ResPartnerPaFile, _ResPartnerPaImporter, _ResPartnerPayment, _ResPartnerPaymentMigrationResult, _ResPartnerPdpMixin, _ResPartnerPdr
+from odoo_records import _ResPartnerPdrMunicipalitiesFile, _ResPartnerPdrMunicipalitiesImporter, _ResPartnerPdrMunicipality, _ResPartnerPersonalData, _ResPartnerPod, _ResPartnerTeam
+from odoo_records import _ResPartnerTitle, _ResPartnerTollFreeNumber, _ResPartnerTransporter, _ResToponym, _ResUsers, _ResUsersApikeys
+from odoo_records import _ResUsersApikeysDescription, _ResUsersApikeysShow, _ResUsersIdentitycheck, _ResUsersLog, _ResUsersSaml, _ResUsersSettings
+from odoo_records import _ResUsersSettingsVolumes, _ResetViewArchWizard, _ResourceCalendar, _ResourceCalendarAttendance, _ResourceCalendarLeaves, _ResourceMixin
+from odoo_records import _ResourceResource, _ResourceTest, _ResultChannelSelector, _ResultCodeConfigurator, _ResultTripletSelector, _ResultType
+from odoo_records import _RfidCard, _RipModelAccess, _RipModelAccessAlias, _RipModelAccessRule, _RipModelFunctionAccess, _RipModelSchema
+from odoo_records import _RipModelSchemaField, _RipModelSchemaIn, _RipModelSchemaInField, _RipModelSchemaOut, _RipModelSchemaOutField, _RipRequestLog
+from odoo_records import _RipTokenHandler, _SaleAreaRole, _SaleChannel, _SaleChannelUpdate, _SaleChannelUpdateImporter, _SaveSpreadsheetTemplate
+from odoo_records import _ScheduledAsyncReport, _SecurityRole, _SelfReadingWizard, _SequenceMixin, _ServiceMixin, _ServicePoint
 from odoo_records import _ServicePointAddressMixin, _ServicePointIvaRate, _ServicePointMigrationResult, _ServicePointTaxRatePdr, _ServicePointTaxRatePod, _SetPhase
 from odoo_records import _SiiReport, _SmsApi, _SmsCancel, _SmsComposer, _SmsResend, _SmsResendRecipient
 from odoo_records import _SmsSms, _SmsTemplate, _SmsTemplatePreview, _SmsTicketComposer, _SnailmailConfirm, _SnailmailConfirmInvoice
 from odoo_records import _SnailmailLetter, _SnailmailLetterCancel, _SnailmailLetterFormatError, _SnailmailLetterMissingRequiredFields, _SocialBonus, _SocialBonusFileLine
 from odoo_records import _SocialBonusInstance, _SocialBonusLine, _SocialBonusNotification, _SocialBonusNotificationResult, _SocialBonusNotificationResultLine, _SocialBonusResult
-from odoo_records import _SocialBonusResultLine, _SocialBonusSiiReport, _SorgeniaContracts, _SorgeniaDigitalLogin, _SorgeniaDigitalLoginPartner, _SorgeniaInvoiceExternalServiceFtpPdfQueue
-from odoo_records import _SorgeniaInvoiceExternalServiceFtpServer, _SorgeniaLoyaltyExternalServiceFtpServer, _SorgeniaMdmGdpr, _SorgeniaPostalizerDocument, _SorgeniaQuestionInput, _SorgeniaResponseInput
-from odoo_records import _SorgeniaSmsFtpServer, _SorgeniaSurveyInput, _SorgeniaTisg, _SorgeniaTisgLine, _SorgeniaUpsa, _SorgeniaUpsaLine
-from odoo_records import _SorgeniaWarranty, _SpreadsheetContributor, _SpreadsheetRevision, _SpreadsheetTemplate, _StudioApprovalEntry, _StudioApprovalRule
-from odoo_records import _StudioMixin, _SupervipLine, _SupplyDateConfig, _SymphonyCaseId, _SymphonyConfigCcq, _SymphonyConfigCuscinetto
-from odoo_records import _SymphonyConfigMetodoPagamento, _SymphonyConfigRivalutazione, _SymphonyConfigVerificaCarta, _SymphonyCustomerPricelist, _SymphonyFastwebCommunication, _SymphonyMarketCommunication
-from odoo_records import _SymphonyOpenfiberCommunication, _SymphonyOrderManagement, _SymphonyPointOrderManagement, _SymphonyTaskOrderManagement, _SymphonyWalletDashboard, _SymphonyWebcomponentDashboardBlacklist
-from odoo_records import _SymphonyWebcomponentDashboardCreditCheck, _SymphonyWebcomponentDashboardFiberCoverage, _SymphonyWebcomponentDashboardFiberUpselling, _SymphonyWebcomponentDashboardIntegrationFlow, _SympleAiAutomation, _SympleAiTag
+from odoo_records import _SocialBonusResultLine, _SocialBonusSiiReport, _SorgeniaAntifraud, _SorgeniaContracts, _SorgeniaDigitalLogin, _SorgeniaDigitalLoginPartner
+from odoo_records import _SorgeniaFilterWizard, _SorgeniaInvoiceExternalServiceFtpPdfQueue, _SorgeniaInvoiceExternalServiceFtpServer, _SorgeniaLoyaltyExternalServiceFtpServer, _SorgeniaMdmGdpr, _SorgeniaPostalizerDocument
+from odoo_records import _SorgeniaQuestionInput, _SorgeniaResponseInput, _SorgeniaSmsFtpServer, _SorgeniaSurveyInput, _SorgeniaTis, _SorgeniaTisLine
+from odoo_records import _SorgeniaTisg, _SorgeniaTisgLine, _SorgeniaUpsa, _SorgeniaUpsaLine, _SorgeniaWarranty, _SpreadsheetContributor
+from odoo_records import _SpreadsheetRevision, _SpreadsheetTemplate, _StudioApprovalEntry, _StudioApprovalRule, _StudioMixin, _SupervipLine
+from odoo_records import _SupplyDateConfig, _SymphonyCaseId, _SymphonyConfigCcq, _SymphonyConfigCuscinetto, _SymphonyConfigMetodoPagamento, _SymphonyConfigRivalutazione
+from odoo_records import _SymphonyConfigVerificaCarta, _SymphonyCustomerPricelist, _SymphonyFastwebCommunication, _SymphonyMarketCommunication, _SymphonyOpenfiberCommunication, _SymphonyOrderManagement
+from odoo_records import _SymphonyPointOrderManagement, _SymphonyTaskOrderManagement, _SymphonyWalletDashboard, _SymphonyWebcomponentDashboardBlacklist, _SymphonyWebcomponentDashboardCreditCheck, _SymphonyWebcomponentDashboardFiberCoverage
+from odoo_records import _SymphonyWebcomponentDashboardFiberUpselling, _SymphonyWebcomponentDashboardIntegrationFlow, _SymphonyWebcomponentDashboardSwitchActivation, _SymphonyWebcomponentDashboardTableau, _SympleAiAutomation, _SympleAiTag
 from odoo_records import _SympleAiTagConfidence, _SympleAiTagConfidenceHistory, _SympleAiTagMixin, _SympleCluster, _SympleDmsFolder, _SympleDmsServer
-from odoo_records import _SympleDmsToken, _SympleEventInteractionMixin, _SympleImporterImportCase, _SympleImporterLine, _SympleInboundMessageRegistry, _SympleInteraction
-from odoo_records import _SympleInteractionCancelReason, _SympleMail, _SympleMailImportMailMail, _SympleMailReport, _SympleMessageRegistry, _SympleMessageRegistryMixin
-from odoo_records import _SympleOutboundMessageRegistry, _SymplePbInstanceKey, _SymplePbInstanceKeyMixin, _SymplePbLauncher, _SymplePbProcess, _SymplePbProcessData
-from odoo_records import _SymplePbProcessElement, _SymplePbSummaryLauncher, _SymplePbWebcomponent, _SymplePbWebcomponentEvent, _SymplePdfUtils, _SympleRcu
-from odoo_records import _SympleRcuCancelCaseWizard, _SympleRcuCheckWorkWizard, _SympleRcuCommodityOperation, _SympleRcuCreateCaseWizard, _SympleRcuForceResolvedWizard, _SympleRcuLine
-from odoo_records import _SympleRcuMassiveProcedureResultFcVatWizard, _SympleRcuMassiveProcedureWizard, _SympleRcuOperation, _SympleRcuOperationType, _SympleRcuOperationTypeCode, _SympleRcuPmax
-from odoo_records import _SympleRcuRefreshDeactivationWizard, _SympleRcuResolvedOkWizard, _SympleRcuResolvedWorkWizard, _SympleRcuSendingResolvedWizard, _SympleRcuSendingWorkWizard, _SympleRcuShowErrorMessageCaseWizard
-from odoo_records import _SympleRcuWorkCheckWizard, _SympleRcuWorkSendingWizard, _SympleRefunderAx, _SympleRefunderAxLine, _SympleRefunderDoxee, _SympleRefunderDoxeeLine
-from odoo_records import _SympleRefunderImportWizard, _SympleRefunderLine, _SympleRefunderLineMixin, _SympleRefunderMixin, _SympleRefunderProcessWizard, _SympleRefunderResult
-from odoo_records import _SympleRefunderUpdate, _SympleRefunderUpdateLine, _SympleSlideoutMenu, _SympleTripletPhase, _SympleTripletPhaseHistory, _SympleTripletPhaseResult
-from odoo_records import _SympleTripletPhaseType, _SympleTripletSubtype, _SympleTripletType, _SympleTripletType, _SympleTripletUnsuccessReason, _SympleWorkflow
-from odoo_records import _TabVisibility, _TaxAdjustmentsWizard, _TemporaryClient, _Trader, _TraderImportWizard, _TransportNetworkMapManagement
-from odoo_records import _TransportNetworkMapManagementHistory, _TransporterDistributorMixin, _UnexecutedFile, _UnexecutedRecord, _Unknown, _UomCategory
-from odoo_records import _UomUom, _UpdateCadastreData, _UtmCampaign, _UtmMedium, _UtmMixin, _UtmSource
-from odoo_records import _UtmStage, _UtmTag, _ValidateAccountMove, _VulnerabilityHistory, _WalletImportWizard, _WalletManagementLine
+from odoo_records import _SympleDmsToken, _SympleImporterImportCase, _SympleImporterLine, _SympleInboundMessageRegistry, _SympleInteraction, _SympleInteractionCancelReason
+from odoo_records import _SympleMail, _SympleMailImportMailMail, _SympleMailReport, _SympleMessageRegistry, _SympleMessageRegistryMixin, _SympleOutboundMessageRegistry
+from odoo_records import _SymplePbInstanceKey, _SymplePbInstanceKeyMixin, _SymplePbLauncher, _SymplePbProcess, _SymplePbProcessData, _SymplePbProcessElement
+from odoo_records import _SymplePbSummaryLauncher, _SymplePbWebcomponent, _SymplePbWebcomponentEvent, _SymplePdfUtils, _SympleRcu, _SympleRcuCancelCaseWizard
+from odoo_records import _SympleRcuCheckWorkWizard, _SympleRcuCommodityOperation, _SympleRcuCreateCaseWizard, _SympleRcuForceResolvedWizard, _SympleRcuLine, _SympleRcuMassiveProcedureResultFcVatWizard
+from odoo_records import _SympleRcuMassiveProcedureWizard, _SympleRcuOperation, _SympleRcuOperationType, _SympleRcuOperationTypeCode, _SympleRcuPmax, _SympleRcuRefreshDeactivationWizard
+from odoo_records import _SympleRcuResolvedOkWizard, _SympleRcuResolvedWorkWizard, _SympleRcuSendingResolvedWizard, _SympleRcuSendingWorkWizard, _SympleRcuShowErrorMessageCaseWizard, _SympleRcuWorkCheckWizard
+from odoo_records import _SympleRcuWorkSendingWizard, _SympleRefunderAx, _SympleRefunderAxLine, _SympleRefunderDoxee, _SympleRefunderDoxeeLine, _SympleRefunderImportWizard
+from odoo_records import _SympleRefunderLine, _SympleRefunderLineMixin, _SympleRefunderMixin, _SympleRefunderProcessWizard, _SympleRefunderResult, _SympleRefunderUpdate
+from odoo_records import _SympleRefunderUpdateLine, _SympleSlideoutMenu, _SympleTripletPhase, _SympleTripletPhaseHistory, _SympleTripletPhaseResult, _SympleTripletPhaseType
+from odoo_records import _SympleTripletSubtype, _SympleTripletType, _SympleTripletType, _SympleTripletUnsuccessReason, _SympleWorkflow, _TabVisibility
+from odoo_records import _TaxAdjustmentsWizard, _TemporaryClient, _TimoeTimgCheckType, _TimoeTimgTable, _Trader, _TraderImportWizard
+from odoo_records import _TransportNetworkMapManagement, _TransportNetworkMapManagementHistory, _TransporterDistributorMixin, _UnexecutedFile, _UnexecutedRecord, _Unknown
+from odoo_records import _UomCategory, _UomUom, _UpdateCadastreData, _UtmCampaign, _UtmMedium, _UtmMixin
+from odoo_records import _UtmSource, _UtmStage, _UtmTag, _ValidateAccountMove, _VulnerabilityDashboard, _VulnerabilityDashboardLine
+from odoo_records import _VulnerabilityHistory, _VulnerabilityNotifyAdmissibility, _VulnerabilityNotifyAdmissibilityLine, _VulnerabilityNotifyOutgoing, _WalletImportWizard, _WalletManagementLine
 from odoo_records import _WatchlistAddWizard, _WatchlistDownloadWizard, _WatchlistRemoveWizard, _WebEditorAssets, _WebEditorConverterTest, _WebEditorConverterTestSub
-from odoo_records import _WebTourTour, _WizardIrModelMenuCreate, _X, _XCcq, _XMktCom, _XPod
-from odoo_records import _XPrecheck, _XTopny, _XmlgeneratorDataAggregator, _XmlgeneratorDataField, _XmlgeneratorDataModel
+from odoo_records import _WebTourTour, _WelcomeAttachmentTable, _WelcomeLetterAttachmentMixin, _WizardIrModelMenuCreate, _WizardUploadVulnerability, _X
+from odoo_records import _XCcq, _XMktCom, _XPod, _XPrecheck, _XTopny, _XmlgeneratorDataAggregator
+from odoo_records import _XmlgeneratorDataField, _XmlgeneratorDataModel
 
 
 class OdooEnvironment:
@@ -487,6 +494,8 @@ class OdooEnvironment:
     @overload
     def __getitem__(self, model_name: Literal["blacklist.history"]) -> _BlacklistHistory: ...
     @overload
+    def __getitem__(self, model_name: Literal["board.board"]) -> _BoardBoard: ...
+    @overload
     def __getitem__(self, model_name: Literal["bonus.line.mixin"]) -> _BonusLineMixin: ...
     @overload
     def __getitem__(self, model_name: Literal["bonus.mixin"]) -> _BonusMixin: ...
@@ -550,6 +559,10 @@ class OdooEnvironment:
     def __getitem__(self, model_name: Literal["city.zip.geonames.import"]) -> _CityZipGeonamesImport: ...
     @overload
     def __getitem__(self, model_name: Literal["client.agency.data"]) -> _ClientAgencyData: ...
+    @overload
+    def __getitem__(self, model_name: Literal["collection.base"]) -> _CollectionBase: ...
+    @overload
+    def __getitem__(self, model_name: Literal["component.builder"]) -> _ComponentBuilder: ...
     @overload
     def __getitem__(self, model_name: Literal["config.ccq"]) -> _ConfigCcq: ...
     @overload
@@ -635,6 +648,16 @@ class OdooEnvironment:
     @overload
     def __getitem__(self, model_name: Literal["documents.workflow.rule"]) -> _DocumentsWorkflowRule: ...
     @overload
+    def __getitem__(self, model_name: Literal["event.manager.action"]) -> _EventManagerAction: ...
+    @overload
+    def __getitem__(self, model_name: Literal["event.manager.filter"]) -> _EventManagerFilter: ...
+    @overload
+    def __getitem__(self, model_name: Literal["event.manager.handler"]) -> _EventManagerHandler: ...
+    @overload
+    def __getitem__(self, model_name: Literal["event.manager.listener"]) -> _EventManagerListener: ...
+    @overload
+    def __getitem__(self, model_name: Literal["executable.mixin"]) -> _ExecutableMixin: ...
+    @overload
     def __getitem__(self, model_name: Literal["export.menu"]) -> _ExportMenu: ...
     @overload
     def __getitem__(self, model_name: Literal["export.rules"]) -> _ExportRules: ...
@@ -645,7 +668,13 @@ class OdooEnvironment:
     @overload
     def __getitem__(self, model_name: Literal["fiber.voucher.management"]) -> _FiberVoucherManagement: ...
     @overload
+    def __getitem__(self, model_name: Literal["flow.f"]) -> _FlowF: ...
+    @overload
+    def __getitem__(self, model_name: Literal["flow.f.line"]) -> _FlowFLine: ...
+    @overload
     def __getitem__(self, model_name: Literal["format.address.mixin"]) -> _FormatAddressMixin: ...
+    @overload
+    def __getitem__(self, model_name: Literal["gas.reading.report"]) -> _GasReadingReport: ...
     @overload
     def __getitem__(self, model_name: Literal["google.gmail.mixin"]) -> _GoogleGmailMixin: ...
     @overload
@@ -712,6 +741,8 @@ class OdooEnvironment:
     def __getitem__(
         self, model_name: Literal["import.distributor.transporter.data"]
     ) -> _ImportDistributorTransporterData: ...
+    @overload
+    def __getitem__(self, model_name: Literal["import.file.tis.wizard"]) -> _ImportFileTisWizard: ...
     @overload
     def __getitem__(self, model_name: Literal["import.file.tisg.wizard"]) -> _ImportFileTisgWizard: ...
     @overload
@@ -895,6 +926,10 @@ class OdooEnvironment:
     @overload
     def __getitem__(self, model_name: Literal["link.tracker.code"]) -> _LinkTrackerCode: ...
     @overload
+    def __getitem__(
+        self, model_name: Literal["m2c.activation.deactivation.payload"]
+    ) -> _M2cActivationDeactivationPayload: ...
+    @overload
     def __getitem__(self, model_name: Literal["mail.activity"]) -> _MailActivity: ...
     @overload
     def __getitem__(self, model_name: Literal["mail.activity.mixin"]) -> _MailActivityMixin: ...
@@ -1051,6 +1086,10 @@ class OdooEnvironment:
     @overload
     def __getitem__(self, model_name: Literal["pcs.wizard.handler"]) -> _PcsWizardHandler: ...
     @overload
+    def __getitem__(self, model_name: Literal["penalty.import.wizard"]) -> _PenaltyImportWizard: ...
+    @overload
+    def __getitem__(self, model_name: Literal["penalty.management"]) -> _PenaltyManagement: ...
+    @overload
     def __getitem__(self, model_name: Literal["phase.result.selector"]) -> _PhaseResultSelector: ...
     @overload
     def __getitem__(self, model_name: Literal["phone.blacklist"]) -> _PhoneBlacklist: ...
@@ -1147,6 +1186,8 @@ class OdooEnvironment:
     @overload
     def __getitem__(self, model_name: Literal["report.case.export_email"]) -> _ReportCaseExportEmail: ...
     @overload
+    def __getitem__(self, model_name: Literal["report.csea"]) -> _ReportCsea: ...
+    @overload
     def __getitem__(self, model_name: Literal["report.export_email"]) -> _ReportExportEmail: ...
     @overload
     def __getitem__(
@@ -1198,12 +1239,30 @@ class OdooEnvironment:
     ) -> _ReportSorgeniaRefunderRepRefundsBySorgenia: ...
     @overload
     def __getitem__(
+        self, model_name: Literal["report.sorgenia_report.rep_csea"]
+    ) -> _ReportSorgeniaReportRepCsea: ...
+    @overload
+    def __getitem__(
         self, model_name: Literal["report.sorgenia_report.rep_gdpr"]
     ) -> _ReportSorgeniaReportRepGdpr: ...
     @overload
     def __getitem__(
+        self, model_name: Literal["report.sorgenia_report.rep_mecoms_copy_080"]
+    ) -> _ReportSorgeniaReportRepMecomsCopy080: ...
+    @overload
+    def __getitem__(self, model_name: Literal["report.sorgenia_report.rep_nrc"]) -> _ReportSorgeniaReportRepNrc: ...
+    @overload
+    def __getitem__(
+        self, model_name: Literal["report.sorgenia_report.rep_pl_12"]
+    ) -> _ReportSorgeniaReportRepPl12: ...
+    @overload
+    def __getitem__(
         self, model_name: Literal["report.sorgenia_report.rep_ps_003"]
     ) -> _ReportSorgeniaReportRepPs003: ...
+    @overload
+    def __getitem__(
+        self, model_name: Literal["report.sorgenia_report.rep_ps_017"]
+    ) -> _ReportSorgeniaReportRepPs017: ...
     @overload
     def __getitem__(
         self, model_name: Literal["report.sorgenia_report.rep_ps_058"]
@@ -1220,6 +1279,14 @@ class OdooEnvironment:
     def __getitem__(
         self, model_name: Literal["report.sorgenia_report.rep_ps_085"]
     ) -> _ReportSorgeniaReportRepPs085: ...
+    @overload
+    def __getitem__(
+        self, model_name: Literal["report.sorgenia_report.rep_ps_21"]
+    ) -> _ReportSorgeniaReportRepPs21: ...
+    @overload
+    def __getitem__(
+        self, model_name: Literal["report.sorgenia_report.rep_ps_bpo"]
+    ) -> _ReportSorgeniaReportRepPsBpo: ...
     @overload
     def __getitem__(
         self, model_name: Literal["report.sorgenia_report.rep_refund"]
@@ -1397,6 +1464,8 @@ class OdooEnvironment:
     @overload
     def __getitem__(self, model_name: Literal["save.spreadsheet.template"]) -> _SaveSpreadsheetTemplate: ...
     @overload
+    def __getitem__(self, model_name: Literal["scheduled.async.report"]) -> _ScheduledAsyncReport: ...
+    @overload
     def __getitem__(self, model_name: Literal["security.role"]) -> _SecurityRole: ...
     @overload
     def __getitem__(self, model_name: Literal["self.reading.wizard"]) -> _SelfReadingWizard: ...
@@ -1475,11 +1544,15 @@ class OdooEnvironment:
     @overload
     def __getitem__(self, model_name: Literal["social.bonus.sii.report"]) -> _SocialBonusSiiReport: ...
     @overload
+    def __getitem__(self, model_name: Literal["sorgenia.antifraud"]) -> _SorgeniaAntifraud: ...
+    @overload
     def __getitem__(self, model_name: Literal["sorgenia.contracts"]) -> _SorgeniaContracts: ...
     @overload
     def __getitem__(self, model_name: Literal["sorgenia.digital.login"]) -> _SorgeniaDigitalLogin: ...
     @overload
     def __getitem__(self, model_name: Literal["sorgenia.digital.login.partner"]) -> _SorgeniaDigitalLoginPartner: ...
+    @overload
+    def __getitem__(self, model_name: Literal["sorgenia.filter.wizard"]) -> _SorgeniaFilterWizard: ...
     @overload
     def __getitem__(
         self, model_name: Literal["sorgenia.invoice.external.service.ftp.pdf.queue"]
@@ -1504,6 +1577,10 @@ class OdooEnvironment:
     def __getitem__(self, model_name: Literal["sorgenia.sms.ftp.server"]) -> _SorgeniaSmsFtpServer: ...
     @overload
     def __getitem__(self, model_name: Literal["sorgenia.survey.input"]) -> _SorgeniaSurveyInput: ...
+    @overload
+    def __getitem__(self, model_name: Literal["sorgenia.tis"]) -> _SorgeniaTis: ...
+    @overload
+    def __getitem__(self, model_name: Literal["sorgenia.tis.line"]) -> _SorgeniaTisLine: ...
     @overload
     def __getitem__(self, model_name: Literal["sorgenia.tisg"]) -> _SorgeniaTisg: ...
     @overload
@@ -1585,6 +1662,14 @@ class OdooEnvironment:
         self, model_name: Literal["symphony.webcomponent.dashboard.integration.flow"]
     ) -> _SymphonyWebcomponentDashboardIntegrationFlow: ...
     @overload
+    def __getitem__(
+        self, model_name: Literal["symphony.webcomponent.dashboard.switch.activation"]
+    ) -> _SymphonyWebcomponentDashboardSwitchActivation: ...
+    @overload
+    def __getitem__(
+        self, model_name: Literal["symphony.webcomponent.dashboard.tableau"]
+    ) -> _SymphonyWebcomponentDashboardTableau: ...
+    @overload
     def __getitem__(self, model_name: Literal["symple.ai.automation"]) -> _SympleAiAutomation: ...
     @overload
     def __getitem__(self, model_name: Literal["symple.ai.tag"]) -> _SympleAiTag: ...
@@ -1604,8 +1689,6 @@ class OdooEnvironment:
     def __getitem__(self, model_name: Literal["symple.dms.server"]) -> _SympleDmsServer: ...
     @overload
     def __getitem__(self, model_name: Literal["symple.dms.token"]) -> _SympleDmsToken: ...
-    @overload
-    def __getitem__(self, model_name: Literal["symple.event.interaction.mixin"]) -> _SympleEventInteractionMixin: ...
     @overload
     def __getitem__(self, model_name: Literal["symple.importer.import.case"]) -> _SympleImporterImportCase: ...
     @overload
@@ -1753,6 +1836,10 @@ class OdooEnvironment:
     @overload
     def __getitem__(self, model_name: Literal["temporary.client"]) -> _TemporaryClient: ...
     @overload
+    def __getitem__(self, model_name: Literal["timoe.timg.check.type"]) -> _TimoeTimgCheckType: ...
+    @overload
+    def __getitem__(self, model_name: Literal["timoe.timg.table"]) -> _TimoeTimgTable: ...
+    @overload
     def __getitem__(self, model_name: Literal["trader"]) -> _Trader: ...
     @overload
     def __getitem__(self, model_name: Literal["trader.import.wizard"]) -> _TraderImportWizard: ...
@@ -1791,7 +1878,21 @@ class OdooEnvironment:
     @overload
     def __getitem__(self, model_name: Literal["validate.account.move"]) -> _ValidateAccountMove: ...
     @overload
+    def __getitem__(self, model_name: Literal["vulnerability.dashboard"]) -> _VulnerabilityDashboard: ...
+    @overload
+    def __getitem__(self, model_name: Literal["vulnerability.dashboard.line"]) -> _VulnerabilityDashboardLine: ...
+    @overload
     def __getitem__(self, model_name: Literal["vulnerability.history"]) -> _VulnerabilityHistory: ...
+    @overload
+    def __getitem__(
+        self, model_name: Literal["vulnerability.notify.admissibility"]
+    ) -> _VulnerabilityNotifyAdmissibility: ...
+    @overload
+    def __getitem__(
+        self, model_name: Literal["vulnerability.notify.admissibility.line"]
+    ) -> _VulnerabilityNotifyAdmissibilityLine: ...
+    @overload
+    def __getitem__(self, model_name: Literal["vulnerability.notify.outgoing"]) -> _VulnerabilityNotifyOutgoing: ...
     @overload
     def __getitem__(self, model_name: Literal["wallet.import.wizard"]) -> _WalletImportWizard: ...
     @overload
@@ -1811,7 +1912,15 @@ class OdooEnvironment:
     @overload
     def __getitem__(self, model_name: Literal["web_tour.tour"]) -> _WebTourTour: ...
     @overload
+    def __getitem__(self, model_name: Literal["welcome.attachment.table"]) -> _WelcomeAttachmentTable: ...
+    @overload
+    def __getitem__(
+        self, model_name: Literal["welcome.letter.attachment.mixin"]
+    ) -> _WelcomeLetterAttachmentMixin: ...
+    @overload
     def __getitem__(self, model_name: Literal["wizard.ir.model.menu.create"]) -> _WizardIrModelMenuCreate: ...
+    @overload
+    def __getitem__(self, model_name: Literal["wizard.upload.vulnerability"]) -> _WizardUploadVulnerability: ...
     @overload
     def __getitem__(self, model_name: Literal["x_"]) -> _X: ...
     @overload

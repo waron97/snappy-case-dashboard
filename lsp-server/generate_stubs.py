@@ -20,6 +20,19 @@ ODOO_DB = "sorgenia"
 # Don't skip any models - generate stubs for all
 ALREADY_TYPED = set()
 
+# Override return types for specific (model_name, method_name) pairs.
+# Value is the return type annotation string (used verbatim in the stub).
+# Use this for methods that return non-Odoo types (e.g. b2w entity wrappers)
+# or whose auto-inferred return type (Any / ...) should be more specific.
+OVERRIDES: Dict[Tuple[str, str], str] = {
+    ("helpdesk.ticket", "kv_store"): '"_SymplePbProcessData"',
+    ("service.point", "assets"): "List[Asset]",
+    ("service.point", "asset"): "Optional[Asset]",
+    ("service.point", "last_order_item"): "Optional[OrderItem]",
+    ("res.partner", "assets"): "List[Asset]",
+    ("res.partner", "contracts"): "List[Contract]",
+}
+
 # Standard models that scripts commonly use (add if referenced)
 STANDARD_MODELS_ALLOW_LIST = {
     "sale.order",
@@ -217,7 +230,11 @@ def generate_class_stub(
 
         # Custom business methods extracted from Odoo registry
         for method_name, sig in methods:
-            lines.append(f"    def {method_name}{sig}: ...")
+            override_return = OVERRIDES.get((model_name, method_name))
+            if override_return:
+                lines.append(f"    def {method_name}{sig} -> {override_return}: ...")
+            else:
+                lines.append(f"    def {method_name}{sig}: ...")
 
     lines.append("")
     return "\n".join(lines)
@@ -339,7 +356,8 @@ def main():
         "# Run lsp-server/generate_stubs.py to regenerate\n",
         "from typing import Any, Dict, List, Optional, Union, Literal",
         "import datetime as _dt",
-        "from recordset import Recordset\n",
+        "from recordset import Recordset",
+        "from b2w_entities import Asset, Contract, Order, OrderItem, Task\n",
     ]
 
     # Generate classes for each model

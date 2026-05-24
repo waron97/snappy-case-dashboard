@@ -15,6 +15,7 @@ import datetime as _dt
 from recordset import Recordset
 from odoo_environment import OdooEnvironment
 from odoo_records import _HelpdeskTicket
+from b2w_entities import Asset, Contract, Order, OrderItem, Task
 
 class Cursor:
     def execute(self, query: str, params: Any = None) -> None: ...
