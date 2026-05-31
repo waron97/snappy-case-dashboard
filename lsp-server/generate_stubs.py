@@ -26,11 +26,14 @@ ALREADY_TYPED = set()
 # or whose auto-inferred return type (Any / ...) should be more specific.
 OVERRIDES: Dict[Tuple[str, str], str] = {
     ("helpdesk.ticket", "kv_store"): '"_SymplePbProcessData"',
+    ("helpdesk.ticket", "last_staging"): '"_SymplePbProcessData"',
     ("service.point", "assets"): "List[Asset]",
     ("service.point", "asset"): "Optional[Asset]",
     ("service.point", "last_order_item"): "Optional[OrderItem]",
     ("res.partner", "assets"): "List[Asset]",
     ("res.partner", "contracts"): "List[Contract]",
+    ("market.comm.event.log", "last"): '"_MarketCommEventLog"',
+    ("m2c.activation.deactivation.payload", "last"): '"_M2cActivationDeactivationPayload"',
 }
 
 # Standard models that scripts commonly use (add if referenced)
