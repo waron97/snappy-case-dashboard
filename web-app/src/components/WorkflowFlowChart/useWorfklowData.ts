@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react';
-import { odooSearchRead } from '@app/api';
+import { useEffect, useMemo, useState } from 'react';
+import { odooSearchRead, OneToMany } from '@app/api';
 import { useQuery } from '@tanstack/react-query';
 import { ChartPhase, ChartResult } from './layout';
+
+type RawPhase = Omit<ChartPhase, 'stage_code'> & { helpdesk_stage_id: OneToMany };
 
 export default function useWorkflowData(workflowId: number, startPhaseId?: number) {
     // -------------------------------------
     // State
     // -------------------------------------
 
-    const [phases, setPhases] = useState<ChartPhase[]>([]);
+    const [phases, setPhases] = useState<RawPhase[]>([]);
     const [results, setResults] = useState<ChartResult[]>([]);
 
     const [phaseIdsToFill, setPhaseIdsToFill] = useState<number[]>([]);
@@ -20,14 +22,14 @@ export default function useWorkflowData(workflowId: number, startPhaseId?: numbe
     // Queries
     // -------------------------------------
 
-    const { data: initialPhases } = useQuery<ChartPhase[]>({
+    const { data: initialPhases } = useQuery<RawPhase[]>({
         enabled: !!workflowId && !isDone,
         queryKey: ['symple.triplet.phase', { workflowId }, 'for-workflow-chart'],
         queryFn: () =>
             odooSearchRead(
                 'symple.triplet.phase',
                 [['workflow_id', '=', workflowId]],
-                ['name', 'allowed_phase_result_ids']
+                ['name', 'allowed_phase_result_ids', 'helpdesk_stage_id']
             ),
     });
 
@@ -42,14 +44,14 @@ export default function useWorkflowData(workflowId: number, startPhaseId?: numbe
             ),
     });
 
-    const { data: complementPhases } = useQuery<ChartPhase[]>({
+    const { data: complementPhases } = useQuery<RawPhase[]>({
         enabled: !!workflowId && phaseIdsToFill.length > 0 && !isDone,
         queryKey: ['symple.triplet.phase', { ids: phaseIdsToFill }, 'for-workflow-chart'],
         queryFn: () =>
             odooSearchRead(
                 'symple.triplet.phase',
                 [['id', 'in', phaseIdsToFill]],
-                ['name', 'allowed_phase_result_ids']
+                ['name', 'allowed_phase_result_ids', 'helpdesk_stage_id']
             ),
     });
 
@@ -68,7 +70,7 @@ export default function useWorkflowData(workflowId: number, startPhaseId?: numbe
     // Methods
     // -------------------------------------
 
-    function findPhase(id: number): ChartPhase | null {
+    function findPhase(id: number): RawPhase | null {
         return (
             initialPhases?.find((p) => p.id === id) ||
             complementPhases?.find((p) => p.id === id) ||
@@ -86,9 +88,9 @@ export default function useWorkflowData(workflowId: number, startPhaseId?: numbe
 
     function traverse(
         startId: number,
-        phases: ChartPhase[] = [],
+        phases: RawPhase[] = [],
         results: ChartResult[] = []
-    ): [ChartPhase[], ChartResult[]] {
+    ): [RawPhase[], ChartResult[]] {
         const phase = findPhase(startId);
         if (!phase) {
             throw new MissingPhaseError(startId);
@@ -151,7 +153,39 @@ export default function useWorkflowData(workflowId: number, startPhaseId?: numbe
         }
     }, [initialPhases, initialResults, complementPhases, complementResults, isDone, startPhaseId]);
 
-    return { phases, results };
+    // -------------------------------------
+    // Stage codes (to detect happy-flow terminals)
+    // -------------------------------------
+
+    const stageIds = useMemo(() => {
+        const ids = new Set<number>();
+        phases.forEach((p) => {
+            const stageId = p.helpdesk_stage_id?.[0];
+            if (stageId) {
+                ids.add(stageId);
+            }
+        });
+        return Array.from(ids);
+    }, [phases]);
+
+    const { data: stages } = useQuery<{ id: number; stage_code: string | false }[]>({
+        enabled: stageIds.length > 0,
+        queryKey: ['helpdesk.stage', { ids: stageIds }, 'for-workflow-chart'],
+        queryFn: () =>
+            odooSearchRead('helpdesk.stage', [['id', 'in', stageIds]], ['stage_code']),
+    });
+
+    const phasesWithStageCode = useMemo<ChartPhase[]>(() => {
+        const stageCodeById = new Map(stages?.map((s) => [s.id, s.stage_code]));
+        return phases.map((phase) => ({
+            id: phase.id,
+            name: phase.name,
+            allowed_phase_result_ids: phase.allowed_phase_result_ids,
+            stage_code: stageCodeById.get(phase.helpdesk_stage_id?.[0]),
+        }));
+    }, [phases, stages]);
+
+    return { phases: phasesWithStageCode, results };
 }
 
 class MissingPhaseError extends Error {

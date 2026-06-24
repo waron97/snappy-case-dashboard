@@ -52,7 +52,7 @@ export default function WorkflowFlowChart(props: Props) {
 
         const activeColor = theme.colors.teal[8];
 
-        buildWorkflowChartLayout(phases, results).then((result) => {
+        buildWorkflowChartLayout(phases, results, startPhaseId).then((result) => {
             setNodes(
                 result.children?.map((node) => {
                     const phase = phases.find((p) => String(p.id) === node.id)!;
@@ -103,7 +103,7 @@ export default function WorkflowFlowChart(props: Props) {
                 }, [])
             );
         });
-    }, [results, phases, crossedPhases, crossedResults, theme]);
+    }, [results, phases, crossedPhases, crossedResults, theme, startPhaseId]);
 
     // -------------------------------------
     // Functions
