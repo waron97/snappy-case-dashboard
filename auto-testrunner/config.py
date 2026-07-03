@@ -8,6 +8,8 @@ DEVOPS_ORG = os.environ["DEVOPS_ORG"]
 DEVOPS_PROJECT = os.environ["DEVOPS_PROJECT"]
 DEVOPS_REPO = os.environ["DEVOPS_REPO"]
 DEVOPS_ACCESS_TOKEN = os.environ["DEVOPS_ACCESS_TOKEN"]
+# When set, PR comments are logged but not actually posted (safe testing).
+DEVOPS_DRYRUN = os.environ.get("DEVOPS_DRYRUN") == "1"
 REDIS_URL = os.environ.get("REDIS_URL", "redis://redis:6379")
 RESULTS_DIR = Path(os.environ.get("RESULTS_DIR", "/results"))
 
@@ -15,6 +17,18 @@ REPO_DIR = Path("/opt/repo")
 ADDONS_DIR = Path("/opt/odoo/addons")
 ODOO_BIN = "/opt/odoo/base/odoo-bin"
 ODOO_CONF = "/opt/odoo/odoo.conf"
+ODOO_INIT_CONF = "/opt/odoo/odoo-init.conf"
+
+# test-01 initialization test: upgrade changed modules on a copy of a restored
+# production-like DB. Gated by ENABLE_TEST01_INIT_TEST; normal flow untouched when off.
+ENABLE_TEST01_INIT_TEST = os.environ.get("ENABLE_TEST01_INIT_TEST") == "1"
+TEST01_BASE_DB = "sorgenia_test_01_base"
+TEST01_DUMP_DIR = Path("/opt/dump-test-01")
+SERIES = "15.0"
+# Init test runs only for PRs touching this repo subdir: heavy XML "workflow"
+# modules with no logic, excluded from unit tests, but must still upgrade cleanly.
+TEST01_INIT_PATH_PREFIX = "config/"
+TARGET_BRANCH = "15.0-dev"
 
 POLL_INTERVAL = 60
 QUEUE_KEY = "test:queue"

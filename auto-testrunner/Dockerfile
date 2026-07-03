@@ -20,10 +20,13 @@ COPY ./notifier.py /opt/notifier.py
 COPY ./poller.py /opt/poller.py
 COPY ./api.py /opt/api.py
 COPY ./orchestrator.py /opt/orchestrator.py
+COPY ./base_db.py /opt/base_db.py
+COPY ./upgrade.py /opt/upgrade.py
 RUN mkdir -p /opt/repo /results \
     && chmod +x /opt/startup.sh \
     && chown odoo:odoo /opt/startup.sh /opt/config.py /opt/ado.py /opt/runner.py \
                        /opt/notifier.py /opt/poller.py /opt/api.py /opt/orchestrator.py \
+                       /opt/base_db.py /opt/upgrade.py \
                        /opt/repo /results \
     && chown -R odoo:odoo /opt/odoo/addons
 

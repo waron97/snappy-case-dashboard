@@ -34,13 +34,13 @@ services:
     restart: unless-stopped
 
   postgres:
-    image: postgres:13
+    image: postgres:17
     environment:
       POSTGRES_USER: odoo
       POSTGRES_PASSWORD: odoo
       POSTGRES_DB: odoo_base
     volumes:
-      - postgres_test_data:/var/lib/postgresql/data
+      - /mnt/sda1/pg_testrunner_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U odoo -d odoo_base"]
       interval: 10s
@@ -62,11 +62,12 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379
       - RESULTS_DIR=/results
+      - ENABLE_TEST01_INIT_TEST=1
     volumes:
       - test_results:/results
+      - ./dump-test-01:/opt/dump-test-01:ro
     deploy:
       replicas: 2
 
 volumes:
-  postgres_test_data:
   test_results:

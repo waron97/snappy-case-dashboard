@@ -17,4 +17,9 @@ fi
 echo "Installing pre-commit..."
 pip install --quiet pre-commit
 
+if [ "$ENABLE_TEST01_INIT_TEST" = "1" ]; then
+    echo "Ensuring test-01 base DB is restored..."
+    python3 /opt/base_db.py ensure
+fi
+
 exec python3 /opt/orchestrator.py

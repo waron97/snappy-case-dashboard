@@ -3,25 +3,33 @@ import os
 import re
 import subprocess
 
+from base_db import ensure_base_db
 from config import (
     ADDONS_DIR,
     DB_HOST,
     DB_PASSWORD,
     DB_USER,
+    ENABLE_TEST01_INIT_TEST,
     EXCLUDE,
     ODOO_BIN,
     ODOO_CONF,
+    ODOO_INIT_CONF,
     REPO_DIR,
     RESULTS_DIR,
+    TARGET_BRANCH,
+    TEST01_BASE_DB,
+    TEST01_INIT_PATH_PREFIX,
     WORKER_ID,
     WORKERS_KEY,
     rdb,
 )
+from upgrade import detect_changed_modules, installed_modules
 
 log = logging.getLogger(__name__)
 
 _RUNNER_RE = re.compile(r"odoo\.tests\.runner: (\d+) failed, (\d+) error\(s\)")
 _PRE_COMMIT_RE = re.compile(r"PRE_COMMIT_STATUS: (OK|KO)")
+_INIT_RE = re.compile(r"INIT_STATUS: (OK|KO)")
 
 
 def result_exists(commit_hash):
@@ -59,6 +67,23 @@ def parse_pre_commit_result(commit_hash):
             f.seek(max(0, precommit_log.stat().st_size - 1024))
             tail = f.read().decode("utf-8", errors="replace")
         m = _PRE_COMMIT_RE.search(tail)
+        if m:
+            return m.group(1).lower()
+    except OSError:
+        pass
+    return None
+
+
+def parse_init_result(commit_hash):
+    """Read last 1 KB of init.log for INIT_STATUS sentinel. Returns 'ok', 'ko', or None."""
+    init_log = RESULTS_DIR / f"{commit_hash}.init.log"
+    if not init_log.exists():
+        return None
+    try:
+        with open(init_log, "rb") as f:
+            f.seek(max(0, init_log.stat().st_size - 1024))
+            tail = f.read().decode("utf-8", errors="replace")
+        m = _INIT_RE.search(tail)
         if m:
             return m.group(1).lower()
     except OSError:
@@ -196,6 +221,95 @@ def _run_odoo_tests(commit_hash):
         )
 
 
+def _write_init_status(init_log, status):
+    with open(init_log, "ab") as f:
+        f.write(f"\nINIT_STATUS: {status}\n".encode())
+
+
+def changed_config_modules(commit_hash):
+    """Set of module names under config/ that the PR (commit vs its merge-base with
+    the target branch) changed. Non-empty gates the init test; the same set scopes the
+    -u so we only upgrade the workflow modules the PR touched, not the whole dev↔prod
+    drift (which is huge, and pulls in migrations that need filestore/memory)."""
+    try:
+        base = subprocess.run(
+            ["git", "-C", str(REPO_DIR), "merge-base", f"origin/{TARGET_BRANCH}", commit_hash],
+            capture_output=True, text=True, check=True,
+        ).stdout.strip()
+        files = subprocess.run(
+            ["git", "-C", str(REPO_DIR), "diff", "--name-only", base, commit_hash],
+            capture_output=True, text=True, check=True,
+        ).stdout.splitlines()
+    except subprocess.CalledProcessError as e:
+        log.warning(f"[{commit_hash[:8]}] Could not diff for config changes: {e}")
+        return set()
+
+    mods = set()
+    for f in files:
+        if not f.startswith(TEST01_INIT_PATH_PREFIX):
+            continue
+        parts = f.split("/")
+        if len(parts) >= 2 and parts[1]:  # config/<module>/...
+            mods.add(parts[1])
+    return mods
+
+
+def _run_init_test(commit_hash, config_mods):
+    """Upgrade the PR's changed config/ modules on an isolated copy of the restored
+    test-01 base DB, to verify initialization succeeds on production-like data."""
+    copy_db = f"init_{commit_hash[:12]}"
+    init_log = RESULTS_DIR / f"{commit_hash}.init.log"
+
+    try:
+        ensure_base_db()
+
+        # Fast, isolated per-run copy via template (test-level isolation).
+        subprocess.run(
+            ["createdb", "-h", DB_HOST, "-U", DB_USER, "-T", TEST01_BASE_DB, copy_db],
+            env={**os.environ, **pg_env()},
+            check=True,
+        )
+
+        # Upgrade every version-changed module, plus the PR's diffed config modules
+        # even if their version was not bumped (an XML-only change still needs -u).
+        # Intersect the config set with installed modules to avoid -u on absent ones.
+        changed = set(detect_changed_modules(ODOO_INIT_CONF, copy_db))
+        installed = installed_modules(copy_db)
+        to_upgrade = sorted(changed | (config_mods & installed))
+        if not to_upgrade:
+            log.info(f"[{commit_hash[:8]}] Init test: nothing to upgrade")
+            with open(init_log, "ab") as f:
+                f.write(b"No modules to upgrade.\n")
+            _write_init_status(init_log, "OK")
+            return
+
+        log.info(f"[{commit_hash[:8]}] Init test: upgrading {len(to_upgrade)} module(s)...")
+        rc = run_cmd(
+            [
+                "python3", ODOO_BIN, "-c", ODOO_INIT_CONF, "-d", copy_db,
+                "-u", ",".join(to_upgrade), "--stop-after-init",
+                "--i18n-overwrite", "--log-level=info",
+            ],
+            log_file=init_log,
+        )
+        _write_init_status(init_log, "OK" if rc == 0 else "KO")
+        log.info(f"[{commit_hash[:8]}] Init test complete (rc={rc})")
+
+    except Exception as e:
+        log.error(f"[{commit_hash[:8]}] Init test failed: {e}")
+        try:
+            with open(init_log, "a") as f:
+                f.write(f"\n\nORCHESTRATOR ERROR: {e}\n")
+            _write_init_status(init_log, "KO")
+        except OSError:
+            pass
+    finally:
+        subprocess.run(
+            ["dropdb", "-h", DB_HOST, "-U", DB_USER, "--if-exists", copy_db],
+            env={**os.environ, **pg_env()},
+        )
+
+
 def run_test(commit_hash):
     rdb.hset(WORKERS_KEY, WORKER_ID, commit_hash)
     log.info(f"Starting test run for {commit_hash}")
@@ -233,6 +347,14 @@ def run_test(commit_hash):
             precommit_log = RESULTS_DIR / f"{commit_hash}.precommit.log"
             with open(precommit_log, "ab") as f:
                 f.write(f"\nPRE_COMMIT_ERROR: {pre_err}\nPRE_COMMIT_STATUS: KO\n".encode())
+
+        if ENABLE_TEST01_INIT_TEST:
+            config_mods = changed_config_modules(commit_hash)
+            if config_mods:
+                log.info(f"[{commit_hash[:8]}] config/ changes detected, running test-01 initialization test...")
+                _run_init_test(commit_hash, config_mods)
+            else:
+                log.info(f"[{commit_hash[:8]}] No config/ changes, skipping test-01 initialization test")
 
     except Exception as e:
         log.error(f"[{commit_hash[:8]}] Run failed: {e}")

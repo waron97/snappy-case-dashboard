@@ -2,6 +2,7 @@ import logging
 import time
 
 from api import app
+from base_db import cleanup_orphan_test_dbs
 from config import POLL_INTERVAL, QUEUE_KEY, RESULTS_DIR, rdb
 from notifier import notify_pr
 from poller import do_poll
@@ -51,6 +52,11 @@ if __name__ == "__main__":
     import threading
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+
+    try:
+        cleanup_orphan_test_dbs()
+    except Exception as e:
+        log.error(f"Orphan DB cleanup failed: {e}")
 
     t_poller = threading.Thread(target=poller, daemon=True, name="poller")
     t_poller.start()

@@ -1,8 +1,17 @@
 import base64
+import logging
 
 import requests
 
-from config import DEVOPS_ACCESS_TOKEN, DEVOPS_ORG, DEVOPS_PROJECT, DEVOPS_REPO
+from config import (
+    DEVOPS_ACCESS_TOKEN,
+    DEVOPS_DRYRUN,
+    DEVOPS_ORG,
+    DEVOPS_PROJECT,
+    DEVOPS_REPO,
+)
+
+log = logging.getLogger(__name__)
 
 
 def ado_headers():
@@ -67,6 +76,10 @@ def upload_pr_attachment(pr_id, filename, file_path):
 
 
 def post_pr_comment(pr_id, content):
+    log.info(f"PR#{pr_id} comment body:\n{content}")
+    if DEVOPS_DRYRUN:
+        log.info(f"DEVOPS_DRYRUN active, not posting comment to PR#{pr_id}")
+        return
     url = (
         f"https://dev.azure.com/{DEVOPS_ORG}/{DEVOPS_PROJECT}"
         f"/_apis/git/repositories/{DEVOPS_REPO}/pullrequests/{pr_id}"

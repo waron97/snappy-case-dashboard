@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Anchor, Badge, Button, Container, Group, Space, Table, Text, Title } from '@mantine/core';
-import { fetchPrs, PreCommitStatus, PrRecord, PrStatus, triggerDiscover } from '../actions';
+import { fetchPrs, InitStatus, PreCommitStatus, PrRecord, PrStatus, triggerDiscover } from '../actions';
 
 const STATUS_COLOR: Record<PrStatus, string> = {
     passed: 'green',
@@ -33,6 +33,16 @@ const PRE_COMMIT_COLOR: Record<PreCommitStatus, string> = {
 const PRE_COMMIT_LABEL: Record<PreCommitStatus, string> = {
     ok: 'pre-commit OK',
     ko: 'pre-commit KO',
+};
+
+const INIT_COLOR: Record<InitStatus, string> = {
+    ok: 'green',
+    ko: 'red',
+};
+
+const INIT_LABEL: Record<InitStatus, string> = {
+    ok: 'init OK',
+    ko: 'init KO',
 };
 
 export default function PrListPage() {
@@ -137,6 +147,15 @@ export default function PrListPage() {
                                                 size="sm"
                                             >
                                                 {PRE_COMMIT_LABEL[pr.preCommitStatus]}
+                                            </Badge>
+                                        )}
+                                        {pr.initStatus && (
+                                            <Badge
+                                                color={INIT_COLOR[pr.initStatus]}
+                                                variant="outline"
+                                                size="sm"
+                                            >
+                                                {INIT_LABEL[pr.initStatus]}
                                             </Badge>
                                         )}
                                     </Group>

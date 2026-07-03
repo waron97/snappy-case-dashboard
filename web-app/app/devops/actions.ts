@@ -20,6 +20,8 @@ export type PrStatus = 'passed' | 'failed' | 'unknown' | 'done' | 'running' | 'q
 
 export type PreCommitStatus = 'ok' | 'ko';
 
+export type InitStatus = 'ok' | 'ko';
+
 export type PrRecord = {
     id: number;
     title: string;
@@ -28,6 +30,7 @@ export type PrRecord = {
     commitId: string;
     status: PrStatus;
     preCommitStatus: PreCommitStatus | null;
+    initStatus: InitStatus | null;
     isDraft: boolean;
 };
 
@@ -65,7 +68,7 @@ export async function getRunningHashes(): Promise<string[]> {
     return getRedis().hvals('test:workers');
 }
 
-export async function readLog(hash: string, type: 'install' | 'test'): Promise<string | null> {
+export async function readLog(hash: string, type: 'install' | 'test' | 'init'): Promise<string | null> {
     const filePath = path.join(RESULTS, `${hash}.${type}.log`);
     try {
         return await fs.readFile(filePath, 'utf-8');

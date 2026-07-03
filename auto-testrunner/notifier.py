@@ -8,8 +8,8 @@ from ado import (
     post_pr_comment,
     upload_pr_attachment,
 )
-from config import RESULTS_DIR, STATE_TTL, rdb
-from runner import parse_pre_commit_result, parse_test_result
+from config import DEVOPS_DRYRUN, RESULTS_DIR, STATE_TTL, rdb
+from runner import parse_init_result, parse_pre_commit_result, parse_test_result
 
 log = logging.getLogger(__name__)
 
@@ -20,6 +20,8 @@ _TEST_ICON = {
     "done": "ℹ️",
 }
 _PRE_COMMIT_ICON = {"ok": "✅", "ko": "❌"}
+_INIT_ICON = {"ok": "✅", "ko": "❌"}
+_INIT_LABEL = {"ok": "Initialization succeeded", "ko": "Initialization failed"}
 _TEST_STATUS_LABEL = {
     "passed": "All tests passed",
     "failed": "Test failures detected",
@@ -108,9 +110,15 @@ def notify_pr(commit_hash, force=False):
         f"| Tests | {test_icon} {test_label} |",
     ]
 
+    init_status = parse_init_result(commit_hash)
+    if init_status:
+        init_icon = _INIT_ICON.get(init_status, "")
+        init_label = _INIT_LABEL.get(init_status, init_status)
+        lines.append(f"| Initialization (live dump) | {init_icon} {init_label} |")
+
     attachment_lines = []
 
-    if test_status in ("failed", "unknown"):
+    if test_status in ("failed", "unknown") and not DEVOPS_DRYRUN:
         test_log = RESULTS_DIR / f"{commit_hash}.test.log"
         install_log = RESULTS_DIR / f"{commit_hash}.install.log"
         upload_path = (
@@ -130,7 +138,18 @@ def notify_pr(commit_hash, force=False):
                 if test_status == "unknown":
                     upload_path.unlink(missing_ok=True)
 
-    if pre_commit_status == "ko":
+    if init_status == "ko" and not DEVOPS_DRYRUN:
+        init_log = RESULTS_DIR / f"{commit_hash}.init.log"
+        if init_log.exists():
+            try:
+                att_url = upload_pr_attachment(pr_id, f"{h8}.init.txt", init_log)
+                if att_url:
+                    attachment_lines.append(f"[Init log]({att_url})")
+            except Exception as e:
+                resp_body = getattr(getattr(e, "response", None), "text", None)
+                log.warning(f"[{h8}] Could not upload init log: {e} | response: {resp_body}")
+
+    if pre_commit_status == "ko" and not DEVOPS_DRYRUN:
         pc_log = RESULTS_DIR / f"{commit_hash}.precommit.log"
         if pc_log.exists():
             try:
@@ -150,5 +169,6 @@ def notify_pr(commit_hash, force=False):
     lines.append("*Automated comment by snappy-case-dashboard*")
 
     post_pr_comment(pr_id, "\n".join(lines))
-    mark_notified(commit_hash)
+    if not DEVOPS_DRYRUN:
+        mark_notified(commit_hash)
     log.info(f"[{h8}] Posted test result comment on PR#{pr_id}")

@@ -8,7 +8,13 @@ from ado import fetch_open_prs, fetch_pr_details
 from config import DB_HOST, DB_USER, QUEUE_KEY, RESULTS_DIR, WORKERS_KEY, rdb
 from notifier import notify_pr
 from poller import do_poll, enqueue
-from runner import parse_pre_commit_result, parse_test_result, pg_env, result_exists
+from runner import (
+    parse_init_result,
+    parse_pre_commit_result,
+    parse_test_result,
+    pg_env,
+    result_exists,
+)
 
 log = logging.getLogger(__name__)
 app = Flask(__name__)
@@ -58,6 +64,8 @@ def api_prs():
             status = "pending"
         precommit_log_exists = bool(commit and (RESULTS_DIR / f"{commit}.precommit.log").exists())
         pre_commit_status = parse_pre_commit_result(commit) if precommit_log_exists else None
+        init_log_exists = bool(commit and (RESULTS_DIR / f"{commit}.init.log").exists())
+        init_status = parse_init_result(commit) if init_log_exists else None
         result.append(
             {
                 "id": pr.get("pullRequestId"),
@@ -67,6 +75,7 @@ def api_prs():
                 "commitId": commit,
                 "status": status,
                 "preCommitStatus": pre_commit_status,
+                "initStatus": init_status,
                 "isDraft": pr.get("isDraft", False),
             }
         )
@@ -75,17 +84,17 @@ def api_prs():
 
 @app.route("/recheck/<commit_hash>", methods=["POST"])
 def api_recheck(commit_hash):
-    for suffix in ("install.log", "test.log", "precommit.log"):
+    for suffix in ("install.log", "test.log", "precommit.log", "init.log"):
         f = RESULTS_DIR / f"{commit_hash}.{suffix}"
         if f.exists():
             f.unlink()
     rdb.delete(f"test:notified:{commit_hash}")
 
-    db_name = f"odoo_{commit_hash[:12]}"
-    subprocess.run(
-        ["dropdb", "-h", DB_HOST, "-U", DB_USER, "--if-exists", db_name],
-        env={**os.environ, **pg_env()},
-    )
+    for db_name in (f"odoo_{commit_hash[:12]}", f"init_{commit_hash[:12]}"):
+        subprocess.run(
+            ["dropdb", "-h", DB_HOST, "-U", DB_USER, "--if-exists", db_name],
+            env={**os.environ, **pg_env()},
+        )
     rdb.lrem(QUEUE_KEY, 0, commit_hash)
     rdb.lpush(QUEUE_KEY, commit_hash)
     log.info(f"Force-rechecked {commit_hash[:8]}, moved to front of queue")
@@ -99,17 +108,17 @@ def api_recheck_pr(pr_id):
     if not commit_hash:
         return jsonify({"error": "could not determine latest commit"}), 400
 
-    for suffix in ("install.log", "test.log", "precommit.log"):
+    for suffix in ("install.log", "test.log", "precommit.log", "init.log"):
         f = RESULTS_DIR / f"{commit_hash}.{suffix}"
         if f.exists():
             f.unlink()
     rdb.delete(f"test:notified:{commit_hash}")
 
-    db_name = f"odoo_{commit_hash[:12]}"
-    subprocess.run(
-        ["dropdb", "-h", DB_HOST, "-U", DB_USER, "--if-exists", db_name],
-        env={**os.environ, **pg_env()},
-    )
+    for db_name in (f"odoo_{commit_hash[:12]}", f"init_{commit_hash[:12]}"):
+        subprocess.run(
+            ["dropdb", "-h", DB_HOST, "-U", DB_USER, "--if-exists", db_name],
+            env={**os.environ, **pg_env()},
+        )
     rdb.lrem(QUEUE_KEY, 0, commit_hash)
     rdb.lpush(QUEUE_KEY, commit_hash)
     log.info(f"Force-rechecked PR#{pr_id} → {commit_hash[:8]}, moved to front of queue")
