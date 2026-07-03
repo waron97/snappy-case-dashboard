@@ -5,6 +5,7 @@ import configparser
 import logging
 import subprocess
 import sys
+import time
 
 import psycopg2
 
@@ -14,8 +15,14 @@ from config import (
     DB_USER,
     ODOO_CONF,
     ODOO_INIT_CONF,
+    POOL_BUILDING_KEY,
+    POOL_CLAIM_POLL,
+    POOL_CLAIM_TIMEOUT,
+    POOL_READY_KEY,
+    POOL_SEQ_KEY,
     TEST01_BASE_DB,
     TEST01_DUMP_DIR,
+    TEST01_POOL_SIZE,
     WORKERS_KEY,
     rdb,
 )
@@ -123,6 +130,8 @@ def ensure_base_db():
         _restore()
         cur.execute(f'COMMENT ON DATABASE "{TEST01_BASE_DB}" IS %s', (READY_MARKER,))
         log.info(f"Marked {TEST01_BASE_DB} ready")
+        # Base data changed → any pre-warmed copies of the old base are stale.
+        flush_pool()
     finally:
         cur.execute("SELECT pg_advisory_unlock(%s)", (ADVISORY_LOCK_KEY,))
         conn.close()
@@ -146,14 +155,31 @@ def cleanup_orphan_test_dbs():
         env=pg_env(), capture_output=True, text=True,
     ).stdout.splitlines()
 
+    # Pooled copies tracked in Redis belong to the shared pool (possibly in use by
+    # another replica) — leave them. Only untracked, idle ones are true orphans.
+    tracked = {_decode(x) for x in rdb.smembers(POOL_READY_KEY)} | {
+        _decode(x) for x in rdb.smembers(POOL_BUILDING_KEY)
+    }
+
     live_hashes = set()
     for row in rows:
         if "|" not in row:
             continue
         datname, conns = row.split("|")
+        conns = int(conns)
         if datname == MAINTENANCE_DB:
             continue
-        if int(conns) > 0:
+        if datname.startswith(POOL_PREFIX):
+            if datname in tracked or conns > 0:
+                continue  # valid shared-pool DB or in use — keep
+            subprocess.run(
+                ["dropdb", "-h", DB_HOST, "-U", DB_USER, "--if-exists", "--force", datname],
+                env=pg_env(),
+            )
+            log.info(f"Dropped orphan pool DB {datname} (untracked in Redis)")
+            continue
+        # Per-run test DB (odoo_<hash> / init_<hash>): single-use, drop if idle.
+        if conns > 0:
             live_hashes.add(datname.split("_", 1)[1])  # 12-char commit prefix
             continue
         subprocess.run(
@@ -168,6 +194,88 @@ def cleanup_orphan_test_dbs():
         if commit[:12] not in live_hashes:
             rdb.hdel(WORKERS_KEY, wid)
             log.info(f"Reaped stale worker entry {wid} -> {commit[:8]}")
+
+
+POOL_PREFIX = "init_pool_"
+
+
+def _decode(v):
+    return v.decode() if isinstance(v, bytes) else v
+
+
+def base_ready():
+    """Quick marker check via the maintenance DB (never connects to the base)."""
+    conn = psycopg2.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, dbname=MAINTENANCE_DB
+    )
+    conn.autocommit = True
+    try:
+        return _base_marked_ready(conn.cursor())
+    finally:
+        conn.close()
+
+
+def claim_pool_db(timeout=POOL_CLAIM_TIMEOUT):
+    """Atomically take a ready pre-warmed copy, waiting for the warmer to produce one
+    rather than racing it with an own copy. Returns a DB name, or None only if none
+    became available within `timeout` (warmer presumably dead → caller does on-demand)."""
+    waited = 0
+    while True:
+        name = _decode(rdb.spop(POOL_READY_KEY))
+        if name:
+            return name
+        if waited >= timeout:
+            return None
+        time.sleep(POOL_CLAIM_POLL)
+        waited += POOL_CLAIM_POLL
+
+
+def flush_pool():
+    """Drop every pooled copy and clear the pool bookkeeping. Called after an actual
+    base re-restore, since pre-warmed copies of the old base are now stale."""
+    rows = subprocess.run(
+        [
+            "psql", "-h", DB_HOST, "-U", DB_USER, "-d", MAINTENANCE_DB, "-tAc",
+            f"SELECT datname FROM pg_database WHERE datname LIKE '{POOL_PREFIX}%'",
+        ],
+        env=pg_env(), capture_output=True, text=True,
+    ).stdout.split()
+    for name in rows:
+        subprocess.run(
+            ["dropdb", "-h", DB_HOST, "-U", DB_USER, "--if-exists", "--force", name],
+            env=pg_env(),
+        )
+    rdb.delete(POOL_READY_KEY, POOL_BUILDING_KEY)
+    if rows:
+        log.info(f"Flushed {len(rows)} stale pooled DB(s) after re-restore")
+
+
+def warm_pool():
+    """Top up the shared pool to TEST01_POOL_SIZE ready base copies. Runs on every
+    replica's warmer thread; SADD-to-building reserves a slot so replicas split the
+    work and don't overshoot. Each copy is a full CREATE DATABASE ... TEMPLATE (slow),
+    done here in the background so it's off the init-test critical path."""
+    if not base_ready():
+        return
+    while rdb.scard(POOL_READY_KEY) + rdb.scard(POOL_BUILDING_KEY) < TEST01_POOL_SIZE:
+        name = f"{POOL_PREFIX}{rdb.incr(POOL_SEQ_KEY)}"
+        rdb.sadd(POOL_BUILDING_KEY, name)
+        try:
+            subprocess.run(
+                ["createdb", "-h", DB_HOST, "-U", DB_USER, "-T", TEST01_BASE_DB, name],
+                env=pg_env(), check=True,
+            )
+        except subprocess.CalledProcessError as e:
+            log.warning(f"Pool warm failed for {name}: {e}")
+            subprocess.run(
+                ["dropdb", "-h", DB_HOST, "-U", DB_USER, "--if-exists", "--force", name],
+                env=pg_env(),
+            )
+            rdb.srem(POOL_BUILDING_KEY, name)
+            break  # avoid a tight fail loop; retry next tick
+        rdb.srem(POOL_BUILDING_KEY, name)
+        rdb.sadd(POOL_READY_KEY, name)
+        log.info(f"Warmed pool DB {name} ({rdb.scard(POOL_READY_KEY)}/{TEST01_POOL_SIZE} ready)")
 
 
 def generate_init_conf():

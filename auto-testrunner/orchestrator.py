@@ -2,8 +2,15 @@ import logging
 import time
 
 from api import app
-from base_db import cleanup_orphan_test_dbs
-from config import POLL_INTERVAL, QUEUE_KEY, RESULTS_DIR, rdb
+from base_db import cleanup_orphan_test_dbs, warm_pool
+from config import (
+    ENABLE_TEST01_INIT_TEST,
+    POLL_INTERVAL,
+    POOL_WARM_INTERVAL,
+    QUEUE_KEY,
+    RESULTS_DIR,
+    rdb,
+)
 from notifier import notify_pr
 from poller import do_poll
 from runner import result_exists, run_test
@@ -19,6 +26,16 @@ def poller():
         except Exception as e:
             log.error(f"Poller error: {e}")
         time.sleep(POLL_INTERVAL)
+
+
+def warmer():
+    while True:
+        try:
+            if ENABLE_TEST01_INIT_TEST:
+                warm_pool()
+        except Exception as e:
+            log.error(f"Pool warmer error: {e}")
+        time.sleep(POOL_WARM_INTERVAL)
 
 
 def worker():
@@ -61,6 +78,11 @@ if __name__ == "__main__":
     t_poller = threading.Thread(target=poller, daemon=True, name="poller")
     t_poller.start()
     log.info("Poller started (interval: 60s)")
+
+    if ENABLE_TEST01_INIT_TEST:
+        t_warmer = threading.Thread(target=warmer, daemon=True, name="warmer")
+        t_warmer.start()
+        log.info(f"Pool warmer started (interval: {POOL_WARM_INTERVAL}s)")
 
     t_api = threading.Thread(
         target=lambda: app.run(host="0.0.0.0", port=8765, use_reloader=False),

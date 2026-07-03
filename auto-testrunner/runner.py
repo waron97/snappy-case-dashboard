@@ -3,7 +3,7 @@ import os
 import re
 import subprocess
 
-from base_db import ensure_base_db
+from base_db import claim_pool_db, ensure_base_db
 from config import (
     ADDONS_DIR,
     DB_HOST,
@@ -257,18 +257,23 @@ def changed_config_modules(commit_hash):
 def _run_init_test(commit_hash, config_mods):
     """Upgrade the PR's changed config/ modules on an isolated copy of the restored
     test-01 base DB, to verify initialization succeeds on production-like data."""
-    copy_db = f"init_{commit_hash[:12]}"
     init_log = RESULTS_DIR / f"{commit_hash}.init.log"
 
+    # Grab a pre-warmed copy from the pool for an instant start; if the pool is empty,
+    # fall back to an on-demand template copy so a run never blocks on an empty pool.
+    copy_db = claim_pool_db()
     try:
-        ensure_base_db()
-
-        # Fast, isolated per-run copy via template (test-level isolation).
-        subprocess.run(
-            ["createdb", "-h", DB_HOST, "-U", DB_USER, "-T", TEST01_BASE_DB, copy_db],
-            env={**os.environ, **pg_env()},
-            check=True,
-        )
+        if copy_db:
+            log.info(f"[{commit_hash[:8]}] Init test: claimed pooled DB {copy_db}")
+        else:
+            ensure_base_db()
+            copy_db = f"init_{commit_hash[:12]}"
+            log.info(f"[{commit_hash[:8]}] Init test: pool empty, creating on-demand copy {copy_db}")
+            subprocess.run(
+                ["createdb", "-h", DB_HOST, "-U", DB_USER, "-T", TEST01_BASE_DB, copy_db],
+                env={**os.environ, **pg_env()},
+                check=True,
+            )
 
         # Upgrade every version-changed module, plus the PR's diffed config modules
         # even if their version was not bumped (an XML-only change still needs -u).
@@ -304,10 +309,13 @@ def _run_init_test(commit_hash, config_mods):
         except OSError:
             pass
     finally:
-        subprocess.run(
-            ["dropdb", "-h", DB_HOST, "-U", DB_USER, "--if-exists", copy_db],
-            env={**os.environ, **pg_env()},
-        )
+        # Copies are single-use: -u mutates them (partially, even on failure), so a
+        # used copy can never return to the pool — always drop; the warmer replenishes.
+        if copy_db:
+            subprocess.run(
+                ["dropdb", "-h", DB_HOST, "-U", DB_USER, "--if-exists", copy_db],
+                env={**os.environ, **pg_env()},
+            )
 
 
 def run_test(commit_hash):

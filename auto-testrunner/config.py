@@ -29,6 +29,18 @@ SERIES = "15.0"
 # modules with no logic, excluded from unit tests, but must still upgrade cleanly.
 TEST01_INIT_PATH_PREFIX = "config/"
 TARGET_BRANCH = "15.0-dev"
+# Pool of pre-created base-DB copies kept warm so init tests grab one instantly
+# instead of waiting for a ~13 min template copy. Size ~= replica_count + 2.
+TEST01_POOL_SIZE = int(os.environ.get("TEST01_POOL_SIZE", "4"))
+POOL_READY_KEY = "test:pool:ready"
+POOL_BUILDING_KEY = "test:pool:building"
+POOL_SEQ_KEY = "test:pool:seq"
+POOL_WARM_INTERVAL = 30
+# Init test waits for a warmer-provided copy rather than making its own (a copy in
+# progress is usually closer to done, and dual copies thrash disk IO). On-demand
+# creation is only a last resort if the warmer is dead past this timeout.
+POOL_CLAIM_TIMEOUT = 1500
+POOL_CLAIM_POLL = 5
 
 POLL_INTERVAL = 60
 QUEUE_KEY = "test:queue"
