@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { IconDownload } from '@tabler/icons-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge, Button, Container, Group, Space, Tabs, Text, Title } from '@mantine/core';
 import LogViewer from '@/components/LogViewer';
@@ -131,6 +132,19 @@ export default function PrDetailPage() {
         }
     }
 
+    function downloadLog(suffix: string, content: string | null | undefined) {
+        if (!content) {
+            return;
+        }
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${hash.slice(0, 8)}.${suffix}.log`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
     return (
         <Container size="xl" py="md">
             <Group justify="space-between">
@@ -186,18 +200,62 @@ export default function PrDetailPage() {
                 </Tabs.List>
 
                 <Tabs.Panel value="install" pt="md">
+                    <Group justify="flex-end" mb="xs">
+                        <Button
+                            size="xs"
+                            variant="light"
+                            leftSection={<IconDownload size={14} />}
+                            disabled={!installLog}
+                            onClick={() => downloadLog('install', installLog)}
+                        >
+                            Download
+                        </Button>
+                    </Group>
                     <LogViewer content={installLog ?? null} />
                 </Tabs.Panel>
 
                 <Tabs.Panel value="test" pt="md">
+                    <Group justify="flex-end" mb="xs">
+                        <Button
+                            size="xs"
+                            variant="light"
+                            leftSection={<IconDownload size={14} />}
+                            disabled={!testLog}
+                            onClick={() => downloadLog('test', testLog)}
+                        >
+                            Download
+                        </Button>
+                    </Group>
                     <LogViewer content={testLog ?? null} />
                 </Tabs.Panel>
 
                 <Tabs.Panel value="precommit" pt="md">
+                    <Group justify="flex-end" mb="xs">
+                        <Button
+                            size="xs"
+                            variant="light"
+                            leftSection={<IconDownload size={14} />}
+                            disabled={!preCommitLog}
+                            onClick={() => downloadLog('precommit', preCommitLog)}
+                        >
+                            Download
+                        </Button>
+                    </Group>
                     <LogViewer content={preCommitLog ?? null} />
                 </Tabs.Panel>
 
                 <Tabs.Panel value="init" pt="md">
+                    <Group justify="flex-end" mb="xs">
+                        <Button
+                            size="xs"
+                            variant="light"
+                            leftSection={<IconDownload size={14} />}
+                            disabled={!initLog}
+                            onClick={() => downloadLog('init', initLog)}
+                        >
+                            Download
+                        </Button>
+                    </Group>
                     <LogViewer content={initLog ?? null} />
                 </Tabs.Panel>
             </Tabs>

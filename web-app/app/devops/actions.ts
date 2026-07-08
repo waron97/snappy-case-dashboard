@@ -68,6 +68,33 @@ export async function getRunningHashes(): Promise<string[]> {
     return getRedis().hvals('test:workers');
 }
 
+export type SystemStatus = {
+    workers: Record<string, string>;
+    queue: string[];
+};
+
+export async function fetchStatus(): Promise<SystemStatus> {
+    const res = await fetch(`${TESTRUNNER}/status`, { cache: 'no-store' });
+    if (!res.ok) {
+        throw new Error(`/status returned ${res.status}`);
+    }
+    return res.json();
+}
+
+export type PoolStatus = {
+    ready: number;
+    building: number;
+};
+
+export async function fetchPoolStatus(): Promise<PoolStatus> {
+    const r = getRedis();
+    const [ready, building] = await Promise.all([
+        r.scard('test:pool:ready'),
+        r.scard('test:pool:building'),
+    ]);
+    return { ready, building };
+}
+
 export async function readLog(hash: string, type: 'install' | 'test' | 'init'): Promise<string | null> {
     const filePath = path.join(RESULTS, `${hash}.${type}.log`);
     try {
