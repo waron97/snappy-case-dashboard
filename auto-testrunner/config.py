@@ -10,6 +10,9 @@ DEVOPS_REPO = os.environ["DEVOPS_REPO"]
 DEVOPS_ACCESS_TOKEN = os.environ["DEVOPS_ACCESS_TOKEN"]
 # When set, PR comments are logged but not actually posted (safe testing).
 DEVOPS_DRYRUN = os.environ.get("DEVOPS_DRYRUN") == "1"
+# Container role: "control" (single instance: poller + API + warmer + base restore)
+# or "worker" (N instances: the test-running loop). See SPLIT_PROPOSAL.md.
+ROLE = os.environ.get("ROLE", "worker")
 REDIS_URL = os.environ.get("REDIS_URL", "redis://redis:6379")
 RESULTS_DIR = Path(os.environ.get("RESULTS_DIR", "/results"))
 
@@ -36,6 +39,9 @@ POOL_READY_KEY = "test:pool:ready"
 POOL_BUILDING_KEY = "test:pool:building"
 POOL_SEQ_KEY = "test:pool:seq"
 POOL_WARM_INTERVAL = 30
+# How many pool copies the (single) control warmer builds concurrently. One CREATE
+# DATABASE doesn't saturate disk IO, so 2 gives higher aggregate throughput.
+POOL_WARM_CONCURRENCY = int(os.environ.get("POOL_WARM_CONCURRENCY", "2"))
 # Init test waits for a warmer-provided copy rather than making its own (a copy in
 # progress is usually closer to done, and dual copies thrash disk IO). On-demand
 # creation is only a last resort if the warmer is dead past this timeout.

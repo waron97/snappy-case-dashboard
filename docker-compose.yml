@@ -23,7 +23,7 @@ services:
     environment:
       - ENABLE_DEVOPS=true
       - ENABLE_PER_USER_AUTH=1
-      - TESTRUNNER_API_URL=http://auto-testrunner:8765
+      - TESTRUNNER_API_URL=http://testrunner-control:8765
       - RESULTS_DIR=/results
       - REDIS_URL=redis://redis:6379
     volumes:
@@ -50,7 +50,7 @@ services:
   redis:
     image: redis:7-alpine
 
-  auto-testrunner:
+  testrunner-control:
     build: ./auto-testrunner
     depends_on:
       postgres:
@@ -60,12 +60,30 @@ services:
     env_file:
       - ./.env
     environment:
+      - ROLE=control
       - REDIS_URL=redis://redis:6379
       - RESULTS_DIR=/results
       - ENABLE_TEST01_INIT_TEST=1
     volumes:
       - test_results:/results
       - ./dump-test-01:/opt/dump-test-01:ro
+
+  testrunner-worker:
+    build: ./auto-testrunner
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    env_file:
+      - ./.env
+    environment:
+      - ROLE=worker
+      - REDIS_URL=redis://redis:6379
+      - RESULTS_DIR=/results
+      - ENABLE_TEST01_INIT_TEST=1
+    volumes:
+      - test_results:/results
     deploy:
       replicas: 2
 

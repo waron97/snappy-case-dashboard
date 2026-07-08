@@ -9,6 +9,7 @@ from config import (
     POOL_WARM_INTERVAL,
     QUEUE_KEY,
     RESULTS_DIR,
+    ROLE,
     rdb,
 )
 from notifier import notify_pr
@@ -70,27 +71,32 @@ if __name__ == "__main__":
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    try:
-        cleanup_orphan_test_dbs()
-    except Exception as e:
-        log.error(f"Orphan DB cleanup failed: {e}")
+    if ROLE == "control":
+        # Singletons + base lifecycle. No worker loop here.
+        try:
+            cleanup_orphan_test_dbs()
+        except Exception as e:
+            log.error(f"Orphan DB cleanup failed: {e}")
 
-    t_poller = threading.Thread(target=poller, daemon=True, name="poller")
-    t_poller.start()
-    log.info("Poller started (interval: 60s)")
+        t_poller = threading.Thread(target=poller, daemon=True, name="poller")
+        t_poller.start()
+        log.info("Poller started (interval: 60s)")
 
-    if ENABLE_TEST01_INIT_TEST:
-        t_warmer = threading.Thread(target=warmer, daemon=True, name="warmer")
-        t_warmer.start()
-        log.info(f"Pool warmer started (interval: {POOL_WARM_INTERVAL}s)")
+        if ENABLE_TEST01_INIT_TEST:
+            t_warmer = threading.Thread(target=warmer, daemon=True, name="warmer")
+            t_warmer.start()
+            log.info(f"Pool warmer started (interval: {POOL_WARM_INTERVAL}s)")
 
-    t_api = threading.Thread(
-        target=lambda: app.run(host="0.0.0.0", port=8765, use_reloader=False),
-        daemon=True,
-        name="api",
-    )
-    t_api.start()
-    log.info("API started on :8765")
+        t_api = threading.Thread(
+            target=lambda: app.run(host="0.0.0.0", port=8765, use_reloader=False),
+            daemon=True,
+            name="api",
+        )
+        t_api.start()
+        log.info("API started on :8765")
 
-    log.info("Worker starting...")
-    worker()
+        log.info("Control plane ready")
+        threading.Event().wait()  # block forever; daemon threads do the work
+    else:
+        log.info("Worker starting...")
+        worker()

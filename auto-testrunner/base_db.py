@@ -6,6 +6,7 @@ import logging
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 import psycopg2
 
@@ -20,6 +21,7 @@ from config import (
     POOL_CLAIM_TIMEOUT,
     POOL_READY_KEY,
     POOL_SEQ_KEY,
+    POOL_WARM_CONCURRENCY,
     TEST01_BASE_DB,
     TEST01_DUMP_DIR,
     TEST01_POOL_SIZE,
@@ -250,32 +252,43 @@ def flush_pool():
         log.info(f"Flushed {len(rows)} stale pooled DB(s) after re-restore")
 
 
+def _build_pool_db(name):
+    """Create one pooled copy (CREATE DATABASE ... TEMPLATE) and move it building→ready."""
+    try:
+        subprocess.run(
+            ["createdb", "-h", DB_HOST, "-U", DB_USER, "-T", TEST01_BASE_DB, name],
+            env=pg_env(), check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        log.warning(f"Pool warm failed for {name}: {e}")
+        subprocess.run(
+            ["dropdb", "-h", DB_HOST, "-U", DB_USER, "--if-exists", "--force", name],
+            env=pg_env(),
+        )
+        rdb.srem(POOL_BUILDING_KEY, name)
+        return
+    rdb.srem(POOL_BUILDING_KEY, name)
+    rdb.sadd(POOL_READY_KEY, name)
+    log.info(f"Warmed pool DB {name} ({rdb.scard(POOL_READY_KEY)}/{TEST01_POOL_SIZE} ready)")
+
+
 def warm_pool():
-    """Top up the shared pool to TEST01_POOL_SIZE ready base copies. Runs on every
-    replica's warmer thread; SADD-to-building reserves a slot so replicas split the
-    work and don't overshoot. Each copy is a full CREATE DATABASE ... TEMPLATE (slow),
-    done here in the background so it's off the init-test critical path."""
+    """Top up the shared pool to TEST01_POOL_SIZE ready base copies. Reserves every
+    missing slot up front (SADD building) so the size gate holds, then builds them
+    POOL_WARM_CONCURRENCY at a time — a single CREATE DATABASE doesn't saturate disk
+    IO, so a couple in parallel fill the pool faster. Runs off the critical path."""
     if not base_ready():
         return
-    while rdb.scard(POOL_READY_KEY) + rdb.scard(POOL_BUILDING_KEY) < TEST01_POOL_SIZE:
+    deficit = TEST01_POOL_SIZE - (rdb.scard(POOL_READY_KEY) + rdb.scard(POOL_BUILDING_KEY))
+    if deficit <= 0:
+        return
+    names = []
+    for _ in range(deficit):
         name = f"{POOL_PREFIX}{rdb.incr(POOL_SEQ_KEY)}"
         rdb.sadd(POOL_BUILDING_KEY, name)
-        try:
-            subprocess.run(
-                ["createdb", "-h", DB_HOST, "-U", DB_USER, "-T", TEST01_BASE_DB, name],
-                env=pg_env(), check=True,
-            )
-        except subprocess.CalledProcessError as e:
-            log.warning(f"Pool warm failed for {name}: {e}")
-            subprocess.run(
-                ["dropdb", "-h", DB_HOST, "-U", DB_USER, "--if-exists", "--force", name],
-                env=pg_env(),
-            )
-            rdb.srem(POOL_BUILDING_KEY, name)
-            break  # avoid a tight fail loop; retry next tick
-        rdb.srem(POOL_BUILDING_KEY, name)
-        rdb.sadd(POOL_READY_KEY, name)
-        log.info(f"Warmed pool DB {name} ({rdb.scard(POOL_READY_KEY)}/{TEST01_POOL_SIZE} ready)")
+        names.append(name)
+    with ThreadPoolExecutor(max_workers=POOL_WARM_CONCURRENCY) as ex:
+        list(ex.map(_build_pool_db, names))
 
 
 def generate_init_conf():
@@ -298,9 +311,11 @@ def generate_init_conf():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    if len(sys.argv) > 1 and sys.argv[1] == "ensure":
-        generate_init_conf()
+    arg = sys.argv[1] if len(sys.argv) > 1 else ""
+    if arg == "ensure":  # control: restore the base DB (needs the dump mount)
         ensure_base_db()
+    elif arg == "init-conf":  # worker: generate the odoo-init.conf it runs -u/-i with
+        generate_init_conf()
     else:
-        print("usage: base_db.py ensure")
+        print("usage: base_db.py ensure|init-conf")
         sys.exit(1)

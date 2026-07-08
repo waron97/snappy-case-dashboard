@@ -276,27 +276,31 @@ def _run_init_test(commit_hash, config_mods):
             )
 
         # Upgrade every version-changed module, plus the PR's diffed config modules
-        # even if their version was not bumped (an XML-only change still needs -u).
-        # Intersect the config set with installed modules to avoid -u on absent ones.
+        # that already exist (an XML-only change still needs -u). Config modules the PR
+        # *adds* (not yet installed on the base) are installed instead with -i, so a
+        # brand-new config_wf_* module is exercised too.
         changed = set(detect_changed_modules(ODOO_INIT_CONF, copy_db))
         installed = installed_modules(copy_db)
         to_upgrade = sorted(changed | (config_mods & installed))
-        if not to_upgrade:
-            log.info(f"[{commit_hash[:8]}] Init test: nothing to upgrade")
+        to_install = sorted(config_mods - installed)
+        if not to_upgrade and not to_install:
+            log.info(f"[{commit_hash[:8]}] Init test: nothing to install or upgrade")
             with open(init_log, "ab") as f:
-                f.write(b"No modules to upgrade.\n")
+                f.write(b"No modules to install or upgrade.\n")
             _write_init_status(init_log, "OK")
             return
 
-        log.info(f"[{commit_hash[:8]}] Init test: upgrading {len(to_upgrade)} module(s)...")
-        rc = run_cmd(
-            [
-                "python3", ODOO_BIN, "-c", ODOO_INIT_CONF, "-d", copy_db,
-                "-u", ",".join(to_upgrade), "--stop-after-init",
-                "--i18n-overwrite", "--log-level=info",
-            ],
-            log_file=init_log,
+        log.info(
+            f"[{commit_hash[:8]}] Init test: installing {len(to_install)}, "
+            f"upgrading {len(to_upgrade)} module(s)..."
         )
+        cmd = ["python3", ODOO_BIN, "-c", ODOO_INIT_CONF, "-d", copy_db]
+        if to_install:
+            cmd += ["-i", ",".join(to_install)]
+        if to_upgrade:
+            cmd += ["-u", ",".join(to_upgrade)]
+        cmd += ["--stop-after-init", "--i18n-overwrite", "--log-level=info"]
+        rc = run_cmd(cmd, log_file=init_log)
         _write_init_status(init_log, "OK" if rc == 0 else "KO")
         log.info(f"[{commit_hash[:8]}] Init test complete (rc={rc})")
 
