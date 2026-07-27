@@ -226,6 +226,21 @@ def _write_init_status(init_log, status):
         f.write(f"\nINIT_STATUS: {status}\n".encode())
 
 
+def rebase_onto_target():
+    """Rebase the current detached HEAD (PR head) onto a fresh origin/TARGET_BRANCH so
+    the init test runs the PR's config changes on top of the latest dev, matching a
+    dump that may be newer than the PR's base. `git fetch --all` (top of run_test)
+    already refreshed the remote ref. Returns 'clean' or 'conflict'; on conflict the
+    rebase is aborted, restoring HEAD to the PR head."""
+    rc = subprocess.run(
+        ["git", "-C", str(REPO_DIR), "rebase", f"origin/{TARGET_BRANCH}"],
+    ).returncode
+    if rc == 0:
+        return "clean"
+    subprocess.run(["git", "-C", str(REPO_DIR), "rebase", "--abort"])
+    return "conflict"
+
+
 def changed_config_modules(commit_hash):
     """Set of module names under config/ that the PR (commit vs its merge-base with
     the target branch) changed. Non-empty gates the init test; the same set scopes the
@@ -294,6 +309,9 @@ def _run_init_test(commit_hash, config_mods):
             f"[{commit_hash[:8]}] Init test: installing {len(to_install)}, "
             f"upgrading {len(to_upgrade)} module(s)..."
         )
+        with open(init_log, "ab") as f:
+            f.write(f"INSTALL_MODULES: {','.join(to_install) or '(none)'}\n".encode())
+            f.write(f"CHANGED_MODULES: {','.join(to_upgrade) or '(none)'}\n".encode())
         cmd = ["python3", ODOO_BIN, "-c", ODOO_INIT_CONF, "-d", copy_db]
         if to_install:
             cmd += ["-i", ",".join(to_install)]
@@ -361,10 +379,34 @@ def run_test(commit_hash):
                 f.write(f"\nPRE_COMMIT_ERROR: {pre_err}\nPRE_COMMIT_STATUS: KO\n".encode())
 
         if ENABLE_TEST01_INIT_TEST:
+            # Compute the PR's changed config modules BEFORE rebasing: it diffs explicit
+            # merge-base..commit_hash refs, so it stays correct regardless of HEAD.
             config_mods = changed_config_modules(commit_hash)
             if config_mods:
                 log.info(f"[{commit_hash[:8]}] config/ changes detected, running test-01 initialization test...")
-                _run_init_test(commit_hash, config_mods)
+                # Rebase the PR onto the latest dev so init runs against code that
+                # matches a (possibly newer) dump; conflicts fail the init test.
+                rebase = rebase_onto_target()
+                if rebase != "clean":
+                    log.warning(f"[{commit_hash[:8]}] Init test: rebase onto {TARGET_BRANCH} -> {rebase}")
+                    init_log = RESULTS_DIR / f"{commit_hash}.init.log"
+                    with open(init_log, "ab") as f:
+                        f.write(
+                            f"Rebase onto origin/{TARGET_BRANCH} failed: {rebase}. "
+                            "PR conflicts with the latest dev; resolve before merge.\n".encode()
+                        )
+                    _write_init_status(init_log, "KO")
+                else:
+                    # Re-sync the rebased tree so the init test reads the latest
+                    # manifests and code (rebase mutated REPO_DIR only, not ADDONS_DIR).
+                    subprocess.run(
+                        [
+                            "rsync", "-a", "--delete", "--exclude=.git", "--exclude=symple_addons",
+                            str(REPO_DIR) + "/", str(ADDONS_DIR) + "/",
+                        ],
+                        check=True,
+                    )
+                    _run_init_test(commit_hash, config_mods)
             else:
                 log.info(f"[{commit_hash[:8]}] No config/ changes, skipping test-01 initialization test")
 
