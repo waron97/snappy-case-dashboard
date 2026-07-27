@@ -1,7 +1,14 @@
 import { ipcMain } from 'electron'
 import * as odoo from './backend/odoo'
 import * as devops from './backend/devops'
-import { getSettings, saveSettings, type Settings } from './backend/settings'
+import { invalidateToken } from './backend/keycloak'
+import {
+  getStore,
+  saveProfile,
+  deleteProfile,
+  setActiveProfile,
+  type Profile
+} from './backend/settings'
 
 export function registerIpcHandlers(): void {
   ipcMain.handle('odoo:search', (_e, model, domain, offset, limit, order) =>
@@ -37,6 +44,11 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle('devops:getMyWorkItems', () => devops.getMyWorkItems())
 
-  ipcMain.handle('settings:get', () => getSettings())
-  ipcMain.handle('settings:save', (_e, settings: Settings) => saveSettings(settings))
+  ipcMain.handle('settings:getStore', () => getStore())
+  ipcMain.handle('settings:saveProfile', (_e, profile: Profile) => saveProfile(profile))
+  ipcMain.handle('settings:deleteProfile', (_e, id: string) => deleteProfile(id))
+  ipcMain.handle('settings:setActiveProfile', (_e, id: string) => {
+    setActiveProfile(id)
+    invalidateToken()
+  })
 }

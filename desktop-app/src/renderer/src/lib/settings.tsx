@@ -1,26 +1,35 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import type { Settings } from '../../../main/backend/settings'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import type { Profile, ProfileCredentials, SettingsStore } from '../../../main/backend/settings'
 
-export type { Settings }
+export type { Profile, ProfileCredentials, SettingsStore }
 
 interface SettingsContextValue {
-  settings: Settings | null
+  profiles: Profile[]
+  activeProfile: Profile | null
   isConfigured: boolean
   loading: boolean
-  save: (settings: Settings) => Promise<void>
+  saveProfile: (profile: Profile) => Promise<Profile>
+  deleteProfile: (id: string) => Promise<void>
+  setActiveProfile: (id: string) => Promise<void>
+  refresh: () => Promise<void>
 }
 
 const SettingsContext = createContext<SettingsContextValue | null>(null)
 
 export function SettingsProvider({ children }: { children: ReactNode }): React.JSX.Element {
-  const [settings, setSettings] = useState<Settings | null>(null)
+  const [store, setStore] = useState<SettingsStore | null>(null)
   const [loading, setLoading] = useState(true)
+
+  const refresh = useCallback(async (): Promise<void> => {
+    const next = (await window.api.settings.getStore()) as SettingsStore
+    setStore(next)
+  }, [])
 
   useEffect(() => {
     let cancelled = false
-    window.api.settings.get().then((s) => {
+    window.api.settings.getStore().then((next) => {
       if (!cancelled) {
-        setSettings(s as Settings)
+        setStore(next as SettingsStore)
         setLoading(false)
       }
     })
@@ -29,15 +38,48 @@ export function SettingsProvider({ children }: { children: ReactNode }): React.J
     }
   }, [])
 
-  const save = async (next: Settings): Promise<void> => {
-    await window.api.settings.save(next)
-    setSettings(next)
-  }
+  const saveProfile = useCallback(
+    async (profile: Profile): Promise<Profile> => {
+      const saved = (await window.api.settings.saveProfile(profile)) as Profile
+      await refresh()
+      return saved
+    },
+    [refresh]
+  )
 
-  const isConfigured = Boolean(settings?.odooUid && settings?.odooApiKey)
+  const deleteProfile = useCallback(
+    async (id: string): Promise<void> => {
+      await window.api.settings.deleteProfile(id)
+      await refresh()
+    },
+    [refresh]
+  )
+
+  const setActiveProfile = useCallback(async (id: string): Promise<void> => {
+    await window.api.settings.setActiveProfile(id)
+    // Full reload guarantees no stale React Query cache, cached Keycloak
+    // token, or open case tabs referencing the previous environment.
+    localStorage.removeItem('caseWorkspace.openTabs.v2')
+    window.location.reload()
+  }, [])
+
+  const profiles = store?.profiles ?? []
+  const activeProfile = profiles.find((p) => p.id === store?.activeProfileId) ?? null
+  const isConfigured = Boolean(activeProfile?.odooUid && activeProfile?.odooApiKey)
 
   return (
-    <SettingsContext.Provider value={{ settings, isConfigured, loading, save }}>
+    <SettingsContext.Provider
+      value={{
+        profiles,
+        activeProfile,
+        isConfigured,
+        loading,
+        saveProfile,
+        deleteProfile,
+        setActiveProfile,
+        refresh
+      }}
+    >
       {children}
     </SettingsContext.Provider>
   )

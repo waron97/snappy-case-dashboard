@@ -160,7 +160,7 @@ type Props = {
 };
 
 export default function FullRecordView({ model, recordId, isActive = true, onNameResolved }: Props) {
-    const { settings } = useSettings();
+    const { activeProfile: settings } = useSettings();
 
     useDocumentTitle(`${model} #${recordId}`, isActive);
 

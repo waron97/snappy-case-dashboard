@@ -19,7 +19,7 @@ export default function SympleWorkflow() {
 
     const params = useParams();
     const id = Number(params.id);
-    const { settings } = useSettings();
+    const { activeProfile: settings } = useSettings();
 
     // -------------------------------------
     // Queries

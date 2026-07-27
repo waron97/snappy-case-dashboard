@@ -62,7 +62,7 @@ export default function Ticket({ id, isActive = true, onNameResolved }: Props) {
     // -------------------------------------
 
     const queryClient = useQueryClient();
-    const { settings } = useSettings();
+    const { activeProfile: settings } = useSettings();
     const [isClearing, setIsClearing] = useState(false);
     const [isCaseDone, setIsCaseDone] = useState(false);
     const [isLocked, setIsLocked] = useState(true);

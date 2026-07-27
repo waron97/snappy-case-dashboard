@@ -21,7 +21,7 @@ export default function RelationDropdownBase(props: Props) {
     // -------------------------------------
     // Hooks
     // -------------------------------------
-    const { settings } = useSettings();
+    const { activeProfile: settings } = useSettings();
 
     // -------------------------------------
     // Queries

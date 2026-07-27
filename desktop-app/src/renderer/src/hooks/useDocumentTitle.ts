@@ -12,7 +12,7 @@ function titlePrefix(odooDb: string | undefined): string {
 }
 
 export function useDocumentTitle(title?: string, active: boolean = true): void {
-  const { settings } = useSettings()
+  const { activeProfile: settings } = useSettings()
 
   useEffect(() => {
     if (!active) return

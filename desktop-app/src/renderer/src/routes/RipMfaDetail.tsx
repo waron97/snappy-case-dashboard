@@ -15,7 +15,7 @@ export default function MFARecord() {
     // -------------------------------------
 
     const { id } = useParams();
-    const { settings } = useSettings();
+    const { activeProfile: settings } = useSettings();
     const numId = parseInt(String(id), 10);
 
     // -------------------------------------

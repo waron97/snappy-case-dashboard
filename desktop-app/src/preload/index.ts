@@ -49,8 +49,12 @@ const api = {
     getMyWorkItems: (): Promise<unknown> => ipcRenderer.invoke('devops:getMyWorkItems')
   },
   settings: {
-    get: (): Promise<unknown> => ipcRenderer.invoke('settings:get'),
-    save: (settings: unknown): Promise<void> => ipcRenderer.invoke('settings:save', settings)
+    getStore: (): Promise<unknown> => ipcRenderer.invoke('settings:getStore'),
+    saveProfile: (profile: unknown): Promise<unknown> =>
+      ipcRenderer.invoke('settings:saveProfile', profile),
+    deleteProfile: (id: string): Promise<void> => ipcRenderer.invoke('settings:deleteProfile', id),
+    setActiveProfile: (id: string): Promise<void> =>
+      ipcRenderer.invoke('settings:setActiveProfile', id)
   }
 }
 
