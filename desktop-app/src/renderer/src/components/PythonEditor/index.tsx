@@ -52,24 +52,33 @@ export default function PythonEditor({
     }
 
     const valueRef = useRef(value);
-    valueRef.current = value;
-
     const onChangeRef = useRef(onChange);
-    onChangeRef.current = onChange;
+
+    useEffect(() => {
+        valueRef.current = value;
+        onChangeRef.current = onChange;
+    }, [value, onChange]);
+
+    async function formatCode(code: string): Promise<string> {
+        await ruffReady;
+        try {
+            return format(code);
+        } catch {
+            return code;
+        }
+    }
 
     async function handleFormat() {
-        await ruffReady;
-        let code = valueRef.current;
-        try {
-            code = format(code);
-        } catch {
-            // syntax error — format unformatted
-        }
-        onChangeRef.current?.(code);
+        onChangeRef.current?.(await formatCode(valueRef.current));
     }
 
     useEffect(() => {
-        Vim.defineEx('format', 'f', handleFormat);
+        // Vim.defineEx registers this ex command globally across every mounted
+        // CodeMirror-vim instance, not per-editor — read/write via the `cm`
+        // argument so `:f` always targets whichever editor is actually focused.
+        Vim.defineEx('format', 'f', async (cm) => {
+            cm.setValue(await formatCode(cm.getValue()));
+        });
     }, []);
 
     const extensions = useMemo(() => {

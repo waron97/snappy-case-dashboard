@@ -53,14 +53,14 @@ Note: `callBit2win`'s `params?: URLSearchParams` is converted to a plain tuple a
 
 ## App Routes
 
-All under `src/renderer/src/routes/`, wired in `routes/index.tsx`:
+Most routes are wired in `routes/index.tsx` under `<AppRoutes/>`. `/` and `/helpdesk.ticket/:id` are the exception: they're owned by `components/CasesWorkspace/`, mounted as a permanent sibling of `<AppRoutes/>` in `App.tsx`'s `Shell()` (outside the `<Routes>` switch) rather than as `<Route>` entries, so it never unmounts when the user switches between the case list and open case tabs — see `lib/caseWorkspace.tsx` (`CaseTabsProvider`) for the tab state.
 
 | Route                                  | File                          | Description                                              |
 | ---------------------------------------- | ------------------------------ | ----------------------------------------------------------- |
-| `/`                                      | `CaseList.tsx`                  | Case listing with filters and infinite scroll               |
-| `/helpdesk.ticket/:id`                   | `CaseDetail.tsx`                | Case detail dashboard (active phase, chart, history, …)     |
+| `/` *(outside `<Routes>`, see above)*     | `components/CasesWorkspace/`, `CaseList.tsx` | Case list + tab strip — the list is the permanent leftmost tab |
+| `/helpdesk.ticket/:id` *(outside `<Routes>`, see above)* | `components/CasesWorkspace/`, `CaseDetail.tsx` | Opening a case adds/focuses a closable tab; background tabs stay mounted |
 | `/full-field-config/:model/:record`      | `FullFieldConfig.tsx`           | Generic field inspector — any Odoo record (debug/admin)     |
-| `/rip/mfa`, `/rip/mfa/:id`               | `RipMfaList.tsx`, `RipMfaDetail.tsx` | RIP MFA record listing/detail                          |
+| `/rip/mfa/:id?`                          | `components/MfaWorkspace/`, `RipMfaList.tsx`, `RipMfaDetail.tsx` | MFA list always visible; opening a record slides up a bottom `Drawer` |
 | `/rip/logs`                              | `RipLogs.tsx`                   | Log listing/viewer                                           |
 | `/symple.workflow/:id`                   | `SympleWorkflowDetail/`         | Workflow phase/results editor                                |
 | `/devops/work-items`                     | `DevOpsWorkItems.tsx`           | "My Work Items" from Azure DevOps                             |

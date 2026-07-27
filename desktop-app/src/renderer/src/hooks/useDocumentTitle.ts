@@ -11,11 +11,12 @@ function titlePrefix(odooDb: string | undefined): string {
   return ''
 }
 
-export function useDocumentTitle(title?: string): void {
+export function useDocumentTitle(title?: string, active: boolean = true): void {
   const { settings } = useSettings()
 
   useEffect(() => {
+    if (!active) return
     const prefix = titlePrefix(settings?.odooDb)
     document.title = title ? `${prefix}${title}` : `${prefix}Snappy`
-  }, [title, settings?.odooDb])
+  }, [title, settings?.odooDb, active])
 }

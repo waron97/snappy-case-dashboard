@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { odooRead, odooSearchRead, OneToMany } from '@/lib/odoo-api';
 import { useQuery } from '@tanstack/react-query';
 import WorkflowFlowChart from '../WorkflowFlowChart';
@@ -16,17 +16,13 @@ export default function CaseWorkflowChart({
     workflowId,
     caseId,
     activePhaseId,
+    isCaseDone,
 }: {
     workflowId: number;
     caseId: number;
     activePhaseId?: number;
+    isCaseDone: boolean;
 }) {
-    // -------------------------------------
-    // Hooks
-    // -------------------------------------
-
-    const [isCaseDone, setIsCaseDone] = useState(false);
-
     // -------------------------------------
     // Queries
     // -------------------------------------
@@ -35,15 +31,6 @@ export default function CaseWorkflowChart({
         queryKey: ['symple.workflow', workflowId, 'for-workflow-chart'],
         queryFn: () =>
             odooRead('symple.workflow', [workflowId], ['triplet_phase_id']).then((res) => res[0]),
-    });
-
-    const { data: [caseFields] = [] } = useQuery<
-        { triplet_active_phase_id: OneToMany; stage_id: OneToMany }[]
-    >({
-        queryKey: ['helpdesk.ticket', caseId, 'for-workflow-chart'],
-        refetchInterval: isCaseDone ? undefined : 3 * 1000,
-        queryFn: () =>
-            odooRead('helpdesk.ticket', [caseId], ['triplet_active_phase_id', 'stage_id']),
     });
 
     const { data: caseHistory } = useQuery<CaseHistory[]>({
@@ -82,40 +69,12 @@ export default function CaseWorkflowChart({
         return [crossedPhases, crossedResults];
     }, [caseHistory]);
 
-    // -------------------------------------
-    // Effects
-    // -------------------------------------
-
-    useEffect(() => {
-        const stage = caseFields?.stage_id?.[1];
-        if (
-            stage === 'Solved' ||
-            stage === 'Cancelled' ||
-            stage === 'Done KO' ||
-            stage === 'Done'
-        ) {
-            setIsCaseDone(true);
-        } else {
-            setIsCaseDone(false);
-        }
-    }, [caseFields]);
-
-    // -------------------------------------
-    // Functions
-    // -------------------------------------
-
-    // -------------------------------------
-    // Local Variables
-    // -------------------------------------
-
-    // -------------------------------------
-
     return (
         <WorkflowFlowChart
             workflowId={workflowId}
             crossedPhases={crossedPhases}
             crossedResults={crossedResults}
-            activePhaseId={caseFields?.triplet_active_phase_id?.[0] || activePhaseId}
+            activePhaseId={activePhaseId}
             startPhaseId={workflowFields?.triplet_phase_id?.[0]}
         />
     );

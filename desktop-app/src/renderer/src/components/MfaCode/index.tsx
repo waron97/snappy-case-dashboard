@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { odooRead, odooWrite } from '@/lib/odoo-api';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { LoadingOverlay } from '@mantine/core';
 import PythonEditor from '@/components/PythonEditor';
 import UiCard from '@/components/UiCard';
@@ -65,21 +65,18 @@ export default function MfaCode({ id }: Props) {
     // -------------------------------------
 
     return (
-        <>
-            <UiCard>
-                <div style={{ position: 'relative', minHeight: 200 }}>
-                    <LoadingOverlay visible={isLoading} />
-                    {initialized && (
-                        <PythonEditor
-                            value={draft}
-                            onChange={setDraft}
-                            onSave={isDirty ? handleSave : undefined}
-                            maxHeight="800px"
-                        />
-                    )}
-                </div>
-            </UiCard>
-            <ToastContainer />
-        </>
+        <UiCard>
+            <div style={{ position: 'relative', minHeight: 200 }}>
+                <LoadingOverlay visible={isLoading} />
+                {initialized && (
+                    <PythonEditor
+                        value={draft}
+                        onChange={setDraft}
+                        onSave={isDirty ? handleSave : undefined}
+                        maxHeight="800px"
+                    />
+                )}
+            </div>
+        </UiCard>
     );
 }

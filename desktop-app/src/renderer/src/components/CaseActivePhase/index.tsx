@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { IconLock, IconLockX } from '@tabler/icons-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { Alert, Button, Center, Group, Select, Stack, Text } from '@mantine/core';
-import { odooCallMethod, odooRead, odooSearchRead, odooWrite, OneToMany } from '@/lib/odoo-api';
+import { odooCallMethod, odooRead, odooSearchRead, odooWrite } from '@/lib/odoo-api';
 import PhaseResultSelector from '../PhaseResultSelector';
 import PythonEditor from '../PythonEditor';
 import UiCard from '../UiCard';
@@ -12,16 +12,16 @@ type Props = {
     caseId: number;
     workflowId?: number;
     activePhaseId?: number;
+    isLocked: boolean;
+    onLockChange: (locked: boolean) => void;
 };
 
 export default function CaseActivePhase(props: Props) {
-    const { caseId, workflowId } = props;
+    const { caseId, workflowId, activePhaseId, isLocked, onLockChange } = props;
 
     // -------------------------------------
     // Hooks
     // -------------------------------------
-
-    const [isLocked, setIsLocked] = useState(true);
 
     const [form, setForm] = useState<{ phase: number | null; code: string }>({
         phase: null,
@@ -34,12 +34,6 @@ export default function CaseActivePhase(props: Props) {
     // Queries
     // -------------------------------------
 
-    const { data: [caseFields] = [] } = useQuery<{ triplet_active_phase_id: OneToMany }[]>({
-        queryKey: ['case', caseId, 'for-active-phase'],
-        refetchInterval: isLocked ? 3 * 1000 : undefined,
-        queryFn: () => odooRead('helpdesk.ticket', [caseId], ['triplet_active_phase_id']),
-    });
-
     const { data: workflowPhases } = useQuery<{ id: number; name: string }[]>({
         queryKey: ['workflow', 'phases', { workflowId }],
         enabled: !!workflowId,
@@ -51,8 +45,6 @@ export default function CaseActivePhase(props: Props) {
             ),
     });
 
-    const activePhaseId = caseFields?.triplet_active_phase_id?.[0];
-
     const { data: [activePhaseData] = [] } = useQuery<
         {
             id: number;
@@ -63,7 +55,7 @@ export default function CaseActivePhase(props: Props) {
         queryKey: ['phase', activePhaseId, 'for-active-phase'],
         enabled: !!activePhaseId,
         queryFn: () =>
-            odooRead('symple.triplet.phase', [activePhaseId], ['code', 'set_result_automatically']),
+            odooRead('symple.triplet.phase', [activePhaseId!], ['code', 'set_result_automatically']),
     });
 
     const phaseIdToFetch = form.phase;
@@ -93,10 +85,8 @@ export default function CaseActivePhase(props: Props) {
     // -------------------------------------
 
     useEffect(() => {
-        if (caseFields) {
-            setForm({ ...form, phase: caseFields.triplet_active_phase_id[0] });
-        }
-    }, [caseFields]);
+        setForm((f) => ({ ...f, phase: activePhaseId ?? null }));
+    }, [activePhaseId]);
 
     useEffect(() => {
         if (selectedPhaseData) {
@@ -134,9 +124,9 @@ export default function CaseActivePhase(props: Props) {
                 { triplet_phase_id: form.phase },
                 { bypass_ticket_check_write_allowed: true }
             );
-            queryClient.invalidateQueries({ queryKey: ['case', caseId, 'for-active-phase'] });
+            queryClient.invalidateQueries({ queryKey: ['case', caseId, 'for-base-view'] });
             queryClient.invalidateQueries({ queryKey: ['case-history', caseId] });
-            setIsLocked(true);
+            onLockChange(true);
         } catch (err) {
             handleSubmitError(err);
         } finally {
@@ -148,7 +138,7 @@ export default function CaseActivePhase(props: Props) {
         setRelaunching(true);
         try {
             await odooCallMethod('helpdesk.ticket', [caseId], 'run_code_and_set_result');
-            queryClient.invalidateQueries({ queryKey: ['case', caseId, 'for-active-phase'] });
+            queryClient.invalidateQueries({ queryKey: ['case', caseId, 'for-base-view'] });
             queryClient.invalidateQueries({ queryKey: ['logs', caseId] });
         } catch (err) {
             if (err instanceof Error) {
@@ -167,11 +157,11 @@ export default function CaseActivePhase(props: Props) {
 
     function handleLock() {
         if (isLocked) {
-            setIsLocked(false);
+            onLockChange(false);
         } else {
-            setIsLocked(true);
+            onLockChange(true);
             setForm({
-                phase: caseFields.triplet_active_phase_id[0],
+                phase: activePhaseId ?? null,
                 code: activePhaseData?.code || '',
             });
         }
@@ -181,7 +171,7 @@ export default function CaseActivePhase(props: Props) {
         if (isLocked) {
             return { anyChanged: false, phase: false, code: false };
         }
-        const phase = form.phase !== caseFields?.triplet_active_phase_id?.[0];
+        const phase = form.phase !== activePhaseId;
         const code = !!(selectedPhaseData?.code && form.code !== selectedPhaseData?.code);
         return { anyChanged: phase || code, phase, code };
     }
@@ -231,7 +221,7 @@ export default function CaseActivePhase(props: Props) {
                                 onClick={() => {
                                     setForm({
                                         ...form,
-                                        phase: caseFields.triplet_active_phase_id[0],
+                                        phase: activePhaseId ?? null,
                                         code: '',
                                     });
                                 }}
@@ -284,7 +274,6 @@ export default function CaseActivePhase(props: Props) {
             }
         >
             {renderContent()}
-            <ToastContainer />
         </UiCard>
     );
 }

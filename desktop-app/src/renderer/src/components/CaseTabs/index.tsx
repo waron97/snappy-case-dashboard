@@ -11,10 +11,11 @@ type Props = {
     childIds: number[];
     workflowId: number;
     activePhaseId?: number;
+    isCaseDone: boolean;
 };
 
 export default function CaseTabs(props: Props) {
-    const { caseId, servicePointIds, childIds, workflowId, activePhaseId } = props;
+    const { caseId, servicePointIds, childIds, workflowId, activePhaseId, isCaseDone } = props;
 
     return (
         <UiCard>
@@ -40,6 +41,7 @@ export default function CaseTabs(props: Props) {
                         caseId={caseId}
                         workflowId={workflowId}
                         activePhaseId={activePhaseId}
+                        isCaseDone={isCaseDone}
                     />
                 </Tabs.Panel>
             </Tabs>

@@ -1,15 +1,21 @@
-import { Link } from 'react-router-dom'
+import { Link, useMatch } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
 import { Box, Container, Group, MantineProvider, Title } from '@mantine/core'
 import { QueryProvider } from '@/components/QueryProvider'
 import HeaderNav from '@/components/HeaderNav'
 import SettingsModal from '@/components/SettingsModal'
 import OdooNavigateModal from '@/components/OdooNavigateModal'
+import CasesWorkspace from '@/components/CasesWorkspace'
+import { CaseTabsProvider } from '@/lib/caseWorkspace'
 import { SettingsProvider, useSettings } from '@/lib/settings'
 import { AppRoutes } from './routes'
 import { theme } from './theme'
 
 function Shell(): React.JSX.Element {
   const { isConfigured, loading, settings } = useSettings()
+  const matchList = useMatch('/')
+  const matchCase = useMatch('/helpdesk.ticket/:id')
+  const isCasesRoute = !!(matchList || matchCase)
 
   return (
     <QueryProvider>
@@ -66,7 +72,17 @@ function Shell(): React.JSX.Element {
         </Box>
       )}
       <OdooNavigateModal />
-      {isConfigured && <AppRoutes />}
+      <ToastContainer position="bottom-right" />
+      {isConfigured && (
+        <CaseTabsProvider>
+          <div style={{ display: isCasesRoute ? 'block' : 'none' }}>
+            <CasesWorkspace />
+          </div>
+          <div style={{ display: isCasesRoute ? 'none' : 'block' }}>
+            <AppRoutes />
+          </div>
+        </CaseTabsProvider>
+      )}
     </QueryProvider>
   )
 }

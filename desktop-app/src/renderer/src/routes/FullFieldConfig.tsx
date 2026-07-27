@@ -11,7 +11,7 @@ import {
     IconSelector,
 } from '@tabler/icons-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import {
     Alert,
     Anchor,
@@ -607,7 +607,6 @@ export default function FullRecordView() {
                     </UiCard>
                 </Grid.Col>
             </Grid>
-            <ToastContainer position="bottom-right" />
         </Container>
     );
 }

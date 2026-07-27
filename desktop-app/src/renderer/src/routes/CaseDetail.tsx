@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { IconCode, ReactNode } from '@tabler/icons-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
@@ -50,18 +50,24 @@ type BaseFields = {
     service_point_ids: number[];
 };
 
-export default function Ticket() {
+type Props = {
+    id: number;
+    isActive?: boolean;
+    onNameResolved?: (name: string) => void;
+};
+
+export default function Ticket({ id, isActive = true, onNameResolved }: Props) {
     // -------------------------------------
     // Hooks
     // -------------------------------------
 
-    const { id } = useParams();
     const queryClient = useQueryClient();
     const { settings } = useSettings();
     const [isClearing, setIsClearing] = useState(false);
     const [isCaseDone, setIsCaseDone] = useState(false);
+    const [isLocked, setIsLocked] = useState(true);
 
-    useDocumentTitle(`Case #${id}`);
+    useDocumentTitle(`Case #${id}`, isActive);
 
     // -------------------------------------
     // Queries
@@ -73,11 +79,11 @@ export default function Ticket() {
         error,
     } = useQuery<BaseFields[]>({
         queryKey: ['case', id, 'for-base-view'],
-        refetchInterval: isCaseDone ? undefined : 3 * 1000,
+        refetchInterval: isCaseDone || !isLocked ? undefined : 3 * 1000,
         queryFn: () =>
             odooRead(
                 'helpdesk.ticket',
-                [parseInt(String(id), 10)],
+                [id],
                 [
                     'name',
                     'stage_id',
@@ -117,6 +123,13 @@ export default function Ticket() {
             setIsCaseDone(false);
         }
     }, [baseFields]);
+
+    useEffect(() => {
+        const name = baseFields?.[0]?.name;
+        if (name) {
+            onNameResolved?.(name);
+        }
+    }, [baseFields, onNameResolved]);
 
     // -------------------------------------
     // Functions
@@ -298,6 +311,9 @@ export default function Ticket() {
                 <CaseActivePhase
                     caseId={caseBaseFields.id}
                     workflowId={caseBaseFields.workflow_id[0]}
+                    activePhaseId={caseBaseFields.triplet_active_phase_id[0]}
+                    isLocked={isLocked}
+                    onLockChange={setIsLocked}
                 />
                 <CaseTabs
                     caseId={caseBaseFields.id}
@@ -305,6 +321,7 @@ export default function Ticket() {
                     childIds={caseBaseFields.child_case_ids}
                     workflowId={caseBaseFields.workflow_id[0]}
                     activePhaseId={caseBaseFields.triplet_active_phase_id[0]}
+                    isCaseDone={isCaseDone}
                 />
             </Stack>
         );
