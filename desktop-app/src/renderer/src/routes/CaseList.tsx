@@ -181,7 +181,7 @@ export default function HomePage() {
             </Table.Td>
             <Table.Td>{dayjs(item.create_date).format('D/M/YY HH:mm')}</Table.Td>
             <Table.Td>
-                <Link to={`/helpdesk.ticket/${item.id}`} target="_blank">
+                <Link to={`/helpdesk.ticket/${item.id}`}>
                     <Button>
                         <IconEye size={18} />
                     </Button>
