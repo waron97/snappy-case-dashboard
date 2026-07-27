@@ -13,7 +13,7 @@
 | Dates              | Dayjs                                                   |
 | Icons              | Tabler Icons                                            |
 | Editor             | CodeMirror 6 with Python support + Vim mode (no LSP)    |
-| Packaging          | electron-builder → Linux AppImage                       |
+| Packaging          | electron-builder → Linux AppImage, Windows portable exe |
 | Package manager    | npm (`legacy-peer-deps=true` in `.npmrc` — needed for `react-json-view`'s stale React peer range) |
 
 ## Architecture
@@ -53,13 +53,13 @@ Note: `callBit2win`'s `params?: URLSearchParams` is converted to a plain tuple a
 
 ## App Routes
 
-Most routes are wired in `routes/index.tsx` under `<AppRoutes/>`. `/` and `/helpdesk.ticket/:id` are the exception: they're owned by `components/CasesWorkspace/`, mounted as a permanent sibling of `<AppRoutes/>` in `App.tsx`'s `Shell()` (outside the `<Routes>` switch) rather than as `<Route>` entries, so it never unmounts when the user switches between the case list and open case tabs — see `lib/caseWorkspace.tsx` (`CaseTabsProvider`) for the tab state.
+Most routes are wired in `routes/index.tsx` under `<AppRoutes/>`. `/`, `/helpdesk.ticket/:id`, and `/full-field-config/:model/:record` are the exception: they're all owned by `components/CasesWorkspace/`, mounted as a permanent sibling of `<AppRoutes/>` in `App.tsx`'s `Shell()` (outside the `<Routes>` switch) rather than as `<Route>` entries, so it never unmounts when the user switches between tabs. Every open tab (case detail or field inspector) is a real Mantine `Tabs.Panel` kept mounted — see `lib/caseWorkspace.tsx` (`CaseTabsProvider`), `lib/caseWorkspaceContext.ts` (the `CaseWorkspaceTab` union + `tabKey`/`tabPath` helpers) for the tab state.
 
 | Route                                  | File                          | Description                                              |
 | ---------------------------------------- | ------------------------------ | ----------------------------------------------------------- |
 | `/` *(outside `<Routes>`, see above)*     | `components/CasesWorkspace/`, `CaseList.tsx` | Case list + tab strip — the list is the permanent leftmost tab |
 | `/helpdesk.ticket/:id` *(outside `<Routes>`, see above)* | `components/CasesWorkspace/`, `CaseDetail.tsx` | Opening a case adds/focuses a closable tab; background tabs stay mounted |
-| `/full-field-config/:model/:record`      | `FullFieldConfig.tsx`           | Generic field inspector — any Odoo record (debug/admin)     |
+| `/full-field-config/:model/:record` *(outside `<Routes>`, see above)* | `components/CasesWorkspace/`, `FullFieldConfig.tsx` | Generic field inspector — any Odoo record (debug/admin); also opens as a closable tab (e.g. from the `</>` buttons or Ctrl+E) |
 | `/rip/mfa/:id?`                          | `components/MfaWorkspace/`, `RipMfaList.tsx`, `RipMfaDetail.tsx` | MFA list always visible; opening a record slides up a bottom `Drawer` |
 | `/rip/logs`                              | `RipLogs.tsx`                   | Log listing/viewer                                           |
 | `/symple.workflow/:id`                   | `SympleWorkflowDetail/`         | Workflow phase/results editor                                |
@@ -86,10 +86,14 @@ npm run build        # typecheck + electron-vite build
 ### Packaging
 
 ```bash
-npm run build
-npx electron-builder --linux AppImage
+npm run build:appimage   # Linux AppImage
+npm run build:win        # Windows portable .exe (cross-built from Linux)
 ```
 
-Output lands in `dist/`. Linux AppImage is the only packaged target for v1 (see `electron-builder.yml`) — Windows/mac are unconfigured but would be a near-free addition later via `electron-builder`'s `win`/`mac` targets if ever needed.
+Output lands in `dist/`. mac is unconfigured but would be a near-free addition later via `electron-builder`'s `mac` target if ever needed.
 
 Known runtime caveat: AppImages built by electron-builder require `libfuse2` on the host to self-mount. Distros without it by default (Ubuntu 22.04+, Debian 12+) will fail to launch the AppImage until it's installed.
+
+Cross-building the Windows target from Linux requires `wine` on the host (electron-builder shells out to it via `rcedit` to set the exe icon/metadata, even for the portable target).
+
+`productName` (electron-builder.yml) is `Snappy` — the display name shown in Explorer/Start Menu/taskbar. Deliberately kept separate from package.json's `name` (`desktop-app`), which is what Electron's `app.getName()` actually uses for the userData directory (`~/.config/desktop-app` on Linux) — changing `productName` doesn't move or orphan a user's existing encrypted settings.

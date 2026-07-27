@@ -15,7 +15,8 @@ function Shell(): React.JSX.Element {
   const { isConfigured, loading, settings } = useSettings()
   const matchList = useMatch('/')
   const matchCase = useMatch('/helpdesk.ticket/:id')
-  const isCasesRoute = !!(matchList || matchCase)
+  const matchFieldConfig = useMatch('/full-field-config/:model/:record')
+  const isCasesRoute = !!(matchList || matchCase || matchFieldConfig)
 
   return (
     <QueryProvider>

@@ -4,7 +4,8 @@ import { IconX } from '@tabler/icons-react'
 import { ActionIcon, Box, Button, Container, Group, Tabs } from '@mantine/core'
 import CaseList from '@/routes/CaseList'
 import CaseDetail from '@/routes/CaseDetail'
-import { CaseTab, useCaseTabs } from '@/lib/useCaseTabs'
+import FullFieldConfig from '@/routes/FullFieldConfig'
+import { CaseWorkspaceTab, tabKey, tabPath, useCaseTabs } from '@/lib/useCaseTabs'
 
 function TabLabel({
   label,
@@ -65,48 +66,54 @@ function TabLabel({
 }
 
 export default function CasesWorkspace(): React.JSX.Element {
-  const { tabs, activeId, setActive, closeCase, closeAll, setLabel, renameTab } = useCaseTabs()
+  const { tabs, activeKey, setActive, closeTab, closeAll, setLabel, renameTab } = useCaseTabs()
   const navigate = useNavigate()
 
-  function handleChange(value: string | null): void {
-    if (!value) return
-    const id = value === 'list' ? 'list' : parseInt(value, 10)
-    setActive(id)
-    navigate(id === 'list' ? '/' : `/helpdesk.ticket/${id}`)
+  function handleChange(key: string | null): void {
+    if (!key) return
+    const tab = tabs.find((t) => tabKey(t) === key)
+    if (!tab) return
+    setActive(key)
+    navigate(tabPath(tab))
   }
 
-  const caseTabs = tabs.filter((t): t is CaseTab & { id: number } => t.id !== 'list')
+  const openTabs = tabs.filter(
+    (t): t is CaseWorkspaceTab & { kind: 'case' | 'field-config' } => t.kind !== 'list'
+  )
 
   return (
-    <Tabs value={String(activeId)} onChange={handleChange} keepMounted>
+    <Tabs value={activeKey} onChange={handleChange} keepMounted>
       <Box style={{ borderBottom: '1px solid var(--mantine-color-gray-8)' }}>
         <Container size="xl">
           <Group justify="space-between" wrap="nowrap" gap="sm">
             <Tabs.List style={{ flex: 1, minWidth: 0 }}>
               <Tabs.Tab value="list">Cases</Tabs.Tab>
-              {caseTabs.map((tab) => (
-                <Tabs.Tab
-                  key={tab.id}
-                  value={String(tab.id)}
-                  rightSection={
-                    <ActionIcon
-                      size="xs"
-                      variant="subtle"
-                      component="span"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        closeCase(tab.id)
-                      }}
-                    >
-                      <IconX size={12} />
-                    </ActionIcon>
-                  }
-                >
-                  <TabLabel label={tab.label} onRename={(value) => renameTab(tab.id, value)} />
-                </Tabs.Tab>
-              ))}
+              {openTabs.map((tab) => {
+                const key = tabKey(tab)
+                return (
+                  <Tabs.Tab
+                    key={key}
+                    value={key}
+                    rightSection={
+                      <ActionIcon
+                        size="xs"
+                        variant="subtle"
+                        component="span"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          closeTab(key)
+                        }}
+                      >
+                        <IconX size={12} />
+                      </ActionIcon>
+                    }
+                  >
+                    <TabLabel label={tab.label} onRename={(value) => renameTab(key, value)} />
+                  </Tabs.Tab>
+                )
+              })}
             </Tabs.List>
-            {caseTabs.length > 0 && (
+            {openTabs.length > 0 && (
               <Button size="xs" variant="subtle" color="gray" onClick={closeAll}>
                 Close all
               </Button>
@@ -118,15 +125,27 @@ export default function CasesWorkspace(): React.JSX.Element {
       <Tabs.Panel value="list">
         <CaseList />
       </Tabs.Panel>
-      {caseTabs.map((tab) => (
-        <Tabs.Panel key={tab.id} value={String(tab.id)}>
-          <CaseDetail
-            id={tab.id}
-            isActive={activeId === tab.id}
-            onNameResolved={(name) => setLabel(tab.id, name)}
-          />
-        </Tabs.Panel>
-      ))}
+      {openTabs.map((tab) => {
+        const key = tabKey(tab)
+        return (
+          <Tabs.Panel key={key} value={key}>
+            {tab.kind === 'case' ? (
+              <CaseDetail
+                id={tab.id}
+                isActive={activeKey === key}
+                onNameResolved={(name) => setLabel(key, name)}
+              />
+            ) : (
+              <FullFieldConfig
+                model={tab.model}
+                recordId={tab.recordId}
+                isActive={activeKey === key}
+                onNameResolved={(name) => setLabel(key, name)}
+              />
+            )}
+          </Tabs.Panel>
+        )
+      })}
     </Tabs>
   )
 }

@@ -1,5 +1,4 @@
 import { Route, Routes } from 'react-router-dom'
-import FullFieldConfig from './FullFieldConfig'
 import MfaWorkspace from '@/components/MfaWorkspace'
 import RipLogs from './RipLogs'
 import SympleWorkflowDetail from './SympleWorkflowDetail'
@@ -8,7 +7,6 @@ import DevOpsWorkItems from './DevOpsWorkItems'
 export function AppRoutes(): React.JSX.Element {
   return (
     <Routes>
-      <Route path="/full-field-config/:model/:record" element={<FullFieldConfig />} />
       <Route path="/rip/mfa/:id?" element={<MfaWorkspace />} />
       <Route path="/rip/logs" element={<RipLogs />} />
       <Route path="/symple.workflow/:id" element={<SympleWorkflowDetail />} />

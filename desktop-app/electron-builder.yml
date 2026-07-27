@@ -1,5 +1,5 @@
 appId: com.sorgenia.snappy-dashboard
-productName: Snappy Case Dashboard
+productName: Snappy
 directories:
   buildResources: build
 files:
@@ -19,5 +19,10 @@ linux:
   synopsis: Case management dashboard
   syncDesktopName: true
 appImage:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${productName}-${version}.${ext}
+win:
+  target:
+    - portable
+portable:
+  artifactName: ${productName}-${version}.${ext}
 npmRebuild: false

@@ -1,6 +1,5 @@
 import dayjs from 'dayjs';
-import { useState, type ReactNode } from 'react';
-import { useParams } from 'react-router-dom';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
     IconChevronDown,
     IconChevronUp,
@@ -153,12 +152,17 @@ function SortTh({
     );
 }
 
-export default function FullRecordView() {
-    const { model, record } = useParams();
-    const { settings } = useSettings();
-    const id = parseInt(String(record), 10);
+type Props = {
+    model: string;
+    recordId: number;
+    isActive?: boolean;
+    onNameResolved?: (name: string) => void;
+};
 
-    useDocumentTitle(`${model} #${record}`);
+export default function FullRecordView({ model, recordId, isActive = true, onNameResolved }: Props) {
+    const { settings } = useSettings();
+
+    useDocumentTitle(`${model} #${recordId}`, isActive);
 
     const [search, setSearch] = useState('');
     const [debouncedSearch] = useDebouncedValue(search, 300);
@@ -173,9 +177,15 @@ export default function FullRecordView() {
     const queryClient = useQueryClient();
 
     const { data: name } = useQuery({
-        queryKey: [model, record, 'name'],
-        queryFn: () => odooNameGet(String(model), [id]).then((res) => res[0][1]),
+        queryKey: [model, recordId, 'name'],
+        queryFn: () => odooNameGet(String(model), [recordId]).then((res) => res[0][1]),
     });
+
+    useEffect(() => {
+        if (name) {
+            onNameResolved?.(name);
+        }
+    }, [name, onNameResolved]);
 
     const { data: fieldDefs, isLoading: fieldsLoading } = useQuery({
         queryKey: ['fields-get', model],
@@ -200,8 +210,8 @@ export default function FullRecordView() {
         : [];
 
     const { data: records, isLoading: recordLoading } = useQuery({
-        queryKey: ['record', model, record],
-        queryFn: () => odooRead(String(model), [id], fieldNames),
+        queryKey: ['record', model, recordId],
+        queryFn: () => odooRead(String(model), [recordId], fieldNames),
         enabled: fieldNames.length > 0,
     });
 
@@ -222,10 +232,10 @@ export default function FullRecordView() {
     async function handleSave() {
         setSaving(true);
         try {
-            await odooWrite(String(model), [id], edits, {
+            await odooWrite(String(model), [recordId], edits, {
                 bypass_ticket_check_write_allowed: true,
             });
-            queryClient.invalidateQueries({ queryKey: ['record', model, record] });
+            queryClient.invalidateQueries({ queryKey: ['record', model, recordId] });
             setEdits({});
             setLocked(true);
         } catch (err) {
@@ -429,9 +439,9 @@ export default function FullRecordView() {
     return (
         <Container size="xl" py="xl">
             <Group mb="md" align="center" justify="space-between">
-                <Title>{name || `${record} #${id}`}</Title>
+                <Title>{name || `Record #${recordId}`}</Title>
                 <Anchor
-                    href={`${settings?.odooUrl}/web#id=${id}&model=${model}&view_type=form`}
+                    href={`${settings?.odooUrl}/web#id=${recordId}&model=${model}&view_type=form`}
                     target="_blank"
                 >
                     <Button bg="#714B67">ODOO</Button>

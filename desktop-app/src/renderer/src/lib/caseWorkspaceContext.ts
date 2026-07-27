@@ -1,25 +1,34 @@
 import { createContext } from 'react'
 
-export type CaseTab = {
-  id: 'list' | number
-  label: string
-  // true once the user has manually renamed this tab — blocks the
-  // auto-label-from-case-name sync (CaseDetail's onNameResolved) from
-  // clobbering it.
-  renamed?: boolean
+export type CaseWorkspaceTab =
+  | { kind: 'list' }
+  | { kind: 'case'; id: number; label: string; renamed?: boolean }
+  | { kind: 'field-config'; model: string; recordId: number; label: string; renamed?: boolean }
+
+export function tabKey(tab: CaseWorkspaceTab): string {
+  if (tab.kind === 'list') return 'list'
+  if (tab.kind === 'case') return `case:${tab.id}`
+  return `field-config:${tab.model}:${tab.recordId}`
+}
+
+export function tabPath(tab: CaseWorkspaceTab): string {
+  if (tab.kind === 'list') return '/'
+  if (tab.kind === 'case') return `/helpdesk.ticket/${tab.id}`
+  return `/full-field-config/${tab.model}/${tab.recordId}`
 }
 
 export type CaseTabsContextValue = {
-  tabs: CaseTab[]
-  activeId: 'list' | number
+  tabs: CaseWorkspaceTab[]
+  activeKey: string
   openCase: (id: number) => void
-  closeCase: (id: number) => void
+  openFieldConfig: (model: string, recordId: number) => void
+  closeTab: (key: string) => void
   closeAll: () => void
-  setActive: (id: 'list' | number) => void
-  setLabel: (id: number, label: string) => void
-  renameTab: (id: number, label: string) => void
+  setActive: (key: string) => void
+  setLabel: (key: string, label: string) => void
+  renameTab: (key: string, label: string) => void
 }
 
 export const CaseTabsContext = createContext<CaseTabsContextValue | null>(null)
 
-export const LIST_TAB: CaseTab = { id: 'list', label: 'Cases' }
+export const LIST_TAB: CaseWorkspaceTab = { kind: 'list' }
