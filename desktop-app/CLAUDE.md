@@ -1,0 +1,95 @@
+# CLAUDE.md — snappy-case-dashboard/desktop-app
+
+## Technologies
+
+| Layer             | Tool                                                  |
+| ------------------ | ------------------------------------------------------ |
+| Shell              | Electron (main process, preload, renderer)             |
+| Bundler            | Vite via `electron-vite`                                |
+| UI                 | React 19 + TypeScript 5 (strict mode)                   |
+| Routing            | react-router v7 (`HashRouter` — required under `file://`) |
+| Component library  | Mantine 8 (core, dates, hooks)                          |
+| Server state       | TanStack React Query 5 (infinite pagination)            |
+| Dates              | Dayjs                                                   |
+| Icons              | Tabler Icons                                            |
+| Editor             | CodeMirror 6 with Python support + Vim mode (no LSP)    |
+| Packaging          | electron-builder → Linux AppImage                       |
+| Package manager    | npm (`legacy-peer-deps=true` in `.npmrc` — needed for `react-json-view`'s stale React peer range) |
+
+## Architecture
+
+Fully standalone desktop app. No server, no docker, no shared secrets. Everything the old `web-app` server-hosted deployment needed now lives locally:
+
+```
+Electron BrowserWindow (renderer: React SPA, HashRouter)
+   ⇅ IPC (contextBridge / ipcMain.handle) — see src/preload/index.ts, src/main/ipc.ts
+Electron main process
+   → src/main/backend/{keycloak,odoo,devops}.ts — direct fetch to Odoo/Keycloak/Azure DevOps
+   → src/main/backend/settings.ts — safeStorage-encrypted local settings file
+```
+
+- `src/main/` — Electron main process: window creation, IPC handlers, backend modules.
+- `src/preload/` — `contextBridge` surface exposed to the renderer as `window.api`.
+- `src/renderer/src/` — the React SPA (routes, components, hooks, lib).
+
+No LSP server, no nginx, no docker-compose. The old 3-container deployment (`gateway`/`web`/`lsp-server`) and the Next.js app it ran are gone — this repo directory is the entire application.
+
+## Settings & auth
+
+All credentials are entered once by the user into the Settings modal (gear icon, top right) and persisted encrypted via Electron `safeStorage` at `app.getPath('userData')/settings.enc`. See `src/main/backend/settings.ts` for the full field list and `src/renderer/src/components/SettingsModal/index.tsx` for the form. Access the current values from renderer code via `useSettings()` in `src/renderer/src/lib/settings.tsx`.
+
+Two independent auth layers, unchanged in shape from the old server-hosted app, just re-sourced from local settings instead of `.env`/cookies:
+
+1. **Keycloak** (`keycloakUrl`/`keycloakClientId`/`keycloakClientSecret`/`keycloakServiceUsername`/`keycloakServicePassword`) — a service-account bearer token used for **all** Odoo/Bit2win RPC calls. Cached and refreshed on 401 (`src/main/backend/keycloak.ts`).
+2. **Odoo user identity** (`odooUid`/`odooApiKey`) — the user's own uid/API key, sent inside every `execute_kw` call's args alongside the Keycloak bearer token. These two fields gate the app: the "Please Configure Your Settings" overlay shows until both are non-empty (`isConfigured` in `src/renderer/src/lib/settings.tsx`).
+
+No test-connection validation — a blank/wrong field surfaces as a `ConnectError`/`AuthError` the first time it's actually used, matching the old app's behavior with a misconfigured `.env`.
+
+## IPC surface
+
+One channel per backend function, registered in `src/main/ipc.ts`, exposed to the renderer via `window.api.*` in `src/preload/index.ts`. Renderer code never calls `window.api.*` directly — use the shims in `src/renderer/src/lib/odoo-api.ts` and `src/renderer/src/lib/devops-api.ts`, which export the same function names/signatures the old `app/api.ts`/`app/devops-api.ts` server actions used (`odooSearch`, `odooRead`, `odooWrite`, `odooSearchRead`, `odooFieldsGet`, `odooNameGet`, `odooCallMethod`, `callBit2win`, `getAssets`, `getMyWorkItems`).
+
+Note: `callBit2win`'s `params?: URLSearchParams` is converted to a plain tuple array at the IPC boundary (`URLSearchParams` isn't structured-clone-safe over `contextBridge`) and reconstructed in `src/main/ipc.ts`'s `b2w:call` handler.
+
+## App Routes
+
+All under `src/renderer/src/routes/`, wired in `routes/index.tsx`:
+
+| Route                                  | File                          | Description                                              |
+| ---------------------------------------- | ------------------------------ | ----------------------------------------------------------- |
+| `/`                                      | `CaseList.tsx`                  | Case listing with filters and infinite scroll               |
+| `/helpdesk.ticket/:id`                   | `CaseDetail.tsx`                | Case detail dashboard (active phase, chart, history, …)     |
+| `/full-field-config/:model/:record`      | `FullFieldConfig.tsx`           | Generic field inspector — any Odoo record (debug/admin)     |
+| `/rip/mfa`, `/rip/mfa/:id`               | `RipMfaList.tsx`, `RipMfaDetail.tsx` | RIP MFA record listing/detail                          |
+| `/rip/logs`                              | `RipLogs.tsx`                   | Log listing/viewer                                           |
+| `/symple.workflow/:id`                   | `SympleWorkflowDetail/`         | Workflow phase/results editor                                |
+| `/devops/work-items`                     | `DevOpsWorkItems.tsx`           | "My Work Items" from Azure DevOps                             |
+
+## Odoo Data Models
+
+Unchanged from the old app — see the original data-model diagram if needed (helpdesk.ticket / symple.workflow / symple.triplet.phase / symple.triplet.phase.result / symple.triplet.phase.history). Domain helpers live in `src/renderer/src/utils/odoo.ts` (`constructOdooDomain`, `OdooDomain`, `OdooFieldType`, `OdooFieldDefinition`).
+
+## Coding style
+
+### Imports
+
+`@/*` resolves to `src/renderer/src/*` (renderer only — see `tsconfig.web.json` and `electron.vite.config.ts`). Prefer it over relative imports for anything crossing a directory boundary.
+
+### Checks
+
+```bash
+npm run typecheck   # tsc --noEmit, both main/preload and renderer configs
+npm run lint        # ESLint 9
+npm run build        # typecheck + electron-vite build
+```
+
+### Packaging
+
+```bash
+npm run build
+npx electron-builder --linux AppImage
+```
+
+Output lands in `dist/`. Linux AppImage is the only packaged target for v1 (see `electron-builder.yml`) — Windows/mac are unconfigured but would be a near-free addition later via `electron-builder`'s `win`/`mac` targets if ever needed.
+
+Known runtime caveat: AppImages built by electron-builder require `libfuse2` on the host to self-mount. Distros without it by default (Ubuntu 22.04+, Debian 12+) will fail to launch the AppImage until it's installed.

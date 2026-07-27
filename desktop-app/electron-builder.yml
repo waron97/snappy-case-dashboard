@@ -1,0 +1,23 @@
+appId: com.sorgenia.snappy-dashboard
+productName: Snappy Case Dashboard
+directories:
+  buildResources: build
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+asarUnpack:
+  - resources/**
+linux:
+  target:
+    - AppImage
+  maintainer: sorgenia
+  category: Utility
+  synopsis: Case management dashboard
+  syncDesktopName: true
+appImage:
+  artifactName: ${name}-${version}.${ext}
+npmRebuild: false
