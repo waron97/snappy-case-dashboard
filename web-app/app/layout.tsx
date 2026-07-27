@@ -75,7 +75,7 @@ export default async function RootLayout({ children }: { children: any }) {
                                                 />
                                             </a>
                                         </Group>
-                                        <HeaderNav />
+                                        <HeaderNav hasDevOpsToken={!!credentials?.cred_devops_pat} />
                                         <Group justify="flex-end">
                                             <CredentialsModal currentValues={credentials} />
                                         </Group>

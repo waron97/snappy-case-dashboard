@@ -18,6 +18,7 @@ export default function CredentialsModal({ currentValues }: Props) {
         currentValues || {
             cred_odoo_api_key: '',
             cred_odoo_uid: '',
+            cred_devops_pat: '',
         }
     );
 
@@ -55,6 +56,15 @@ export default function CredentialsModal({ currentValues }: Props) {
                         value={formData.cred_odoo_api_key}
                         onChange={(e) =>
                             setFormData({ ...formData, cred_odoo_api_key: e.currentTarget.value })
+                        }
+                        disabled={isPending}
+                    />
+                    <PasswordInput
+                        label="Azure DevOps PAT (optional)"
+                        placeholder="personal access token"
+                        value={formData.cred_devops_pat ?? ''}
+                        onChange={(e) =>
+                            setFormData({ ...formData, cred_devops_pat: e.currentTarget.value })
                         }
                         disabled={isPending}
                     />

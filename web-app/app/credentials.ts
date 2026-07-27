@@ -20,5 +20,11 @@ export async function saveCredentials(creds: Credentials): Promise<void> {
     cookieStore.set('cred_odoo_api_key', creds.cred_odoo_api_key, cookieOptions);
     cookieStore.set('cred_odoo_uid', creds.cred_odoo_uid, cookieOptions);
 
+    if (creds.cred_devops_pat) {
+        cookieStore.set('cred_devops_pat', creds.cred_devops_pat, cookieOptions);
+    } else {
+        cookieStore.delete('cred_devops_pat');
+    }
+
     redirect('/');
 }

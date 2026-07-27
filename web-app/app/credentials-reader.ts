@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 export interface Credentials {
     cred_odoo_api_key: string;
     cred_odoo_uid: string;
+    cred_devops_pat?: string;
 }
 
 export async function getCredentials(): Promise<Credentials | null> {
@@ -10,6 +11,7 @@ export async function getCredentials(): Promise<Credentials | null> {
 
     const cred_odoo_api_key = cookieStore.get('cred_odoo_api_key')?.value;
     const cred_odoo_uid = cookieStore.get('cred_odoo_uid')?.value;
+    const cred_devops_pat = cookieStore.get('cred_devops_pat')?.value;
 
     if (!cred_odoo_api_key || !cred_odoo_uid) {
         return null;
@@ -18,5 +20,6 @@ export async function getCredentials(): Promise<Credentials | null> {
     return {
         cred_odoo_api_key,
         cred_odoo_uid,
+        cred_devops_pat,
     };
 }
