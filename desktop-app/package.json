@@ -17,7 +17,8 @@
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
     "build:appimage": "npm run build && electron-builder --linux AppImage",
-    "build:win": "npm run build && electron-builder --win portable"
+    "build:win": "npm run build && electron-builder --win portable",
+    "build:all": "npm run build && electron-builder --win portable && electron-builder --linux AppImage"
   },
   "dependencies": {
     "@codemirror/lang-json": "^6.0.2",
