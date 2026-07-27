@@ -2,6 +2,7 @@
   "name": "desktop-app",
   "version": "1.0.0",
   "description": "Case management dashboard",
+  "homepage": "https://github.com/waron97/snappy-case-dashboard",
   "main": "./out/main/index.js",
   "author": "sorgenia",
   "desktopName": "snappy-case-dashboard.desktop",
@@ -17,8 +18,10 @@
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
     "build:appimage": "npm run build && electron-builder --linux AppImage",
-    "build:win": "npm run build && electron-builder --win portable",
-    "build:all": "npm run build && electron-builder --win portable && electron-builder --linux AppImage"
+    "build:deb": "npm run build && electron-builder --linux deb",
+    "build:win": "npm run build && electron-builder --win nsis",
+    "build:all": "npm run build && electron-builder --win nsis && electron-builder --linux AppImage && electron-builder --linux deb",
+    "release": "npm run build && electron-builder --win nsis --linux AppImage --linux deb --publish always"
   },
   "dependencies": {
     "@codemirror/lang-json": "^6.0.2",
@@ -39,6 +42,7 @@
     "@wasm-fmt/ruff_fmt": "^0.15.6",
     "@xyflow/react": "^12.10.1",
     "dayjs": "^1.11.19",
+    "electron-updater": "^6.8.9",
     "elkjs": "^0.11.1",
     "react-json-view": "^1.21.3",
     "react-router-dom": "^7.9.4",

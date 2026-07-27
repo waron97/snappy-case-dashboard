@@ -9,6 +9,7 @@ import {
   setActiveProfile,
   type Profile
 } from './backend/settings'
+import { quitAndInstall } from './updater'
 
 export function registerIpcHandlers(): void {
   ipcMain.handle('odoo:search', (_e, model, domain, offset, limit, order) =>
@@ -51,4 +52,6 @@ export function registerIpcHandlers(): void {
     setActiveProfile(id)
     invalidateToken()
   })
+
+  ipcMain.handle('updater:quitAndInstall', () => quitAndInstall())
 }

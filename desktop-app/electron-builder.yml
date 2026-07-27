@@ -1,5 +1,9 @@
 appId: com.sorgenia.snappy-dashboard
 productName: Snappy
+publish:
+  provider: github
+  owner: waron97
+  repo: snappy-case-dashboard
 directories:
   buildResources: build
 files:
@@ -14,15 +18,20 @@ asarUnpack:
 linux:
   target:
     - AppImage
+    - deb
   maintainer: sorgenia
   category: Utility
   synopsis: Case management dashboard
   syncDesktopName: true
 appImage:
-  artifactName: ${productName}-${version}.${ext}
+  artifactName: ${productName}.${ext}
+deb:
+  artifactName: ${productName}.${ext}
 win:
   target:
-    - portable
-portable:
-  artifactName: ${productName}-${version}.${ext}
+    - nsis
+nsis:
+  artifactName: ${productName}-Setup.${ext}
+  oneClick: true
+  perMachine: false
 npmRebuild: false

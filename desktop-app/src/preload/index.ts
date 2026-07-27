@@ -55,6 +55,14 @@ const api = {
     deleteProfile: (id: string): Promise<void> => ipcRenderer.invoke('settings:deleteProfile', id),
     setActiveProfile: (id: string): Promise<void> =>
       ipcRenderer.invoke('settings:setActiveProfile', id)
+  },
+  updater: {
+    onUpdateDownloaded: (callback: () => void): (() => void) => {
+      const listener = (): void => callback()
+      ipcRenderer.on('updater:update-downloaded', listener)
+      return () => ipcRenderer.removeListener('updater:update-downloaded', listener)
+    },
+    quitAndInstall: (): Promise<void> => ipcRenderer.invoke('updater:quitAndInstall')
   }
 }
 

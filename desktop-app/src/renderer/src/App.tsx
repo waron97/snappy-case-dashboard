@@ -6,6 +6,7 @@ import { QueryProvider } from '@/components/QueryProvider'
 import HeaderNav from '@/components/HeaderNav'
 import ProfileSwitcher from '@/components/ProfileSwitcher'
 import OdooNavigateModal from '@/components/OdooNavigateModal'
+import UpdateNotifier from '@/components/UpdateNotifier'
 import CasesWorkspace from '@/components/CasesWorkspace'
 import { CaseTabsProvider } from '@/lib/caseWorkspace'
 import { SettingsProvider, useSettings } from '@/lib/settings'
@@ -96,6 +97,7 @@ function Shell(): React.JSX.Element {
         </>
       )}
       <ToastContainer position="bottom-right" />
+      <UpdateNotifier />
     </QueryProvider>
   )
 }

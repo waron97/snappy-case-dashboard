@@ -13,7 +13,7 @@
 | Dates              | Dayjs                                                   |
 | Icons              | Tabler Icons                                            |
 | Editor             | CodeMirror 6 with Python support + Vim mode (no LSP)    |
-| Packaging          | electron-builder → Linux AppImage, Windows portable exe |
+| Packaging          | electron-builder → Linux AppImage/deb, Windows NSIS installer, auto-update via `electron-updater` off public GitHub Releases |
 | Package manager    | npm (`legacy-peer-deps=true` in `.npmrc` — needed for `react-json-view`'s stale React peer range) |
 
 ## Architecture
@@ -87,13 +87,24 @@ npm run build        # typecheck + electron-vite build
 
 ```bash
 npm run build:appimage   # Linux AppImage
-npm run build:win        # Windows portable .exe (cross-built from Linux)
+npm run build:deb        # Linux .deb
+npm run build:win        # Windows NSIS installer (cross-built from Linux)
+npm run build:all        # all three
+npm run release          # all three + publish to GitHub Releases (needs GH_TOKEN)
 ```
 
-Output lands in `dist/`. mac is unconfigured but would be a near-free addition later via `electron-builder`'s `mac` target if ever needed.
+Output lands in `dist/`, artifact names have no version suffix (`Snappy.AppImage`, `Snappy.deb`, `Snappy-Setup.exe`) — see `electron-builder.yml`'s `artifactName` overrides. mac is unconfigured but would be a near-free addition later via `electron-builder`'s `mac` target if ever needed.
+
+Windows target is `nsis`, not `portable` — a real (one-click, per-user, no admin needed) installer, required so `electron-updater` has something to update in place. Switching back to `portable` would break Windows auto-update.
 
 Known runtime caveat: AppImages built by electron-builder require `libfuse2` on the host to self-mount. Distros without it by default (Ubuntu 22.04+, Debian 12+) will fail to launch the AppImage until it's installed.
 
-Cross-building the Windows target from Linux requires `wine` on the host (electron-builder shells out to it via `rcedit` to set the exe icon/metadata, even for the portable target).
+Cross-building the Windows target from Linux requires `wine` on the host (electron-builder shells out to it via `rcedit`/`signtool` to set the exe icon/metadata, even unsigned).
+
+### Auto-update
+
+`electron-updater` (`src/main/updater.ts`) checks the public GitHub Releases feed for `waron97/snappy-case-dashboard` (see `publish:` in `electron-builder.yml`) on launch and every 4 hours, only in packaged builds (`app.isPackaged` guard — it throws under `npm run dev`, which has no `app-update.yml`). Downloads happen silently in the background; once `update-downloaded` fires, the renderer shows a persistent toast (`components/UpdateNotifier/`) with a "Restart & update" button that calls `quitAndInstall()` via IPC (`updater:quitAndInstall`).
+
+Only AppImage and NSIS support in-place auto-update. The `.deb` artifact still gets built and published, but `electron-updater` doesn't update it — deb users update by reinstalling the new `.deb` manually. `npm run release` requires a `GH_TOKEN` env var (repo scope) to upload build artifacts to the release; downloading them at runtime needs no token since the repo is public.
 
 `productName` (electron-builder.yml) is `Snappy` — the display name shown in Explorer/Start Menu/taskbar. Deliberately kept separate from package.json's `name` (`desktop-app`), which is what Electron's `app.getName()` actually uses for the userData directory (`~/.config/desktop-app` on Linux) — changing `productName` doesn't move or orphan a user's existing encrypted settings.
