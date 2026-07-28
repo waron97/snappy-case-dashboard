@@ -62,6 +62,17 @@ const api = {
       ipcRenderer.invoke('savedDomains:save', input),
     remove: (id: string): Promise<void> => ipcRenderer.invoke('savedDomains:remove', id)
   },
+  savedTabSets: {
+    list: (profileId: string): Promise<unknown> =>
+      ipcRenderer.invoke('savedTabSets:list', profileId),
+    save: (input: {
+      id?: string
+      profileId: string
+      name: string
+      tabs: unknown[]
+    }): Promise<unknown> => ipcRenderer.invoke('savedTabSets:save', input),
+    remove: (id: string): Promise<void> => ipcRenderer.invoke('savedTabSets:remove', id)
+  },
   updater: {
     onUpdateDownloaded: (callback: () => void): (() => void) => {
       const listener = (): void => callback()

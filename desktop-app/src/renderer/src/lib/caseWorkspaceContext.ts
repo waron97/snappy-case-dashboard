@@ -24,6 +24,7 @@ export type CaseTabsContextValue = {
   openFieldConfig: (model: string, recordId: number) => void
   closeTab: (key: string) => void
   closeAll: () => void
+  loadTabs: (tabs: CaseWorkspaceTab[]) => void
   setActive: (key: string) => void
   setLabel: (key: string, label: string) => void
   renameTab: (key: string, label: string) => void

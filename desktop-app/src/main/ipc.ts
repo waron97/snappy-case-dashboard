@@ -10,6 +10,7 @@ import {
   type Profile
 } from './backend/settings'
 import { listSavedDomains, saveSavedDomain, removeSavedDomain } from './backend/savedDomains'
+import { listSavedTabSets, saveSavedTabSet, removeSavedTabSet } from './backend/savedTabSets'
 import { quitAndInstall } from './updater'
 
 export function registerIpcHandlers(): void {
@@ -60,6 +61,14 @@ export function registerIpcHandlers(): void {
     (_e, input: { id?: string; name: string; domain: string }) => saveSavedDomain(input)
   )
   ipcMain.handle('savedDomains:remove', (_e, id: string) => removeSavedDomain(id))
+
+  ipcMain.handle('savedTabSets:list', (_e, profileId: string) => listSavedTabSets(profileId))
+  ipcMain.handle(
+    'savedTabSets:save',
+    (_e, input: { id?: string; profileId: string; name: string; tabs: unknown[] }) =>
+      saveSavedTabSet(input)
+  )
+  ipcMain.handle('savedTabSets:remove', (_e, id: string) => removeSavedTabSet(id))
 
   ipcMain.handle('updater:quitAndInstall', () => quitAndInstall())
 }

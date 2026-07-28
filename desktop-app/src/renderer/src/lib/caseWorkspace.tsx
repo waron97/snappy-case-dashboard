@@ -95,6 +95,15 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
     navigate('/')
   }, [navigate])
 
+  const loadTabs = useCallback(
+    (next: CaseWorkspaceTab[]) => {
+      setTabs([LIST_TAB, ...next.filter((t) => t.kind !== 'list')])
+      setActiveKey('list')
+      navigate('/')
+    },
+    [navigate]
+  )
+
   useEffect(() => {
     const nonListTabs = tabs.filter((t) => t.kind !== 'list')
     localStorage.setItem(STORAGE_KEY, JSON.stringify(nonListTabs))
@@ -132,11 +141,23 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
       openFieldConfig,
       closeTab,
       closeAll,
+      loadTabs,
       setActive,
       setLabel,
       renameTab
     }),
-    [tabs, activeKey, openCase, openFieldConfig, closeTab, closeAll, setActive, setLabel, renameTab]
+    [
+      tabs,
+      activeKey,
+      openCase,
+      openFieldConfig,
+      closeTab,
+      closeAll,
+      loadTabs,
+      setActive,
+      setLabel,
+      renameTab
+    ]
   )
 
   return <CaseTabsContext.Provider value={value}>{children}</CaseTabsContext.Provider>
