@@ -73,6 +73,11 @@ const api = {
     }): Promise<unknown> => ipcRenderer.invoke('savedTabSets:save', input),
     remove: (id: string): Promise<void> => ipcRenderer.invoke('savedTabSets:remove', id)
   },
+  uiPrefs: {
+    getAll: (): Promise<Record<string, unknown>> => ipcRenderer.invoke('uiPrefs:getAll'),
+    set: (key: string, value: unknown): Promise<void> =>
+      ipcRenderer.invoke('uiPrefs:set', key, value)
+  },
   updater: {
     onUpdateDownloaded: (callback: () => void): (() => void) => {
       const listener = (): void => callback()

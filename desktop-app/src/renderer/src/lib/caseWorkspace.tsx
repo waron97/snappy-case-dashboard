@@ -7,32 +7,26 @@ import {
   tabKey,
   tabPath
 } from '@/lib/caseWorkspaceContext'
-import { scheduleIdleTask } from '@/lib/idleTask'
+import { getUiPref, setUiPref } from '@/lib/uiPrefs'
 
-const STORAGE_KEY = 'caseWorkspace.openTabs.v2'
+const PREF_KEY = 'caseWorkspaceOpenTabs'
 
 // Only the open tabs are persisted, not which one was focused — restoring
 // always starts on the list tab, so there's no startup race between
 // "restore the active tab" and the URL -> tabs sync effect below.
-function loadPersistedTabs(): CaseWorkspaceTab[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return [LIST_TAB]
-    const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return [LIST_TAB]
-    const tabs = parsed
-      .filter((t): t is Extract<CaseWorkspaceTab, { kind: 'case' | 'field-config' }> => {
-        if (typeof t?.label !== 'string') return false
-        if (t.kind === 'case') return typeof t.id === 'number'
-        if (t.kind === 'field-config')
-          return typeof t.model === 'string' && typeof t.recordId === 'number'
-        return false
-      })
-      .map((t) => ({ ...t, renamed: t.renamed === true }))
-    return [LIST_TAB, ...tabs]
-  } catch {
-    return [LIST_TAB]
-  }
+async function loadPersistedTabs(): Promise<CaseWorkspaceTab[]> {
+  const stored = await getUiPref<unknown>(PREF_KEY, [])
+  if (!Array.isArray(stored)) return [LIST_TAB]
+  const tabs = stored
+    .filter((t): t is Extract<CaseWorkspaceTab, { kind: 'case' | 'field-config' }> => {
+      if (typeof t?.label !== 'string') return false
+      if (t.kind === 'case') return typeof t.id === 'number'
+      if (t.kind === 'field-config')
+        return typeof t.model === 'string' && typeof t.recordId === 'number'
+      return false
+    })
+    .map((t) => ({ ...t, renamed: t.renamed === true }))
+  return [LIST_TAB, ...tabs]
 }
 
 export function CaseTabsProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
@@ -125,27 +119,27 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
   useEffect(() => {
     if (!hasRestoredRef.current) return
     const nonListTabs = tabs.filter((t) => t.kind !== 'list')
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(nonListTabs))
+    setUiPref(PREF_KEY, nonListTabs)
   }, [tabs])
 
   useEffect(() => {
-    // Chromium's localStorage under a file:// origin (required for
-    // HashRouter) takes ~3.5s to respond on its first touch in a session —
-    // see lib/colorSchemeManager.ts for the full story. Defer this read to
-    // idle time so it doesn't block the initial render, and merge rather
-    // than overwrite: the user may have already opened tabs (e.g. clicked a
-    // case from the list) in the window before this resolves.
-    const restore = (): void => {
-      const persisted = loadPersistedTabs()
+    // The restore is async (an IPC round-trip, not localStorage), so merge
+    // rather than overwrite: the user may have already opened a tab (e.g.
+    // clicked a case from the list) in the — now much smaller, but still
+    // real — window before this resolves.
+    let cancelled = false
+    loadPersistedTabs().then((persisted) => {
+      if (cancelled) return
       setTabs((current) => {
         const currentKeys = new Set(current.map(tabKey))
         const merged = [...current, ...persisted.filter((t) => !currentKeys.has(tabKey(t)))]
         return merged
       })
       hasRestoredRef.current = true
+    })
+    return () => {
+      cancelled = true
     }
-
-    return scheduleIdleTask(restore)
   }, [])
 
   // Syncs URL -> tab state, so any plain <Link>/navigate() elsewhere in the

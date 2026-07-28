@@ -11,6 +11,7 @@ import {
 } from './backend/settings'
 import { listSavedDomains, saveSavedDomain, removeSavedDomain } from './backend/savedDomains'
 import { listSavedTabSets, saveSavedTabSet, removeSavedTabSet } from './backend/savedTabSets'
+import { getUiPrefs, setUiPref } from './backend/uiPrefs'
 import { quitAndInstall } from './updater'
 
 export function registerIpcHandlers(): void {
@@ -68,6 +69,9 @@ export function registerIpcHandlers(): void {
       saveSavedTabSet(input)
   )
   ipcMain.handle('savedTabSets:remove', (_e, id: string) => removeSavedTabSet(id))
+
+  ipcMain.handle('uiPrefs:getAll', () => getUiPrefs())
+  ipcMain.handle('uiPrefs:set', (_e, key: string, value: unknown) => setUiPref(key, value))
 
   ipcMain.handle('updater:quitAndInstall', () => quitAndInstall())
 }

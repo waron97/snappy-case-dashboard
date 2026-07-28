@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { Profile, ProfileCredentials, SettingsStore } from '../../../main/backend/settings'
+import { setUiPref } from '@/lib/uiPrefs'
 
 export type { Profile, ProfileCredentials, SettingsStore }
 
@@ -59,7 +60,7 @@ export function SettingsProvider({ children }: { children: ReactNode }): React.J
     await window.api.settings.setActiveProfile(id)
     // Full reload guarantees no stale React Query cache, cached Keycloak
     // token, or open case tabs referencing the previous environment.
-    localStorage.removeItem('caseWorkspace.openTabs.v2')
+    await setUiPref('caseWorkspaceOpenTabs', [])
     window.location.reload()
   }, [])
 

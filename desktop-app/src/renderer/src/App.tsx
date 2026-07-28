@@ -9,13 +9,13 @@ import OdooNavigateModal from '@/components/OdooNavigateModal'
 import UpdateNotifier from '@/components/UpdateNotifier'
 import CasesWorkspace from '@/components/CasesWorkspace'
 import { CaseTabsProvider } from '@/lib/caseWorkspace'
-import { deferredLocalStorageColorSchemeManager } from '@/lib/colorSchemeManager'
+import { deferredUiPrefColorSchemeManager } from '@/lib/colorSchemeManager'
 import { SettingsProvider, useSettings } from '@/lib/settings'
 import { AppRoutes } from './routes'
 import SettingsPage from './routes/Settings'
 import { theme } from './theme'
 
-const colorSchemeManager = deferredLocalStorageColorSchemeManager()
+const colorSchemeManager = deferredUiPrefColorSchemeManager()
 
 function Shell(): React.JSX.Element {
   const { isConfigured, loading, activeProfile } = useSettings()
