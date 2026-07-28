@@ -9,10 +9,13 @@ import OdooNavigateModal from '@/components/OdooNavigateModal'
 import UpdateNotifier from '@/components/UpdateNotifier'
 import CasesWorkspace from '@/components/CasesWorkspace'
 import { CaseTabsProvider } from '@/lib/caseWorkspace'
+import { deferredLocalStorageColorSchemeManager } from '@/lib/colorSchemeManager'
 import { SettingsProvider, useSettings } from '@/lib/settings'
 import { AppRoutes } from './routes'
 import SettingsPage from './routes/Settings'
 import { theme } from './theme'
+
+const colorSchemeManager = deferredLocalStorageColorSchemeManager()
 
 function Shell(): React.JSX.Element {
   const { isConfigured, loading, activeProfile } = useSettings()
@@ -104,7 +107,11 @@ function Shell(): React.JSX.Element {
 
 function App(): React.JSX.Element {
   return (
-    <MantineProvider theme={theme} defaultColorScheme="dark">
+    <MantineProvider
+      theme={theme}
+      defaultColorScheme="dark"
+      colorSchemeManager={colorSchemeManager}
+    >
       <SettingsProvider>
         <Shell />
       </SettingsProvider>
