@@ -76,20 +76,13 @@ export default function MiniPathChart({ phases, results, group }: Props): React.
     let prevSpineId: string | undefined
 
     group.backbone.forEach((token, k) => {
-      const prevToken = k > 0 ? group.backbone[k - 1] : undefined
-
       if (token.type === 'node') {
-        const isRedundantExit = prevToken?.type === 'bubble' && prevToken.exit === token.phaseId
-        if (isRedundantExit) {
-          return
-        }
-
         const id = String(token.phaseId)
         if (k > 0) {
           y += SPINE_GAP
         }
         placeNode(id, 0, y, phaseNameById.get(token.phaseId) ?? token.phaseId)
-        if (prevToken?.type === 'node' && token.viaResultId !== undefined && prevSpineId) {
+        if (token.viaResultId !== undefined && prevSpineId) {
           placeEdge(
             `e-${prevSpineId}-${id}`,
             prevSpineId,
@@ -138,7 +131,7 @@ export default function MiniPathChart({ phases, results, group }: Props): React.
   }, [phases, results, group, pinkColor])
 
   return (
-    <Box w={320} h={600}>
+    <Box w={320} h={900} mah="90vh">
       <ReactFlow nodes={nodes} edges={edges} fitView colorMode="dark">
         <Background />
       </ReactFlow>

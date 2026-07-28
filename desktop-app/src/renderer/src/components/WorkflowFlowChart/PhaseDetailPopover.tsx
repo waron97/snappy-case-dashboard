@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { NodeToolbar, Position } from '@xyflow/react'
 import {
   ActionIcon,
@@ -11,13 +11,12 @@ import {
   Tabs,
   Text
 } from '@mantine/core'
-import { IconX } from '@tabler/icons-react'
+import { IconBug, IconX } from '@tabler/icons-react'
 import { ChartPhase, ChartResult } from './layout'
-import { findAllSimplePaths } from './pathfinding'
-import { detectBubbleExits } from './bubbles'
+import { detectBubbles } from './bubbles'
 import {
   BubbleToken,
-  groupPaths,
+  findGroupedPaths,
   highlightForGroup,
   HighlightedGroup,
   PathGroup
@@ -67,19 +66,19 @@ export default function PhaseDetailPopover(props: Props): React.JSX.Element {
       .filter((r): r is { result: ChartResult; otherId: number } => !!r.otherId)
   }, [results, phaseId])
 
-  const { paths, truncated } = useMemo(() => {
-    if (phaseId === null || !startPhaseId) {
-      return { paths: [], truncated: false }
-    }
-    return findAllSimplePaths(startPhaseId, phaseId, results)
-  }, [startPhaseId, phaseId, results])
-
   const resultNameById = useMemo(() => new Map(results.map((r) => [r.id, r.name])), [results])
 
-  // Detour branches that fork off and reconverge within a few hops get
-  // collapsed into one group instead of listed as fully separate paths.
-  const bubbleExitByEntry = useMemo(() => detectBubbleExits(results), [results])
-  const groups = useMemo(() => groupPaths(paths, bubbleExitByEntry), [paths, bubbleExitByEntry])
+  // Detour branches that fork off and reconverge within a few hops are
+  // detected once per graph, then collapsed into a single hop during
+  // enumeration below — their interior routes never get multiplied out.
+  const bubbles = useMemo(() => detectBubbles(results), [results])
+
+  const { groups, truncated } = useMemo(() => {
+    if (phaseId === null || !startPhaseId) {
+      return { groups: [], truncated: false }
+    }
+    return findGroupedPaths(startPhaseId, phaseId, bubbles, results)
+  }, [startPhaseId, phaseId, bubbles, results])
 
   // The distinct alternate routes folded into a group by bubble collapsing —
   // each one is a short "variant" branch the group's paths take.
@@ -92,6 +91,22 @@ export default function PhaseDetailPopover(props: Props): React.JSX.Element {
     )
   }
 
+  // Representative hop count for a group — bubbles report their shortest
+  // known route's length, since the exact count varies by variant.
+  function stepCount(group: PathGroup): number {
+    let steps = 0
+    for (const token of group.backbone) {
+      if (token.type === 'node') {
+        if (token.viaResultId !== undefined) {
+          steps += 1
+        }
+      } else {
+        steps += Math.min(...token.routes.map((r) => r.resultIds.length))
+      }
+    }
+    return steps
+  }
+
   function handleSelectGroup(index: number): void {
     if (highlightedGroup?.groupIndex === index) {
       onHighlightGroup(null)
@@ -99,6 +114,38 @@ export default function PhaseDetailPopover(props: Props): React.JSX.Element {
     }
     onHighlightGroup(highlightForGroup(index, groups[index]))
   }
+
+  // Debug snapshot of everything the bubble/grouping algorithm saw for the
+  // currently selected phase — for reporting graph-shape bugs without
+  // needing live Odoo access to reproduce them.
+  const debugPayload = useMemo(() => {
+    if (phaseId === null) {
+      return null
+    }
+    return {
+      phaseId,
+      startPhaseId,
+      phases: phases.map((p) => ({
+        id: p.id,
+        name: p.name,
+        allowed_phase_result_ids: p.allowed_phase_result_ids
+      })),
+      results: results.map((r) => ({
+        id: r.id,
+        name: r.name,
+        starting_phase_ids: r.starting_phase_ids,
+        next_phase_id: r.next_phase_id
+      })),
+      bubbles: Array.from(bubbles.entries()).map(([entry, bubble]) => ({ entry, ...bubble })),
+      groups
+    }
+  }, [phaseId, startPhaseId, phases, results, bubbles, groups])
+
+  useEffect(() => {
+    if (debugPayload) {
+      console.log('[WorkflowChart debug]', debugPayload)
+    }
+  }, [debugPayload])
 
   return (
     <NodeToolbar
@@ -113,9 +160,20 @@ export default function PhaseDetailPopover(props: Props): React.JSX.Element {
           <Text fw={600} size="sm" truncate>
             {phase?.name}
           </Text>
-          <ActionIcon size="sm" variant="subtle" color="gray" onClick={onClose}>
-            <IconX size={14} />
-          </ActionIcon>
+          <Group gap={4} wrap="nowrap">
+            <ActionIcon
+              size="sm"
+              variant="subtle"
+              color="gray"
+              title="Copy debug data (phases/results/bubbles/groups) to clipboard"
+              onClick={() => navigator.clipboard.writeText(JSON.stringify(debugPayload, null, 2))}
+            >
+              <IconBug size={14} />
+            </ActionIcon>
+            <ActionIcon size="sm" variant="subtle" color="gray" onClick={onClose}>
+              <IconX size={14} />
+            </ActionIcon>
+          </Group>
         </Group>
 
         <Tabs defaultValue="edges">
@@ -188,7 +246,7 @@ export default function PhaseDetailPopover(props: Props): React.JSX.Element {
                 Workflow has no starting phase configured.
               </Text>
             )}
-            {startPhaseId && paths.length === 0 && (
+            {startPhaseId && groups.length === 0 && (
               <Text c="dimmed" size="xs">
                 No path found from the starting phase.
               </Text>
@@ -215,7 +273,7 @@ export default function PhaseDetailPopover(props: Props): React.JSX.Element {
                             style={{ cursor: 'pointer' }}
                           >
                             <Table.Td>P{i + 1}</Table.Td>
-                            <Table.Td>{group.paths[0].resultIds.length}</Table.Td>
+                            <Table.Td>{stepCount(group)}</Table.Td>
                             <Table.Td>{variantCount > 0 ? variantCount : '—'}</Table.Td>
                           </Table.Tr>
                         )
@@ -225,7 +283,7 @@ export default function PhaseDetailPopover(props: Props): React.JSX.Element {
                 </ScrollArea.Autosize>
                 {truncated && (
                   <Text c="dimmed" size="xs">
-                    Showing first {paths.length} paths — more may exist.
+                    Showing first {groups.length} groups — more may exist.
                   </Text>
                 )}
               </Stack>

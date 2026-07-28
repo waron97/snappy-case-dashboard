@@ -2,9 +2,13 @@ import { ChartResult } from './layout'
 
 // A "bubble" is a short branch-and-reconverge: from `entry`, at least two
 // distinct short routes (<= MAX_BUBBLE_EDGES edges) lead to the same `exit`
-// node. Paths that only differ inside a bubble get grouped together instead
-// of listed as fully separate paths.
+// node. Path enumeration treats a bubble as a single entry->exit hop, so the
+// combinatorial fan-out of its interior routes never gets multiplied out
+// during the search — see pathGroups.ts's findGroupedPaths.
 export const MAX_BUBBLE_EDGES = 3
+
+export type ChartPath = { phaseIds: number[]; resultIds: number[] }
+export type Bubble = { exit: number; routes: ChartPath[] }
 
 type Adjacency = Map<number, Array<{ target: number; resultId: number }>>
 
@@ -24,64 +28,87 @@ function buildAdjacency(results: ChartResult[]): Adjacency {
   return adjacency
 }
 
-function findBubbleExit(entry: number, adjacency: Adjacency): number | undefined {
-  const routeCountByNode = new Map<number, number>()
-  const depthByNode = new Map<number, number>()
+function findBubble(entry: number, adjacency: Adjacency): Bubble | undefined {
+  const routesByNode = new Map<number, ChartPath[]>()
 
-  function walk(node: number, depth: number, visited: Set<number>): void {
+  function walk(node: number, phaseIds: number[], resultIds: number[], visited: Set<number>): void {
     if (node !== entry) {
-      routeCountByNode.set(node, (routeCountByNode.get(node) ?? 0) + 1)
-      const prevDepth = depthByNode.get(node)
-      if (prevDepth === undefined || depth < prevDepth) {
-        depthByNode.set(node, depth)
-      }
+      const routes = routesByNode.get(node) ?? []
+      routes.push({ phaseIds: [...phaseIds], resultIds: [...resultIds] })
+      routesByNode.set(node, routes)
     }
-    if (depth === MAX_BUBBLE_EDGES) {
+    if (resultIds.length === MAX_BUBBLE_EDGES) {
       return
     }
-    for (const { target } of adjacency.get(node) ?? []) {
+    for (const { target, resultId } of adjacency.get(node) ?? []) {
       if (visited.has(target)) {
         continue
       }
       visited.add(target)
-      walk(target, depth + 1, visited)
+      phaseIds.push(target)
+      resultIds.push(resultId)
+      walk(target, phaseIds, resultIds, visited)
+      resultIds.pop()
+      phaseIds.pop()
       visited.delete(target)
     }
   }
 
-  for (const { target } of adjacency.get(entry) ?? []) {
-    walk(target, 1, new Set([entry, target]))
-  }
+  walk(entry, [entry], [], new Set([entry]))
 
   let bestNode: number | undefined
   let bestDepth = Infinity
-  for (const [node, count] of routeCountByNode) {
-    if (count >= 2) {
-      const depth = depthByNode.get(node)!
+  let bestRoutes: ChartPath[] | undefined
+
+  for (const [node, routes] of routesByNode) {
+    // Keep at most one (the shortest) route per distinct first hop from
+    // entry. Two routes that only diverge deep inside an already-shared
+    // tail aren't a real fork — they're the same branch found twice.
+    const shortestByFirstHop = new Map<number, ChartPath>()
+    for (const route of routes) {
+      const firstHop = route.phaseIds[1]
+      const existing = shortestByFirstHop.get(firstHop)
+      if (!existing || route.resultIds.length < existing.resultIds.length) {
+        shortestByFirstHop.set(firstHop, route)
+      }
+    }
+    const dedupedRoutes = Array.from(shortestByFirstHop.values())
+
+    if (dedupedRoutes.length >= 2) {
+      // Depth at which a *second* distinct branch is confirmed to have
+      // reconverged here — not just the fastest branch's own arrival time.
+      // A node reached by routes of length [1, 3] isn't a real bubble exit
+      // until hop 3; ranking it by its length-1 route would wrongly make it
+      // look nearer than a node whose two routes are both length 2.
+      const lengths = dedupedRoutes.map((r) => r.resultIds.length).sort((a, b) => a - b)
+      const depth = lengths[1]
       if (depth < bestDepth) {
         bestDepth = depth
         bestNode = node
+        bestRoutes = dedupedRoutes
       }
     }
   }
-  return bestNode
+
+  return bestNode !== undefined ? { exit: bestNode, routes: bestRoutes! } : undefined
 }
 
-// entry phase id -> exit phase id, for every node that has a nearby
-// reconvergence reachable via >=2 distinct short routes.
-export function detectBubbleExits(results: ChartResult[]): Map<number, number> {
+// entry phase id -> its bubble (nearest reconvergence + the short routes
+// that reach it), for every node with >=2 distinct short routes to a shared
+// downstream node.
+export function detectBubbles(results: ChartResult[]): Map<number, Bubble> {
   const adjacency = buildAdjacency(results)
-  const exitByEntry = new Map<number, number>()
+  const bubbleByEntry = new Map<number, Bubble>()
 
   for (const [node, edges] of adjacency) {
     if (edges.length < 2) {
       continue
     }
-    const exit = findBubbleExit(node, adjacency)
-    if (exit !== undefined) {
-      exitByEntry.set(node, exit)
+    const bubble = findBubble(node, adjacency)
+    if (bubble) {
+      bubbleByEntry.set(node, bubble)
     }
   }
 
-  return exitByEntry
+  return bubbleByEntry
 }

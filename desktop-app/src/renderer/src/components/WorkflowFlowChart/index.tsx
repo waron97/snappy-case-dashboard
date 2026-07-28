@@ -186,7 +186,7 @@ export default function WorkflowFlowChart(props: Props) {
         </Button>
       </Group>
       <Group align="stretch" wrap="nowrap" gap="md">
-        <Box h={600} style={{ flex: 1, minWidth: 0 }}>
+        <Box h={900} mah="90vh" style={{ flex: 1, minWidth: 0 }}>
           <ReactFlow
             nodes={nodes}
             edges={edges}

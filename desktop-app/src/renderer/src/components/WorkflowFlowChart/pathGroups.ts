@@ -1,5 +1,5 @@
-import { MAX_BUBBLE_EDGES } from './bubbles'
-import { ChartPath } from './pathfinding'
+import { Bubble, ChartPath } from './bubbles'
+import { ChartResult } from './layout'
 
 // viaResultId is the edge that connects this node to the previous backbone
 // node, when that hop wasn't folded into a bubble (undefined for the very
@@ -10,14 +10,12 @@ export type BubbleToken = {
   type: 'bubble'
   entry: number
   exit: number
-  // Distinct short entry->exit routes actually observed among this group's
-  // member paths (each inclusive of entry and exit).
+  // All distinct short entry->exit routes found during bubble detection.
   routes: ChartPath[]
 }
 export type BackboneToken = NodeToken | BubbleToken
 
 export type PathGroup = {
-  paths: ChartPath[]
   backbone: BackboneToken[]
 }
 
@@ -28,99 +26,121 @@ export type HighlightedGroup = {
   resultIds: number[]
 }
 
-function replayPath(path: ChartPath, bubbleExitByEntry: Map<number, number>): BackboneToken[] {
-  const backbone: BackboneToken[] = []
-  let i = 0
+// Cap on the number of GROUPS (not raw paths) enumerated. Bubbles are
+// collapsed to a single hop *during* the search, so their interior routes
+// never get multiplied out — this only guards against graphs with genuinely
+// large branching outside of any bubble.
+export const MAX_GROUPS = 500
 
-  while (i < path.phaseIds.length) {
-    const node = path.phaseIds[i]
-    const exit = bubbleExitByEntry.get(node)
-    let collapsed = false
+type Adjacency = Map<number, Array<{ target: number; resultId: number }>>
 
-    if (exit !== undefined) {
-      const maxLookahead = Math.min(path.phaseIds.length - 1, i + MAX_BUBBLE_EDGES)
-      for (let j = i + 1; j <= maxLookahead; j++) {
-        if (path.phaseIds[j] === exit) {
-          backbone.push({
-            type: 'bubble',
-            entry: node,
-            exit,
-            routes: [
-              {
-                phaseIds: path.phaseIds.slice(i, j + 1),
-                resultIds: path.resultIds.slice(i, j)
-              }
-            ]
-          })
-          i = j
-          collapsed = true
-          break
-        }
-      }
+function buildAdjacency(results: ChartResult[]): Adjacency {
+  const adjacency: Adjacency = new Map()
+  for (const result of results) {
+    const target = result.next_phase_id?.[0]
+    if (!target) {
+      continue
+    }
+    for (const source of result.starting_phase_ids) {
+      const edges = adjacency.get(source) ?? []
+      edges.push({ target, resultId: result.id })
+      adjacency.set(source, edges)
+    }
+  }
+  return adjacency
+}
+
+export function findGroupedPaths(
+  startPhaseId: number,
+  targetPhaseId: number,
+  bubbles: Map<number, Bubble>,
+  results: ChartResult[]
+): { groups: PathGroup[]; truncated: boolean } {
+  if (startPhaseId === targetPhaseId) {
+    return { groups: [{ backbone: [{ type: 'node', phaseId: startPhaseId }] }], truncated: false }
+  }
+
+  const adjacency = buildAdjacency(results)
+  const groups: PathGroup[] = []
+  const visited = new Set<number>([startPhaseId])
+  const backbone: BackboneToken[] = [{ type: 'node', phaseId: startPhaseId }]
+
+  function dfs(current: number): void {
+    if (groups.length >= MAX_GROUPS) {
+      return
+    }
+    if (current === targetPhaseId) {
+      groups.push({ backbone: [...backbone] })
+      return
     }
 
-    if (!collapsed) {
-      backbone.push({
-        type: 'node',
-        phaseId: node,
-        viaResultId: i > 0 ? path.resultIds[i - 1] : undefined
-      })
-      i += 1
+    const bubble = bubbles.get(current)
+    // The target itself can legitimately sit as an interior node of one of
+    // this bubble's routes (we're enumerating paths TO an arbitrary node,
+    // not just to the overall bubble exit). Contracting past it would make
+    // it permanently unreachable as a stopping point, so such a bubble must
+    // be explored edge-by-edge instead of taken as a single hop.
+    const bubbleContainsTarget =
+      bubble?.routes.some((r) => r.phaseIds.slice(1, -1).includes(targetPhaseId)) ?? false
+    const bubbleTaken = bubble !== undefined && !visited.has(bubble.exit) && !bubbleContainsTarget
+    // Only exclude the bubble's first-hop edges from normal exploration when
+    // the contracted hop was actually taken. If the exit is already visited
+    // (common in a cyclic graph — some other branch already passed through
+    // it), we fall back to exploring those edges individually instead of
+    // silently pruning them.
+    const bubbleFirstHops = bubbleTaken
+      ? new Set(bubble!.routes.map((r) => r.phaseIds[1]))
+      : undefined
+
+    // Take the bubble as a single contracted hop — its interior routes are
+    // known already (from detection), not rediscovered by branching here.
+    if (bubbleTaken) {
+      backbone.push({ type: 'bubble', entry: current, exit: bubble!.exit, routes: bubble!.routes })
+      visited.add(bubble!.exit)
+      dfs(bubble!.exit)
+      visited.delete(bubble!.exit)
+      backbone.pop()
+    }
+
+    // Any other edge not already covered by the bubble contraction above.
+    for (const { target, resultId } of adjacency.get(current) ?? []) {
+      if (groups.length >= MAX_GROUPS) {
+        return
+      }
+      if (bubbleFirstHops?.has(target) || visited.has(target)) {
+        continue
+      }
+      backbone.push({ type: 'node', phaseId: target, viaResultId: resultId })
+      visited.add(target)
+      dfs(target)
+      visited.delete(target)
+      backbone.pop()
     }
   }
 
-  return backbone
-}
+  dfs(startPhaseId)
 
-function signatureOf(backbone: BackboneToken[]): string {
-  return backbone
-    .map((token) => (token.type === 'node' ? `n${token.phaseId}` : `b${token.entry}-${token.exit}`))
-    .join('|')
-}
-
-export function groupPaths(
-  paths: ChartPath[],
-  bubbleExitByEntry: Map<number, number>
-): PathGroup[] {
-  const groupsBySignature = new Map<string, PathGroup>()
-
-  for (const path of paths) {
-    const backbone = replayPath(path, bubbleExitByEntry)
-    const signature = signatureOf(backbone)
-
-    let group = groupsBySignature.get(signature)
-    if (!group) {
-      group = { paths: [], backbone }
-      groupsBySignature.set(signature, group)
-    }
-    group.paths.push(path)
-
-    for (let k = 0; k < group.backbone.length; k++) {
-      const existingToken = group.backbone[k]
-      const newToken = backbone[k]
-      if (existingToken.type === 'bubble' && newToken.type === 'bubble') {
-        const seen = new Set(existingToken.routes.map((route) => route.phaseIds.join(',')))
-        for (const route of newToken.routes) {
-          const key = route.phaseIds.join(',')
-          if (!seen.has(key)) {
-            existingToken.routes.push(route)
-            seen.add(key)
-          }
-        }
-      }
-    }
-  }
-
-  return Array.from(groupsBySignature.values())
+  return { groups, truncated: groups.length >= MAX_GROUPS }
 }
 
 export function highlightForGroup(groupIndex: number, group: PathGroup): HighlightedGroup {
   const phaseIds = new Set<number>()
   const resultIds = new Set<number>()
 
-  for (const path of group.paths) {
-    path.phaseIds.forEach((id) => phaseIds.add(id))
-    path.resultIds.forEach((id) => resultIds.add(id))
+  for (const token of group.backbone) {
+    if (token.type === 'node') {
+      phaseIds.add(token.phaseId)
+      if (token.viaResultId !== undefined) {
+        resultIds.add(token.viaResultId)
+      }
+    } else {
+      phaseIds.add(token.entry)
+      phaseIds.add(token.exit)
+      for (const route of token.routes) {
+        route.phaseIds.forEach((id) => phaseIds.add(id))
+        route.resultIds.forEach((id) => resultIds.add(id))
+      }
+    }
   }
 
   return {
