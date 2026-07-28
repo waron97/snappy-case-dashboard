@@ -14,6 +14,7 @@ import {
   Loader,
   Space,
   Stack,
+  Tabs,
   Text,
   Title
 } from '@mantine/core'
@@ -304,15 +305,52 @@ export default function Ticket({ id, isActive = true, onNameResolved }: Props) {
           isLocked={isLocked}
           onLockChange={setIsLocked}
         />
-        <CaseTabs
-          caseId={caseBaseFields.id}
-          servicePointIds={caseBaseFields.service_point_ids}
-          childIds={caseBaseFields.child_case_ids}
-          workflowId={caseBaseFields.workflow_id[0]}
-          activePhaseId={caseBaseFields.triplet_active_phase_id[0]}
-          isCaseDone={isCaseDone}
-        />
       </Stack>
+    )
+  }
+
+  function renderSidePanel(): React.JSX.Element {
+    const hasMarketComm = caseBaseFields.market_comm_event_log_ids.length > 0
+    const hasIntegrationHistory = caseBaseFields.integration_history_ids.length > 0
+
+    return (
+      <UiCard>
+        <Suspense
+          fallback={
+            <Center py="xl">
+              <Loader size="sm" />
+            </Center>
+          }
+        >
+          <Tabs defaultValue="logs">
+            <Tabs.List>
+              {hasMarketComm && <Tabs.Tab value="market_comm">Market comm</Tabs.Tab>}
+              <Tabs.Tab value="logs">Logs</Tabs.Tab>
+              {hasIntegrationHistory && (
+                <Tabs.Tab value="integration_history">Integration History</Tabs.Tab>
+              )}
+              <Tabs.Tab value="staging_area">Staging Area</Tabs.Tab>
+            </Tabs.List>
+
+            {hasMarketComm && (
+              <Tabs.Panel value="market_comm" pt="md">
+                <CaseMarketComm caseId={caseBaseFields.id} />
+              </Tabs.Panel>
+            )}
+            <Tabs.Panel value="logs" pt="md">
+              <CaseLogs caseId={caseBaseFields.id} />
+            </Tabs.Panel>
+            {hasIntegrationHistory && (
+              <Tabs.Panel value="integration_history" pt="md">
+                <CaseIntegrationHistory caseId={caseBaseFields.id} />
+              </Tabs.Panel>
+            )}
+            <Tabs.Panel value="staging_area" pt="md">
+              <CaseStagingArea caseId={caseBaseFields.id} />
+            </Tabs.Panel>
+          </Tabs>
+        </Suspense>
+      </UiCard>
     )
   }
 
@@ -370,35 +408,19 @@ export default function Ticket({ id, isActive = true, onNameResolved }: Props) {
 
       <Grid gutter="md">
         <Grid.Col span={8}>{renderLeft()}</Grid.Col>
-        <Grid.Col span={4}>
-          <Suspense
-            fallback={
-              <Center py="xl">
-                <Loader size="sm" />
-              </Center>
-            }
-          >
-            <Stack gap="lg">
-              {caseBaseFields.market_comm_event_log_ids.length > 0 && (
-                <UiCard title="Market comm">
-                  <CaseMarketComm caseId={caseBaseFields.id} />
-                </UiCard>
-              )}
-              <UiCard title="Logs">
-                <CaseLogs caseId={caseBaseFields.id} />
-              </UiCard>
-              {caseBaseFields.integration_history_ids.length > 0 && (
-                <UiCard title="Integration History">
-                  <CaseIntegrationHistory caseId={caseBaseFields.id} />
-                </UiCard>
-              )}
-              <UiCard title="Staging Area">
-                <CaseStagingArea caseId={caseBaseFields.id} />
-              </UiCard>
-            </Stack>
-          </Suspense>
-        </Grid.Col>
+        <Grid.Col span={4}>{renderSidePanel()}</Grid.Col>
       </Grid>
+
+      <Space h="md" />
+
+      <CaseTabs
+        caseId={caseBaseFields.id}
+        servicePointIds={caseBaseFields.service_point_ids}
+        childIds={caseBaseFields.child_case_ids}
+        workflowId={caseBaseFields.workflow_id[0]}
+        activePhaseId={caseBaseFields.triplet_active_phase_id[0]}
+        isCaseDone={isCaseDone}
+      />
     </Container>
   )
 }
