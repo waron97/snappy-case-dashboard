@@ -22,6 +22,7 @@ jobs:
       - run: npm run build && npx electron-builder --win nsis --linux AppImage --linux deb --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOME: /root
 
   mac:
     runs-on: macos-latest
