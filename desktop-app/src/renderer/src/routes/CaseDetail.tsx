@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { IconCode, ReactNode } from '@tabler/icons-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -18,16 +18,17 @@ import {
   Title
 } from '@mantine/core'
 import CaseActivePhase from '@/components/CaseActivePhase'
-import CaseIntegrationHistory from '@/components/CaseIntegrationHistory'
-import CaseLogs from '@/components/CaseLogs'
-import CaseMarketComm from '@/components/CaseMarketComm'
-import CaseStagingArea from '@/components/CaseStagingArea'
 import CaseTabs from '@/components/CaseTabs'
 import RelationLink from '@/components/RelationLink'
 import UiCard from '@/components/UiCard'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useSettings } from '@/lib/settings'
 import { odooRead, odooWrite, OneToMany } from '@/lib/odoo-api'
+
+const CaseMarketComm = lazy(() => import('@/components/CaseMarketComm'))
+const CaseLogs = lazy(() => import('@/components/CaseLogs'))
+const CaseIntegrationHistory = lazy(() => import('@/components/CaseIntegrationHistory'))
+const CaseStagingArea = lazy(() => import('@/components/CaseStagingArea'))
 
 type BaseFields = {
   id: number
@@ -370,24 +371,32 @@ export default function Ticket({ id, isActive = true, onNameResolved }: Props) {
       <Grid gutter="md">
         <Grid.Col span={8}>{renderLeft()}</Grid.Col>
         <Grid.Col span={4}>
-          <Stack gap="lg">
-            {caseBaseFields.market_comm_event_log_ids.length > 0 && (
-              <UiCard title="Market comm">
-                <CaseMarketComm caseId={caseBaseFields.id} />
+          <Suspense
+            fallback={
+              <Center py="xl">
+                <Loader size="sm" />
+              </Center>
+            }
+          >
+            <Stack gap="lg">
+              {caseBaseFields.market_comm_event_log_ids.length > 0 && (
+                <UiCard title="Market comm">
+                  <CaseMarketComm caseId={caseBaseFields.id} />
+                </UiCard>
+              )}
+              <UiCard title="Logs">
+                <CaseLogs caseId={caseBaseFields.id} />
               </UiCard>
-            )}
-            <UiCard title="Logs">
-              <CaseLogs caseId={caseBaseFields.id} />
-            </UiCard>
-            {caseBaseFields.integration_history_ids.length > 0 && (
-              <UiCard title="Integration History">
-                <CaseIntegrationHistory caseId={caseBaseFields.id} />
+              {caseBaseFields.integration_history_ids.length > 0 && (
+                <UiCard title="Integration History">
+                  <CaseIntegrationHistory caseId={caseBaseFields.id} />
+                </UiCard>
+              )}
+              <UiCard title="Staging Area">
+                <CaseStagingArea caseId={caseBaseFields.id} />
               </UiCard>
-            )}
-            <UiCard title="Staging Area">
-              <CaseStagingArea caseId={caseBaseFields.id} />
-            </UiCard>
-          </Stack>
+            </Stack>
+          </Suspense>
         </Grid.Col>
       </Grid>
     </Container>

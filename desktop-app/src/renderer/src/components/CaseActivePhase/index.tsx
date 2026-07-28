@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { IconLock, IconLockX } from '@tabler/icons-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
-import { Alert, Button, Center, Group, Select, Stack, Text } from '@mantine/core'
+import { Alert, Button, Center, Group, Loader, Select, Stack, Text } from '@mantine/core'
 import { odooCallMethod, odooRead, odooSearchRead, odooWrite } from '@/lib/odoo-api'
 import PhaseResultSelector from '../PhaseResultSelector'
-import PythonEditor from '../PythonEditor'
 import UiCard from '../UiCard'
+
+const PythonEditor = lazy(() => import('../PythonEditor'))
 
 type Props = {
   caseId: number
@@ -173,12 +174,20 @@ export default function CaseActivePhase(props: Props) {
       return null
     }
     return (
-      <PythonEditor
-        value={form.code || ''}
-        readOnly={isLocked}
-        onChange={(newCode) => setForm({ ...form, code: newCode })}
-        onSave={codeChanged ? saveCode : undefined}
-      />
+      <Suspense
+        fallback={
+          <Center h={120}>
+            <Loader size="sm" />
+          </Center>
+        }
+      >
+        <PythonEditor
+          value={form.code || ''}
+          readOnly={isLocked}
+          onChange={(newCode) => setForm({ ...form, code: newCode })}
+          onSave={codeChanged ? saveCode : undefined}
+        />
+      </Suspense>
     )
   }
 
