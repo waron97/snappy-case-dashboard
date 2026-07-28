@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useMatch, useNavigate } from 'react-router-dom'
-import { CaseTabsContext, CaseWorkspaceTab, LIST_TAB, tabKey, tabPath } from '@/lib/caseWorkspaceContext'
+import {
+  CaseTabsContext,
+  CaseWorkspaceTab,
+  LIST_TAB,
+  tabKey,
+  tabPath
+} from '@/lib/caseWorkspaceContext'
 
 const STORAGE_KEY = 'caseWorkspace.openTabs.v2'
 
@@ -17,7 +23,8 @@ function loadPersistedTabs(): CaseWorkspaceTab[] {
       .filter((t): t is Extract<CaseWorkspaceTab, { kind: 'case' | 'field-config' }> => {
         if (typeof t?.label !== 'string') return false
         if (t.kind === 'case') return typeof t.id === 'number'
-        if (t.kind === 'field-config') return typeof t.model === 'string' && typeof t.recordId === 'number'
+        if (t.kind === 'field-config')
+          return typeof t.model === 'string' && typeof t.recordId === 'number'
         return false
       })
       .map((t) => ({ ...t, renamed: t.renamed === true }))
@@ -41,7 +48,11 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
 
   const openCase = useCallback((id: number) => {
     const key = `case:${id}`
-    setTabs((prev) => (prev.some((t) => tabKey(t) === key) ? prev : [...prev, { kind: 'case', id, label: `Case #${id}` }]))
+    setTabs((prev) =>
+      prev.some((t) => tabKey(t) === key)
+        ? prev
+        : [...prev, { kind: 'case', id, label: `Case #${id}` }]
+    )
     setActiveKey(key)
   }, [])
 
@@ -67,7 +78,9 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
     const trimmed = label.trim()
     if (!trimmed) return
     setTabs((prev) =>
-      prev.map((t) => (tabKey(t) === key && t.kind !== 'list' ? { ...t, label: trimmed, renamed: true } : t))
+      prev.map((t) =>
+        tabKey(t) === key && t.kind !== 'list' ? { ...t, label: trimmed, renamed: true } : t
+      )
     )
   }, [])
 
@@ -131,7 +144,15 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
       setActive('list')
     }
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, [caseIdParam, fieldConfigModel, fieldConfigRecord, matchList, openCase, openFieldConfig, setActive])
+  }, [
+    caseIdParam,
+    fieldConfigModel,
+    fieldConfigRecord,
+    matchList,
+    openCase,
+    openFieldConfig,
+    setActive
+  ])
 
   const value = useMemo(
     () => ({

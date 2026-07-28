@@ -121,9 +121,11 @@ export default function CasesWorkspace(): React.JSX.Element {
     useCaseTabs()
   const navigate = useNavigate()
   const { activeProfile } = useSettings()
-  const { items: savedTabSets, save: saveTabSet, remove: removeTabSet } = useSavedTabSets(
-    activeProfile?.id ?? null
-  )
+  const {
+    items: savedTabSets,
+    save: saveTabSet,
+    remove: removeTabSet
+  } = useSavedTabSets(activeProfile?.id ?? null)
   const [selectedSetId, setSelectedSetId] = useState<string | null>(null)
   const [saveModalOpen, setSaveModalOpen] = useState(false)
 
@@ -142,10 +144,7 @@ export default function CasesWorkspace(): React.JSX.Element {
   const selectedSet = savedTabSets.find((s) => s.id === selectedSetId) ?? null
   const tabSignature = (t: CaseWorkspaceTab & { kind: 'case' | 'field-config' }): string =>
     `${tabKey(t)}::${t.label}`
-  const currentSignature = openTabs
-    .map(tabSignature)
-    .sort()
-    .join(',')
+  const currentSignature = openTabs.map(tabSignature).sort().join(',')
   const savedSignature = selectedSet
     ? (selectedSet.tabs as (CaseWorkspaceTab & { kind: 'case' | 'field-config' })[])
         .map(tabSignature)
@@ -246,7 +245,11 @@ export default function CasesWorkspace(): React.JSX.Element {
                   {selectedSet && isDirty && (
                     <Menu.Item
                       onClick={async () => {
-                        await saveTabSet({ id: selectedSet.id, name: selectedSet.name, tabs: openTabs })
+                        await saveTabSet({
+                          id: selectedSet.id,
+                          name: selectedSet.name,
+                          tabs: openTabs
+                        })
                       }}
                     >
                       Update &quot;{selectedSet.name}&quot;

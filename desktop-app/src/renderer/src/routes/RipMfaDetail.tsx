@@ -1,102 +1,113 @@
-import { Link, useParams } from 'react-router-dom';
-import { IconCode } from '@tabler/icons-react';
-import { odooRead } from '@/lib/odoo-api';
-import { useQuery } from '@tanstack/react-query';
-import { Anchor, Button, Center, Container, Grid, Group, Loader, Space, Stack, Text, Title } from '@mantine/core';
-import MfaCode from '@/components/MfaCode';
-import MfaMetadata from '@/components/MfaMetadata';
-import MfaRecentCalls from '@/components/MfaRecentCalls';
-import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import { useSettings } from '@/lib/settings';
+import { Link, useParams } from 'react-router-dom'
+import { IconCode } from '@tabler/icons-react'
+import { odooRead } from '@/lib/odoo-api'
+import { useQuery } from '@tanstack/react-query'
+import {
+  Anchor,
+  Button,
+  Center,
+  Container,
+  Grid,
+  Group,
+  Loader,
+  Space,
+  Stack,
+  Text,
+  Title
+} from '@mantine/core'
+import MfaCode from '@/components/MfaCode'
+import MfaMetadata from '@/components/MfaMetadata'
+import MfaRecentCalls from '@/components/MfaRecentCalls'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { useSettings } from '@/lib/settings'
 
 export default function MFARecord() {
-    // -------------------------------------
-    // Hooks
-    // -------------------------------------
+  // -------------------------------------
+  // Hooks
+  // -------------------------------------
 
-    const { id } = useParams();
-    const { activeProfile: settings } = useSettings();
-    const numId = parseInt(String(id), 10);
+  const { id } = useParams()
+  const { activeProfile: settings } = useSettings()
+  const numId = parseInt(String(id), 10)
 
-    // -------------------------------------
-    // Queries
-    // -------------------------------------
+  // -------------------------------------
+  // Queries
+  // -------------------------------------
 
-    const { data, isLoading, error } = useQuery({
-        queryKey: ['mfa', numId, 'title'],
-        queryFn: () => odooRead('rip.model.function.access', [numId], ['name', 'model_name']),
-    });
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['mfa', numId, 'title'],
+    queryFn: () => odooRead('rip.model.function.access', [numId], ['name', 'model_name'])
+  })
 
-    // -------------------------------------
-    // Effects
-    // -------------------------------------
+  // -------------------------------------
+  // Effects
+  // -------------------------------------
 
-    const titleRecord = data?.[0];
-    useDocumentTitle(titleRecord ? `MFA ${titleRecord.name}` : undefined);
+  const titleRecord = data?.[0]
+  useDocumentTitle(titleRecord ? `MFA ${titleRecord.name}` : undefined)
 
-    // -------------------------------------
-    // Local Variables
-    // -------------------------------------
+  // -------------------------------------
+  // Local Variables
+  // -------------------------------------
 
-    if (isLoading) {
-        return (
-            <Center py="xl">
-                <Loader />
-            </Center>
-        );
-    }
-
-    const record = data?.[0];
-
-    if (!record || error) {
-        return (
-            <Container size="lg" py="xl">
-                <Center py="xl">
-                    <Text c="red">
-                        Failed to load function:{' '}
-                        {error instanceof Error ? error.message : 'Not found'}
-                    </Text>
-                </Center>
-            </Container>
-        );
-    }
-
-    // -------------------------------------
-
+  if (isLoading) {
     return (
-        <Container size="xl" py="md">
-            <Group gap="md" justify="space-between">
-                <Title fz={28}>
-                    {record.model_name}/{record.name} (#{id})
-                </Title>
-                <Group gap="sm">
-                    <Anchor
-                        href={`${settings?.odooUrl}/web#id=${id}&model=rip.model.function.access&view_type=form`}
-                        target="_blank"
-                    >
-                        <Button bg="#714B67">ODOO</Button>
-                    </Anchor>
-                    <Link to={`/full-field-config/rip.model.function.access/${id}`}>
-                        <Button>
-                            <IconCode />
-                        </Button>
-                    </Link>
-                </Group>
-            </Group>
+      <Center py="xl">
+        <Loader />
+      </Center>
+    )
+  }
 
-            <Space h={32} />
+  const record = data?.[0]
 
-            <Grid gutter="md">
-                <Grid.Col span={8}>
-                    <MfaCode id={numId} />
-                </Grid.Col>
-                <Grid.Col span={4}>
-                    <Stack gap="md">
-                        <MfaMetadata id={numId} />
-                        <MfaRecentCalls id={numId} />
-                    </Stack>
-                </Grid.Col>
-            </Grid>
-        </Container>
-    );
+  if (!record || error) {
+    return (
+      <Container size="lg" py="xl">
+        <Center py="xl">
+          <Text c="red">
+            Failed to load function: {error instanceof Error ? error.message : 'Not found'}
+          </Text>
+        </Center>
+      </Container>
+    )
+  }
+
+  // -------------------------------------
+
+  return (
+    <Container size="xl" py="md">
+      <Group gap="md" justify="space-between">
+        <Title fz={28}>
+          {record.model_name}/{record.name} (#{id})
+        </Title>
+        <Group gap="sm">
+          <Anchor
+            href={`${settings?.odooUrl}/web#id=${id}&model=rip.model.function.access&view_type=form`}
+            target="_blank"
+          >
+            <Button bg="#714B67">ODOO</Button>
+          </Anchor>
+          <Link to={`/full-field-config/rip.model.function.access/${id}`}>
+            <Button>
+              <IconCode />
+            </Button>
+          </Link>
+        </Group>
+      </Group>
+
+      <Space h={32} />
+
+      <Grid gutter="md">
+        <Grid.Col span={8}>
+          <MfaCode id={numId} />
+        </Grid.Col>
+        <Grid.Col span={4}>
+          <Stack gap="md">
+            <MfaMetadata id={numId} />
+            <MfaRecentCalls id={numId} />
+          </Stack>
+        </Grid.Col>
+      </Grid>
+    </Container>
+  )
 }

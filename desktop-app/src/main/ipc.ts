@@ -56,9 +56,8 @@ export function registerIpcHandlers(): void {
   })
 
   ipcMain.handle('savedDomains:list', () => listSavedDomains())
-  ipcMain.handle(
-    'savedDomains:save',
-    (_e, input: { id?: string; name: string; domain: string }) => saveSavedDomain(input)
+  ipcMain.handle('savedDomains:save', (_e, input: { id?: string; name: string; domain: string }) =>
+    saveSavedDomain(input)
   )
   ipcMain.handle('savedDomains:remove', (_e, id: string) => removeSavedDomain(id))
 

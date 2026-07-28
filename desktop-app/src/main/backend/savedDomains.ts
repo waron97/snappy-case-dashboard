@@ -60,7 +60,11 @@ export function listSavedDomains(): SavedDomainQuery[] {
   return load().items
 }
 
-export function saveSavedDomain(input: { id?: string; name: string; domain: string }): SavedDomainQuery {
+export function saveSavedDomain(input: {
+  id?: string
+  name: string
+  domain: string
+}): SavedDomainQuery {
   const store = load()
   const now = new Date().toISOString()
   const existing = input.id ? store.items.find((i) => i.id === input.id) : undefined

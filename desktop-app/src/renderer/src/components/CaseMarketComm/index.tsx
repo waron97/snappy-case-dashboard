@@ -1,120 +1,118 @@
-import dayjs from 'dayjs';
-import { useMemo, useState } from 'react';
-import ReactJson from 'react-json-view';
-import { IconEye } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
-import { Box, Button, LoadingOverlay, Modal, Stack, Table } from '@mantine/core';
-import { odooRead, odooSearchRead } from '@/lib/odoo-api';
+import dayjs from 'dayjs'
+import { useMemo, useState } from 'react'
+import ReactJson from 'react-json-view'
+import { IconEye } from '@tabler/icons-react'
+import { useQuery } from '@tanstack/react-query'
+import { Box, Button, LoadingOverlay, Modal, Stack, Table } from '@mantine/core'
+import { odooRead, odooSearchRead } from '@/lib/odoo-api'
 
-type Props = { caseId: number };
+type Props = { caseId: number }
 
 export default function CaseMarketComm({ caseId }: Props) {
-    // -------------------------------------
-    // Hooks
-    // -------------------------------------
+  // -------------------------------------
+  // Hooks
+  // -------------------------------------
 
-    const [isShowAll, setIsShowAll] = useState(false);
-    const [selected, setSelected] = useState<number | null>(null);
+  const [isShowAll, setIsShowAll] = useState(false)
+  const [selected, setSelected] = useState<number | null>(null)
 
-    // -------------------------------------
-    // Queries
-    // -------------------------------------
+  // -------------------------------------
+  // Queries
+  // -------------------------------------
 
-    const { data: logs, isLoading: logsLoading } = useQuery<
-        { id: number; flow_code: string; service_code: string; create_date: string }[]
-    >({
-        queryKey: ['market-comm', { caseId, isShowAll }],
-        refetchInterval: 3 * 1000,
-        queryFn: () =>
-            odooSearchRead(
-                'market.comm.event.log',
-                [['ticket_id', '=', caseId]],
-                ['create_date', 'flow_code', 'service_code'],
-                0,
-                isShowAll ? undefined : 8,
-                'create_date desc'
-            ),
-    });
+  const { data: logs, isLoading: logsLoading } = useQuery<
+    { id: number; flow_code: string; service_code: string; create_date: string }[]
+  >({
+    queryKey: ['market-comm', { caseId, isShowAll }],
+    refetchInterval: 3 * 1000,
+    queryFn: () =>
+      odooSearchRead(
+        'market.comm.event.log',
+        [['ticket_id', '=', caseId]],
+        ['create_date', 'flow_code', 'service_code'],
+        0,
+        isShowAll ? undefined : 8,
+        'create_date desc'
+      )
+  })
 
-    const { data: logDetail, isLoading: detailLoading } = useQuery<
-        { id: number; inner_payload: string }[]
-    >({
-        queryKey: ['market-comm', selected],
-        refetchInterval: 15 * 1000,
-        enabled: !!selected,
-        queryFn: () => odooRead('market.comm.event.log', [selected!], ['inner_payload']),
-    });
+  const { data: logDetail, isLoading: detailLoading } = useQuery<
+    { id: number; inner_payload: string }[]
+  >({
+    queryKey: ['market-comm', selected],
+    refetchInterval: 15 * 1000,
+    enabled: !!selected,
+    queryFn: () => odooRead('market.comm.event.log', [selected!], ['inner_payload'])
+  })
 
-    const logJson = useMemo(() => {
-        if (!logDetail?.length) {
-            return {};
-        }
-        const { inner_payload: message } = logDetail[0];
-        try {
-            return JSON.parse(message);
-        } catch {
-            return { content: message };
-        }
-    }, [logDetail?.[0]?.inner_payload]);
+  const logJson = useMemo(() => {
+    if (!logDetail?.length) {
+      return {}
+    }
+    const { inner_payload: message } = logDetail[0]
+    try {
+      return JSON.parse(message)
+    } catch {
+      return { content: message }
+    }
+  }, [logDetail?.[0]?.inner_payload])
 
-    // -------------------------------------
-    // Effects
-    // -------------------------------------
+  // -------------------------------------
+  // Effects
+  // -------------------------------------
 
-    // -------------------------------------
-    // Functions
-    // -------------------------------------
+  // -------------------------------------
+  // Functions
+  // -------------------------------------
 
-    // -------------------------------------
-    // Local Variables
-    // -------------------------------------
+  // -------------------------------------
+  // Local Variables
+  // -------------------------------------
 
-    // -------------------------------------
+  // -------------------------------------
 
-    return (
-        <Stack gap="sm" justify="space-between">
-            <Box pos="relative" mih={200}>
-                <LoadingOverlay visible={logsLoading} />
-                <Table>
-                    <Table.Thead>
-                        <Table.Tr>
-                            <Table.Th>Timestamp</Table.Th>
-                            <Table.Th>Service</Table.Th>
-                            <Table.Th>Flow</Table.Th>
-                            <Table.Th />
-                        </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                        {logs?.map((log) => {
-                            return (
-                                <Table.Tr key={log.id}>
-                                    <Table.Td>
-                                        {dayjs(log.create_date).format('DD/MM HH:mm')}
-                                    </Table.Td>
-                                    <Table.Td>{log.service_code}</Table.Td>
-                                    <Table.Td>{log.flow_code}</Table.Td>
-                                    <Table.Td>
-                                        <Button size="xs" onClick={() => setSelected(log.id)}>
-                                            <IconEye size={16} />
-                                        </Button>
-                                    </Table.Td>
-                                </Table.Tr>
-                            );
-                        })}
-                    </Table.Tbody>
-                </Table>
-            </Box>
-            {!isShowAll && logs?.length === 8 && (
-                <Button size="sm" onClick={() => setIsShowAll(true)}>
-                    Show all
-                </Button>
-            )}
-            <Modal opened={!!selected} onClose={() => setSelected(null)} size="xl">
-                <Box pos="relative" mih={100}>
-                    <LoadingOverlay visible={detailLoading} />
-                    <ReactJson src={logJson} theme="monokai" />
-                </Box>
-            </Modal>
-        </Stack>
-    );
+  return (
+    <Stack gap="sm" justify="space-between">
+      <Box pos="relative" mih={200}>
+        <LoadingOverlay visible={logsLoading} />
+        <Table>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>Timestamp</Table.Th>
+              <Table.Th>Service</Table.Th>
+              <Table.Th>Flow</Table.Th>
+              <Table.Th />
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {logs?.map((log) => {
+              return (
+                <Table.Tr key={log.id}>
+                  <Table.Td>{dayjs(log.create_date).format('DD/MM HH:mm')}</Table.Td>
+                  <Table.Td>{log.service_code}</Table.Td>
+                  <Table.Td>{log.flow_code}</Table.Td>
+                  <Table.Td>
+                    <Button size="xs" onClick={() => setSelected(log.id)}>
+                      <IconEye size={16} />
+                    </Button>
+                  </Table.Td>
+                </Table.Tr>
+              )
+            })}
+          </Table.Tbody>
+        </Table>
+      </Box>
+      {!isShowAll && logs?.length === 8 && (
+        <Button size="sm" onClick={() => setIsShowAll(true)}>
+          Show all
+        </Button>
+      )}
+      <Modal opened={!!selected} onClose={() => setSelected(null)} size="xl">
+        <Box pos="relative" mih={100}>
+          <LoadingOverlay visible={detailLoading} />
+          <ReactJson src={logJson} theme="monokai" />
+        </Box>
+      </Modal>
+    </Stack>
+  )
 }

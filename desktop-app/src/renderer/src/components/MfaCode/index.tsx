@@ -1,82 +1,82 @@
-import { useEffect, useState } from 'react';
-import { odooRead, odooWrite } from '@/lib/odoo-api';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
-import { LoadingOverlay } from '@mantine/core';
-import PythonEditor from '@/components/PythonEditor';
-import UiCard from '@/components/UiCard';
+import { useEffect, useState } from 'react'
+import { odooRead, odooWrite } from '@/lib/odoo-api'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'react-toastify'
+import { LoadingOverlay } from '@mantine/core'
+import PythonEditor from '@/components/PythonEditor'
+import UiCard from '@/components/UiCard'
 
 type Props = {
-    id: number;
-};
+  id: number
+}
 
 export default function MfaCode({ id }: Props) {
-    // -------------------------------------
-    // Hooks
-    // -------------------------------------
+  // -------------------------------------
+  // Hooks
+  // -------------------------------------
 
-    const [draft, setDraft] = useState('');
-    const [initialized, setInitialized] = useState(false);
+  const [draft, setDraft] = useState('')
+  const [initialized, setInitialized] = useState(false)
 
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
-    // -------------------------------------
-    // Queries
-    // -------------------------------------
+  // -------------------------------------
+  // Queries
+  // -------------------------------------
 
-    const { data, isLoading } = useQuery({
-        queryKey: ['mfa', id, 'code'],
-        queryFn: () => odooRead('rip.model.function.access', [id], ['code']),
-    });
+  const { data, isLoading } = useQuery({
+    queryKey: ['mfa', id, 'code'],
+    queryFn: () => odooRead('rip.model.function.access', [id], ['code'])
+  })
 
-    // -------------------------------------
-    // Effects
-    // -------------------------------------
+  // -------------------------------------
+  // Effects
+  // -------------------------------------
 
-    useEffect(() => {
-        if (data?.[0]?.code !== undefined) {
-            setDraft(data[0].code);
-            setInitialized(true);
-        }
-    }, [data]);
-
-    // -------------------------------------
-    // Functions
-    // -------------------------------------
-
-    async function handleSave() {
-        try {
-            await odooWrite('rip.model.function.access', [id], { code: draft });
-            queryClient.invalidateQueries({ queryKey: ['mfa', id, 'code'] });
-        } catch (err) {
-            toast(err instanceof Error ? err.message : 'Unknown error. Check browser console.');
-            // eslint-disable-next-line no-console
-            console.error(err);
-        }
+  useEffect(() => {
+    if (data?.[0]?.code !== undefined) {
+      setDraft(data[0].code)
+      setInitialized(true)
     }
+  }, [data])
 
-    // -------------------------------------
-    // Local Variables
-    // -------------------------------------
+  // -------------------------------------
+  // Functions
+  // -------------------------------------
 
-    const savedCode: string = data?.[0]?.code ?? '';
-    const isDirty = initialized && draft !== savedCode;
+  async function handleSave() {
+    try {
+      await odooWrite('rip.model.function.access', [id], { code: draft })
+      queryClient.invalidateQueries({ queryKey: ['mfa', id, 'code'] })
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Unknown error. Check browser console.')
 
-    // -------------------------------------
+      console.error(err)
+    }
+  }
 
-    return (
-        <UiCard>
-            <div style={{ position: 'relative', minHeight: 200 }}>
-                <LoadingOverlay visible={isLoading} />
-                {initialized && (
-                    <PythonEditor
-                        value={draft}
-                        onChange={setDraft}
-                        onSave={isDirty ? handleSave : undefined}
-                        maxHeight="800px"
-                    />
-                )}
-            </div>
-        </UiCard>
-    );
+  // -------------------------------------
+  // Local Variables
+  // -------------------------------------
+
+  const savedCode: string = data?.[0]?.code ?? ''
+  const isDirty = initialized && draft !== savedCode
+
+  // -------------------------------------
+
+  return (
+    <UiCard>
+      <div style={{ position: 'relative', minHeight: 200 }}>
+        <LoadingOverlay visible={isLoading} />
+        {initialized && (
+          <PythonEditor
+            value={draft}
+            onChange={setDraft}
+            onSave={isDirty ? handleSave : undefined}
+            maxHeight="800px"
+          />
+        )}
+      </div>
+    </UiCard>
+  )
 }
