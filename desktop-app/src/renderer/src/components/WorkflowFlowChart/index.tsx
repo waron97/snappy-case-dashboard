@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import '@xyflow/react/dist/style.css'
 import {
   Background,
@@ -13,6 +13,9 @@ import {
 import { Box, Button, Group, Stack, Text, useMantineTheme } from '@mantine/core'
 import { buildWorkflowChartLayout, ChartResult, NODE_WIDTH } from './layout'
 import useWorkflowData from './useWorfklowData'
+import PhaseDetailPopover from './PhaseDetailPopover'
+import MiniPathChart from './MiniPathChart'
+import { HighlightedGroup } from './pathGroups'
 
 type Props = {
   workflowId: number
@@ -34,6 +37,9 @@ export default function WorkflowFlowChart(props: Props) {
   const [nodes, setNodes] = useNodesState([] as Node[])
   const [edges, setEdges] = useEdgesState([] as Edge[])
 
+  const [selectedPhaseId, setSelectedPhaseId] = useState<number | null>(null)
+  const [highlightedGroup, setHighlightedGroup] = useState<HighlightedGroup | null>(null)
+
   const chartRef = useRef<ReactFlowInstance | null>(null)
 
   // -------------------------------------
@@ -52,19 +58,23 @@ export default function WorkflowFlowChart(props: Props) {
     }
 
     const activeColor = theme.colors.teal[8]
+    const pinkColor = theme.colors.pink[8]
+    const pathPhaseIds = highlightedGroup ? new Set(highlightedGroup.phaseIds) : undefined
+    const pathResultIds = highlightedGroup ? new Set(highlightedGroup.resultIds) : undefined
 
     buildWorkflowChartLayout(phases, results, startPhaseId).then((result) => {
       setNodes(
         result.children?.map((node) => {
           const phase = phases.find((p) => String(p.id) === node.id)!
+          const isPathNode = pathPhaseIds?.has(phase.id)
           const isCrossed = crossedPhases?.has(phase.id)
           return {
             id: String(phase.id),
             position: { x: node.x!, y: node.y! },
             data: { label: phase.name },
             style: {
-              borderColor: isCrossed ? activeColor : undefined,
-              opacity: isCrossed ? 1 : 0.4
+              borderColor: isPathNode ? pinkColor : isCrossed ? activeColor : undefined,
+              opacity: 1
             },
             width: NODE_WIDTH
           }
@@ -73,7 +83,9 @@ export default function WorkflowFlowChart(props: Props) {
 
       setEdges(
         results.reduce((acc: Edge[], current: ChartResult) => {
+          const isPathEdge = pathResultIds?.has(current.id)
           const isCrossed = crossedResults?.has(current.id)
+          const edgeColor = isPathEdge ? pinkColor : isCrossed ? activeColor : undefined
           const ret: Edge[] = [
             ...acc,
             ...current.starting_phase_ids.map((startId: number) => {
@@ -82,20 +94,20 @@ export default function WorkflowFlowChart(props: Props) {
                 source: String(startId),
                 target: String(current.next_phase_id[0]),
                 type: 'smoothstep',
-                label: isCrossed ? current.name : undefined,
+                label: edgeColor ? current.name : undefined,
                 labelShowBg: true,
                 animated: true,
                 labelBgStyle: {
-                  fill: isCrossed ? activeColor : undefined
+                  fill: edgeColor
                 },
                 style: {
-                  stroke: isCrossed ? activeColor : undefined,
-                  strokeWidth: isCrossed ? 3 : undefined
+                  stroke: edgeColor,
+                  strokeWidth: edgeColor ? 3 : undefined
                 },
                 data: {
                   label: current.name
                 },
-                zIndex: isCrossed ? 1 : 0
+                zIndex: edgeColor ? 1 : 0
               }
               return edge
             })
@@ -104,38 +116,18 @@ export default function WorkflowFlowChart(props: Props) {
         }, [])
       )
     })
-  }, [results, phases, crossedPhases, crossedResults, theme, startPhaseId])
+  }, [results, phases, crossedPhases, crossedResults, theme, startPhaseId, highlightedGroup])
 
   // -------------------------------------
   // Functions
   // -------------------------------------
 
-  function scrollToPhase(phase: number | 'active' | 'starting') {
+  function centerOnPhase(phaseId: number): void {
     if (!chartRef.current) {
       return
     }
 
-    let targetPhaseId: string | undefined
-
-    if (phase === 'active') {
-      // Scroll to the current active phase
-      if (activePhaseId) {
-        targetPhaseId = String(activePhaseId)
-      }
-    } else if (phase === 'starting') {
-      // Scroll to the first phase in the workflow
-      if (phases && phases.length > 0) {
-        targetPhaseId = String(phases[0].id)
-      }
-    } else {
-      targetPhaseId = String(phase)
-    }
-
-    if (!targetPhaseId) {
-      return
-    }
-
-    const targetNode = nodes.find((n) => n.id === targetPhaseId)
+    const targetNode = nodes.find((n) => n.id === String(phaseId))
     if (!targetNode) {
       return
     }
@@ -147,6 +139,31 @@ export default function WorkflowFlowChart(props: Props) {
     })
   }
 
+  function scrollToPhase(phase: number | 'active' | 'starting') {
+    let targetPhaseId: number | undefined
+
+    if (phase === 'active') {
+      // Scroll to the current active phase
+      targetPhaseId = activePhaseId
+    } else if (phase === 'starting') {
+      // Scroll to the first phase in the workflow
+      targetPhaseId = phases && phases.length > 0 ? phases[0].id : undefined
+    } else {
+      targetPhaseId = phase
+    }
+
+    if (targetPhaseId === undefined) {
+      return
+    }
+
+    centerOnPhase(targetPhaseId)
+  }
+
+  function onFocusPhase(phaseId: number): void {
+    centerOnPhase(phaseId)
+    setSelectedPhaseId(phaseId)
+  }
+
   // -------------------------------------
   // Local Variables
   // -------------------------------------
@@ -156,6 +173,11 @@ export default function WorkflowFlowChart(props: Props) {
   return (
     <Stack pt="md">
       <Group justify="end">
+        {highlightedGroup && (
+          <Button size="sm" color="pink" variant="light" onClick={() => setHighlightedGroup(null)}>
+            <Text>Clear highlighted path</Text>
+          </Button>
+        )}
         <Button size="sm" color="teal" onClick={() => scrollToPhase('active')}>
           <Text>Show active phase</Text>
         </Button>
@@ -163,20 +185,36 @@ export default function WorkflowFlowChart(props: Props) {
           <Text>Show starting phase</Text>
         </Button>
       </Group>
-      <Box h={600}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          fitView
-          colorMode="dark"
-          onInit={(instance) => {
-            chartRef.current = instance
-          }}
-        >
-          <Background />
-          <Controls />
-        </ReactFlow>
-      </Box>
+      <Group align="stretch" wrap="nowrap" gap="md">
+        <Box h={600} style={{ flex: 1, minWidth: 0 }}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            fitView
+            colorMode="dark"
+            onInit={(instance) => {
+              chartRef.current = instance
+            }}
+            onNodeClick={(_, node) => setSelectedPhaseId(Number(node.id))}
+          >
+            <Background />
+            <Controls />
+            <PhaseDetailPopover
+              phaseId={selectedPhaseId}
+              phases={phases}
+              results={results}
+              startPhaseId={startPhaseId}
+              highlightedGroup={highlightedGroup}
+              onClose={() => setSelectedPhaseId(null)}
+              onFocusPhase={onFocusPhase}
+              onHighlightGroup={setHighlightedGroup}
+            />
+          </ReactFlow>
+        </Box>
+        {highlightedGroup && (
+          <MiniPathChart phases={phases} results={results} group={highlightedGroup} />
+        )}
+      </Group>
     </Stack>
   )
 }
