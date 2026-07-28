@@ -1,9 +1,9 @@
 import dayjs from 'dayjs'
 import { useMemo, useState } from 'react'
-import ReactJson from 'react-json-view'
+import SearchableJsonView, { SearchableJsonModal } from '@/components/SearchableJsonView'
 import { IconEye } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
-import { Box, Button, LoadingOverlay, Modal, Stack, Table } from '@mantine/core'
+import { Box, Button, LoadingOverlay, Stack, Table } from '@mantine/core'
 import { odooRead, odooSearchRead } from '@/lib/odoo-api'
 
 type Props = { caseId: number }
@@ -104,12 +104,13 @@ export default function CaseLogs({ caseId }: Props) {
           Show all
         </Button>
       )}
-      <Modal opened={!!selected} onClose={() => setSelected(null)} size="xl">
-        <Box pos="relative" mih={100}>
-          <LoadingOverlay visible={detailLoading} />
-          <ReactJson src={logJson} theme="monokai" />
-        </Box>
-      </Modal>
+      <SearchableJsonModal
+        opened={!!selected}
+        onClose={() => setSelected(null)}
+        loading={detailLoading}
+      >
+        <SearchableJsonView src={logJson} theme="monokai" />
+      </SearchableJsonModal>
     </Stack>
   )
 }

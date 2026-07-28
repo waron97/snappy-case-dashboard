@@ -1,8 +1,8 @@
 import dayjs from 'dayjs'
-import ReactJson from 'react-json-view'
+import SearchableJsonView, { SearchableJsonModal } from '@/components/SearchableJsonView'
 import { odooRead } from '@/lib/odoo-api'
 import { useQuery } from '@tanstack/react-query'
-import { Badge, Center, Group, Loader, Modal, Stack, Tabs, Text } from '@mantine/core'
+import { Badge, Center, Group, Loader, Stack, Tabs, Text } from '@mantine/core'
 
 type Props = {
   id: number | null
@@ -56,7 +56,7 @@ export default function RipLogModal({ id, onClose }: Props) {
   // -------------------------------------
 
   return (
-    <Modal opened={id !== null} onClose={onClose} size="xl" title={log?.endpoint ?? '…'}>
+    <SearchableJsonModal opened={id !== null} onClose={onClose} title={log?.endpoint ?? '…'}>
       {isLoading && (
         <Center py="xl">
           <Loader size="sm" />
@@ -96,14 +96,14 @@ export default function RipLogModal({ id, onClose }: Props) {
           </Tabs.Panel>
 
           <Tabs.Panel value="content" pt="md">
-            <ReactJson src={parseJson(log.content)} theme="monokai" />
+            <SearchableJsonView src={parseJson(log.content)} theme="monokai" />
           </Tabs.Panel>
 
           <Tabs.Panel value="response" pt="md">
-            <ReactJson src={parseJson(log.response_content)} theme="monokai" />
+            <SearchableJsonView src={parseJson(log.response_content)} theme="monokai" />
           </Tabs.Panel>
         </Tabs>
       )}
-    </Modal>
+    </SearchableJsonModal>
   )
 }

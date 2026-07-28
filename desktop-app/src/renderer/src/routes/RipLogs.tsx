@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { useRef, useState } from 'react'
-import ReactJson from 'react-json-view'
+import SearchableJsonView, { SearchableJsonModal } from '@/components/SearchableJsonView'
 import { odooSearchRead } from '@/lib/odoo-api'
 import { IconEye } from '@tabler/icons-react'
 import { useInfiniteQuery } from '@tanstack/react-query'
@@ -11,7 +11,6 @@ import {
   Container,
   Group,
   Loader,
-  Modal,
   Stack,
   Table,
   Tabs,
@@ -265,10 +264,9 @@ export default function RipLogs() {
         )}
       </Stack>
 
-      <Modal
+      <SearchableJsonModal
         opened={!!selected}
         onClose={() => setSelected(null)}
-        size="xl"
         title={selected?.endpoint}
       >
         {selected && (
@@ -305,15 +303,15 @@ export default function RipLogs() {
             </Tabs.Panel>
 
             <Tabs.Panel value="content" pt="md">
-              <ReactJson src={parseJson(selected.content)} theme="monokai" />
+              <SearchableJsonView src={parseJson(selected.content)} theme="monokai" />
             </Tabs.Panel>
 
             <Tabs.Panel value="response" pt="md">
-              <ReactJson src={parseJson(selected.response_content)} theme="monokai" />
+              <SearchableJsonView src={parseJson(selected.response_content)} theme="monokai" />
             </Tabs.Panel>
           </Tabs>
         )}
-      </Modal>
+      </SearchableJsonModal>
     </Container>
   )
 }

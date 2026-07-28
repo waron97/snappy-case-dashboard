@@ -8,3 +8,12 @@ body,
 body {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 }
+
+::highlight(json-search) {
+  background-color: #ffd54f66;
+}
+
+::highlight(json-search-current) {
+  background-color: #ff9800;
+  color: #000;
+}
