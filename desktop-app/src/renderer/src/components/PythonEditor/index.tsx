@@ -7,6 +7,7 @@ import { vscodeDark } from '@uiw/codemirror-theme-vscode'
 import ReactCodeMirror, { EditorState, EditorView, keymap, Prec } from '@uiw/react-codemirror'
 import init, { format } from '@wasm-fmt/ruff_fmt/web'
 import { ActionIcon, Button, Group, Stack, Text, Tooltip } from '@mantine/core'
+import { useDeferredLocalStorage } from '@/lib/useDeferredLocalStorage'
 
 const ruffReady = init()
 
@@ -40,15 +41,12 @@ export default function PythonEditor({
   maxHeight = '600px'
 }: Props) {
   const [saving, setSaving] = useState(false)
-  const [vimEnabled, setVimEnabled] = useState(
-    () => localStorage.getItem('pythonEditor.vimEnabled') !== 'false'
-  )
+  const [vimEnabled, setVimEnabled] = useDeferredLocalStorage('pythonEditor.vimEnabled', true, {
+    deserialize: (raw) => raw !== 'false'
+  })
 
-  function toggleVim() {
-    setVimEnabled((v) => {
-      localStorage.setItem('pythonEditor.vimEnabled', String(!v))
-      return !v
-    })
+  function toggleVim(): void {
+    setVimEnabled(!vimEnabled)
   }
 
   const valueRef = useRef(value)

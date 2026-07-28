@@ -1,4 +1,5 @@
 import type { MantineColorSchemeManager } from '@mantine/core'
+import { scheduleIdleTask } from './idleTask'
 
 const STORAGE_KEY = 'mantine-color-scheme-value'
 
@@ -16,6 +17,7 @@ function isValidScheme(value: string | null): value is 'dark' | 'light' | 'auto'
  */
 export function deferredLocalStorageColorSchemeManager(): MantineColorSchemeManager {
   let handleStorageEvent: ((event: StorageEvent) => void) | undefined
+  let cancelIdleRead: (() => void) | undefined
 
   return {
     get: (defaultValue) => defaultValue,
@@ -27,22 +29,17 @@ export function deferredLocalStorageColorSchemeManager(): MantineColorSchemeMana
       }
     },
     subscribe: (onUpdate) => {
-      const readStored = (): void => {
+      // The first localStorage touch this session is the slow one (see
+      // above) — schedule it for idle time so it doesn't compete with
+      // whatever the user is doing right after launch.
+      cancelIdleRead = scheduleIdleTask(() => {
         try {
           const stored = window.localStorage.getItem(STORAGE_KEY)
           if (isValidScheme(stored)) onUpdate(stored)
         } catch {
           // ignore — keep the default
         }
-      }
-      // The first localStorage touch this session is the slow one (see
-      // above) — schedule it for idle time so it doesn't compete with
-      // whatever the user is doing right after launch.
-      if ('requestIdleCallback' in window) {
-        window.requestIdleCallback(readStored, { timeout: 5000 })
-      } else {
-        setTimeout(readStored, 0)
-      }
+      })
 
       handleStorageEvent = (event) => {
         if (event.storageArea === window.localStorage && event.key === STORAGE_KEY) {
@@ -52,6 +49,7 @@ export function deferredLocalStorageColorSchemeManager(): MantineColorSchemeMana
       window.addEventListener('storage', handleStorageEvent)
     },
     unsubscribe: () => {
+      cancelIdleRead?.()
       if (handleStorageEvent) window.removeEventListener('storage', handleStorageEvent)
     },
     clear: () => {

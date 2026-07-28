@@ -7,6 +7,7 @@ import {
   tabKey,
   tabPath
 } from '@/lib/caseWorkspaceContext'
+import { scheduleIdleTask } from '@/lib/idleTask'
 
 const STORAGE_KEY = 'caseWorkspace.openTabs.v2'
 
@@ -144,12 +145,7 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
       hasRestoredRef.current = true
     }
 
-    if ('requestIdleCallback' in window) {
-      const id = window.requestIdleCallback(restore, { timeout: 5000 })
-      return () => window.cancelIdleCallback(id)
-    }
-    const id = setTimeout(restore, 0)
-    return () => clearTimeout(id)
+    return scheduleIdleTask(restore)
   }, [])
 
   // Syncs URL -> tab state, so any plain <Link>/navigate() elsewhere in the
