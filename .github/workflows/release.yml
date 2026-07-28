@@ -25,6 +25,7 @@ jobs:
           HOME: /root
 
   mac:
+    needs: linux-win
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
