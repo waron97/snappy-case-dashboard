@@ -34,4 +34,10 @@ nsis:
   artifactName: ${productName}-Setup.${ext}
   oneClick: true
   perMachine: false
+mac:
+  target:
+    - dmg
+    - zip
+  category: public.app-category.utilities
+  artifactName: ${productName}.${ext}
 npmRebuild: false

@@ -89,11 +89,15 @@ npm run build        # typecheck + electron-vite build
 npm run build:appimage   # Linux AppImage
 npm run build:deb        # Linux .deb
 npm run build:win        # Windows NSIS installer (cross-built from Linux)
-npm run build:all        # all three
-npm run release          # all three + publish to GitHub Releases (needs GH_TOKEN)
+npm run build:mac        # macOS dmg + zip (must run on a macOS host — no cross-build)
+npm run build:all        # win + linux (still Linux-host only)
+npm run release          # win + linux, publish to GitHub Releases (needs GH_TOKEN)
+npm run release:mac      # mac, publish to GitHub Releases (needs GH_TOKEN, macOS host)
 ```
 
-Output lands in `dist/`, artifact names have no version suffix (`Snappy.AppImage`, `Snappy.deb`, `Snappy-Setup.exe`) — see `electron-builder.yml`'s `artifactName` overrides. mac is unconfigured but would be a near-free addition later via `electron-builder`'s `mac` target if ever needed.
+Output lands in `dist/`, artifact names have no version suffix (`Snappy.AppImage`, `Snappy.deb`, `Snappy-Setup.exe`, `Snappy.dmg`, `Snappy.zip`) — see `electron-builder.yml`'s `artifactName` overrides.
+
+`.github/workflows/release.yml` (repo root) builds on tag push (`v*`): one job on `ubuntu-latest` for win+linux (wine cross-build, as below), one job on `macos-latest` for mac (native — `electron-builder` cannot cross-build mac from Linux, needs real `hdiutil`/codesign tooling). Both publish to the same GitHub Release via the default `GITHUB_TOKEN`. Free on `macos-latest` for a public repo (unlimited minutes); a private repo would burn Actions minutes at a 10x multiplier for mac jobs.
 
 Windows target is `nsis`, not `portable` — a real (one-click, per-user, no admin needed) installer, required so `electron-updater` has something to update in place. Switching back to `portable` would break Windows auto-update.
 
@@ -101,10 +105,12 @@ Known runtime caveat: AppImages built by electron-builder require `libfuse2` on 
 
 Cross-building the Windows target from Linux requires `wine` on the host (electron-builder shells out to it via `rcedit`/`signtool` to set the exe icon/metadata, even unsigned).
 
+**Mac is unsigned/unnotarized.** No Apple Developer Program enrollment ($99/yr) configured, so the `.dmg`/`.zip` aren't codesigned or notarized. Consequence: Gatekeeper blocks first launch ("unidentified developer" — user must right-click → Open, or `xattr -d com.apple.quarantine`), and `electron-updater`'s `Squirrel.Mac` backend verifies code signatures before applying an update, so **auto-update on mac will not work reliably** until signing/notarization is added (Apple dev account + `APPLE_ID`/`APPLE_APP_SPECIFIC_PASSWORD` or API key secrets + `notarize` config/`afterSign` hook). Win (NSIS) and Linux (AppImage) auto-update are unaffected by this.
+
 ### Auto-update
 
 `electron-updater` (`src/main/updater.ts`) checks the public GitHub Releases feed for `waron97/snappy-case-dashboard` (see `publish:` in `electron-builder.yml`) on launch and every 4 hours, only in packaged builds (`app.isPackaged` guard — it throws under `npm run dev`, which has no `app-update.yml`). Downloads happen silently in the background; once `update-downloaded` fires, the renderer shows a persistent toast (`components/UpdateNotifier/`) with a "Restart & update" button that calls `quitAndInstall()` via IPC (`updater:quitAndInstall`).
 
-Only AppImage and NSIS support in-place auto-update. The `.deb` artifact still gets built and published, but `electron-updater` doesn't update it — deb users update by reinstalling the new `.deb` manually. `npm run release` requires a `GH_TOKEN` env var (repo scope) to upload build artifacts to the release; downloading them at runtime needs no token since the repo is public.
+Only AppImage and NSIS support in-place auto-update (mac's `zip` target is the update payload `Squirrel.Mac` needs, but see the signing caveat above — unsigned builds won't actually apply it). The `.deb` artifact still gets built and published, but `electron-updater` doesn't update it — deb users update by reinstalling the new `.deb` manually. `npm run release`/`release:mac` require a `GH_TOKEN` env var (repo scope) to upload build artifacts to the release; downloading them at runtime needs no token since the repo is public.
 
 `productName` (electron-builder.yml) is `Snappy` — the display name shown in Explorer/Start Menu/taskbar. Deliberately kept separate from package.json's `name` (`desktop-app`), which is what Electron's `app.getName()` actually uses for the userData directory (`~/.config/desktop-app` on Linux) — changing `productName` doesn't move or orphan a user's existing encrypted settings.

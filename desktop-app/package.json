@@ -20,8 +20,10 @@
     "build:appimage": "npm run build && electron-builder --linux AppImage",
     "build:deb": "npm run build && electron-builder --linux deb",
     "build:win": "npm run build && electron-builder --win nsis",
+    "build:mac": "npm run build && electron-builder --mac",
     "build:all": "npm run build && electron-builder --win nsis && electron-builder --linux AppImage && electron-builder --linux deb",
-    "release": "npm run build && electron-builder --win nsis --linux AppImage --linux deb --publish always"
+    "release": "npm run build && electron-builder --win nsis --linux AppImage --linux deb --publish always",
+    "release:mac": "npm run build && electron-builder --mac --publish always"
   },
   "dependencies": {
     "@codemirror/lang-json": "^6.0.2",
