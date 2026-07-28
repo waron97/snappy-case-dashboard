@@ -9,6 +9,7 @@ import {
   setActiveProfile,
   type Profile
 } from './backend/settings'
+import { listSavedDomains, saveSavedDomain, removeSavedDomain } from './backend/savedDomains'
 import { quitAndInstall } from './updater'
 
 export function registerIpcHandlers(): void {
@@ -52,6 +53,13 @@ export function registerIpcHandlers(): void {
     setActiveProfile(id)
     invalidateToken()
   })
+
+  ipcMain.handle('savedDomains:list', () => listSavedDomains())
+  ipcMain.handle(
+    'savedDomains:save',
+    (_e, input: { id?: string; name: string; domain: string }) => saveSavedDomain(input)
+  )
+  ipcMain.handle('savedDomains:remove', (_e, id: string) => removeSavedDomain(id))
 
   ipcMain.handle('updater:quitAndInstall', () => quitAndInstall())
 }

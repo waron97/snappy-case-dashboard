@@ -56,6 +56,12 @@ const api = {
     setActiveProfile: (id: string): Promise<void> =>
       ipcRenderer.invoke('settings:setActiveProfile', id)
   },
+  savedDomains: {
+    list: (): Promise<unknown> => ipcRenderer.invoke('savedDomains:list'),
+    save: (input: { id?: string; name: string; domain: string }): Promise<unknown> =>
+      ipcRenderer.invoke('savedDomains:save', input),
+    remove: (id: string): Promise<void> => ipcRenderer.invoke('savedDomains:remove', id)
+  },
   updater: {
     onUpdateDownloaded: (callback: () => void): (() => void) => {
       const listener = (): void => callback()
