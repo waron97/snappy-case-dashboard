@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useMatch, useNavigate } from 'react-router-dom'
 import {
   CaseTabsContext,
@@ -35,8 +35,12 @@ function loadPersistedTabs(): CaseWorkspaceTab[] {
 }
 
 export function CaseTabsProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
-  const [tabs, setTabs] = useState<CaseWorkspaceTab[]>(loadPersistedTabs)
+  const [tabs, setTabs] = useState<CaseWorkspaceTab[]>([LIST_TAB])
   const [activeKey, setActiveKey] = useState<string>('list')
+  // Guards the persist-write effect below: it must not overwrite storage
+  // with the not-yet-restored [LIST_TAB] default before the deferred read
+  // (see effect further down) has had a chance to run.
+  const hasRestoredRef = useRef(false)
   const navigate = useNavigate()
   const matchCase = useMatch('/helpdesk.ticket/:id')
   const matchFieldConfig = useMatch('/full-field-config/:model/:record')
@@ -118,9 +122,35 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
   )
 
   useEffect(() => {
+    if (!hasRestoredRef.current) return
     const nonListTabs = tabs.filter((t) => t.kind !== 'list')
     localStorage.setItem(STORAGE_KEY, JSON.stringify(nonListTabs))
   }, [tabs])
+
+  useEffect(() => {
+    // Chromium's localStorage under a file:// origin (required for
+    // HashRouter) takes ~3.5s to respond on its first touch in a session —
+    // see lib/colorSchemeManager.ts for the full story. Defer this read to
+    // idle time so it doesn't block the initial render, and merge rather
+    // than overwrite: the user may have already opened tabs (e.g. clicked a
+    // case from the list) in the window before this resolves.
+    const restore = (): void => {
+      const persisted = loadPersistedTabs()
+      setTabs((current) => {
+        const currentKeys = new Set(current.map(tabKey))
+        const merged = [...current, ...persisted.filter((t) => !currentKeys.has(tabKey(t)))]
+        return merged
+      })
+      hasRestoredRef.current = true
+    }
+
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(restore, { timeout: 5000 })
+      return () => window.cancelIdleCallback(id)
+    }
+    const id = setTimeout(restore, 0)
+    return () => clearTimeout(id)
+  }, [])
 
   // Syncs URL -> tab state, so any plain <Link>/navigate() elsewhere in the
   // app (relation chips, parent/child links, Ctrl+E jump, the field-inspector
