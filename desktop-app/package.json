@@ -1,6 +1,6 @@
 {
   "name": "desktop-app",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Case management dashboard",
   "homepage": "https://github.com/waron97/snappy-case-dashboard",
   "main": "./out/main/index.js",
