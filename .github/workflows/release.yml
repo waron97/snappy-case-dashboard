@@ -15,14 +15,11 @@ defaults:
 jobs:
   linux-win:
     runs-on: ubuntu-latest
+    container: electronuserland/builder:wine
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: sudo apt-get update && sudo apt-get install -y wine xvfb
       - run: npm ci
-      - run: npm run build && xvfb-run --auto-servernum npx electron-builder --win nsis --linux AppImage --linux deb --publish always
+      - run: npm run build && npx electron-builder --win nsis --linux AppImage --linux deb --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
