@@ -8,7 +8,17 @@ import { ChartResult } from './layout'
 export const MAX_BUBBLE_EDGES = 3
 
 export type ChartPath = { phaseIds: number[]; resultIds: number[] }
-export type Bubble = { exit: number; routes: ChartPath[] }
+export type Bubble = {
+  exit: number
+  routes: ChartPath[]
+  // First-hop nodes (immediate successors of `entry`) that have OTHER short
+  // routes leading somewhere other than `exit` — a real branch point the
+  // dedup below hid from `routes`. Contracting straight from entry to exit
+  // would make whatever hangs off that branch permanently unreachable, so
+  // pathGroups.ts must still explore these first hops edge-by-edge instead
+  // of treating them as fully absorbed into the bubble.
+  escapingFirstHops: Set<number>
+}
 
 type Adjacency = Map<number, Array<{ target: number; resultId: number }>>
 
@@ -90,7 +100,34 @@ function findBubble(entry: number, adjacency: Adjacency): Bubble | undefined {
     }
   }
 
-  return bestNode !== undefined ? { exit: bestNode, routes: bestRoutes! } : undefined
+  if (bestNode === undefined) {
+    return undefined
+  }
+
+  // Which node(s) does each first hop actually lead to, across every route
+  // the walk found (not just the deduped ones kept for rendering)? A first
+  // hop that only ever leads back to the exit is safe to fully absorb; one
+  // that also reaches some other node has a branch `routes` doesn't capture.
+  const nodesByFirstHop = new Map<number, Set<number>>()
+  for (const [node, routes] of routesByNode) {
+    for (const route of routes) {
+      const firstHop = route.phaseIds[1]
+      const nodes = nodesByFirstHop.get(firstHop) ?? new Set<number>()
+      nodes.add(node)
+      nodesByFirstHop.set(firstHop, nodes)
+    }
+  }
+
+  const escapingFirstHops = new Set<number>()
+  for (const route of bestRoutes!) {
+    const firstHop = route.phaseIds[1]
+    const reachableNodes = nodesByFirstHop.get(firstHop) ?? new Set<number>()
+    if (reachableNodes.size > 1 || !reachableNodes.has(bestNode)) {
+      escapingFirstHops.add(firstHop)
+    }
+  }
+
+  return { exit: bestNode, routes: bestRoutes!, escapingFirstHops }
 }
 
 // entry phase id -> its bubble (nearest reconvergence + the short routes

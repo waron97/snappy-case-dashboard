@@ -87,9 +87,15 @@ export function findGroupedPaths(
     // the contracted hop was actually taken. If the exit is already visited
     // (common in a cyclic graph — some other branch already passed through
     // it), we fall back to exploring those edges individually instead of
-    // silently pruning them.
+    // silently pruning them. First hops with an escaping branch (something
+    // the deduped `routes` don't lead to `exit`) are excluded from the skip
+    // set too, so that branch stays individually reachable.
     const bubbleFirstHops = bubbleTaken
-      ? new Set(bubble!.routes.map((r) => r.phaseIds[1]))
+      ? new Set(
+          bubble!.routes
+            .map((r) => r.phaseIds[1])
+            .filter((firstHop) => !bubble!.escapingFirstHops.has(firstHop))
+        )
       : undefined
 
     // Take the bubble as a single contracted hop — its interior routes are
