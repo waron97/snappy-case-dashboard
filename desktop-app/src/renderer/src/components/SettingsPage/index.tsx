@@ -27,6 +27,7 @@ const EMPTY_CREDENTIALS: ProfileCredentials = {
   odooUid: '',
   odooApiKey: '',
   b2wUrl: '',
+  symphonyUrl: '',
   devopsOrg: '',
   devopsPat: ''
 }
@@ -182,6 +183,14 @@ export default function SettingsPage(): React.JSX.Element {
               <Divider />
               <Text fw={600}>Bit2win</Text>
               <TextInput label="Bit2win URL" {...field('b2wUrl')} />
+
+              <Divider />
+              <Text fw={600}>Symphony</Text>
+              <TextInput
+                label="Symphony URL (optional)"
+                placeholder="derived from the Bit2win URL host"
+                {...field('symphonyUrl')}
+              />
 
               <Divider />
               <Text fw={600}>Azure DevOps</Text>

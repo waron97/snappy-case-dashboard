@@ -4,10 +4,13 @@ import {
   CaseTabsContext,
   CaseWorkspaceTab,
   LIST_TAB,
+  NO_PROCESS_ID,
+  sanitizeTabs,
   tabKey,
   tabPath
 } from '@/lib/caseWorkspaceContext'
 import { getUiPref, setUiPref } from '@/lib/uiPrefs'
+import { useSweepProgressBridge } from '@/lib/symphonyDeepSearch'
 
 const PREF_KEY = 'caseWorkspaceOpenTabs'
 
@@ -16,17 +19,7 @@ const PREF_KEY = 'caseWorkspaceOpenTabs'
 // "restore the active tab" and the URL -> tabs sync effect below.
 async function loadPersistedTabs(): Promise<CaseWorkspaceTab[]> {
   const stored = await getUiPref<unknown>(PREF_KEY, [])
-  if (!Array.isArray(stored)) return [LIST_TAB]
-  const tabs = stored
-    .filter((t): t is Extract<CaseWorkspaceTab, { kind: 'case' | 'field-config' }> => {
-      if (typeof t?.label !== 'string') return false
-      if (t.kind === 'case') return typeof t.id === 'number'
-      if (t.kind === 'field-config')
-        return typeof t.model === 'string' && typeof t.recordId === 'number'
-      return false
-    })
-    .map((t) => ({ ...t, renamed: t.renamed === true }))
-  return [LIST_TAB, ...tabs]
+  return [LIST_TAB, ...sanitizeTabs(stored)]
 }
 
 export function CaseTabsProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
@@ -37,8 +30,13 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
   // (see effect further down) has had a chance to run.
   const hasRestoredRef = useRef(false)
   const navigate = useNavigate()
+  // Keep these patterns in sync with the isWorkspaceRoute guard in App.tsx —
+  // both files have to agree on which routes CasesWorkspace owns.
   const matchCase = useMatch('/helpdesk.ticket/:id')
   const matchFieldConfig = useMatch('/full-field-config/:model/:record')
+  const matchSymphonyList = useMatch('/symphony/requests')
+  const matchSymphonyRequest = useMatch('/symphony/request/:requestId/:processId')
+  const matchDeepSearch = useMatch('/symphony/deep-search/:jobId')
   const matchList = useMatch('/')
 
   const setActive = useCallback((key: string) => {
@@ -61,6 +59,49 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
       prev.some((t) => tabKey(t) === key)
         ? prev
         : [...prev, { kind: 'field-config', model, recordId, label: `${model} #${recordId}` }]
+    )
+    setActiveKey(key)
+  }, [])
+
+  // Singleton — there is only ever one Symphony list tab, so re-opening just
+  // focuses it. Unlike LIST_TAB it is an ordinary closable tab.
+  const openSymphonyList = useCallback(() => {
+    const key = 'symphony-list'
+    setTabs((prev) =>
+      prev.some((t) => tabKey(t) === key)
+        ? prev
+        : [...prev, { kind: 'symphony-list', label: 'Symphony' }]
+    )
+    setActiveKey(key)
+  }, [])
+
+  const openSymphonyRequest = useCallback(
+    (requestId: string, processId: string, label?: string) => {
+      const key = `symphony-request:${requestId}`
+      setTabs((prev) =>
+        prev.some((t) => tabKey(t) === key)
+          ? prev
+          : [
+              ...prev,
+              {
+                kind: 'symphony-request',
+                requestId,
+                processId: processId || NO_PROCESS_ID,
+                label: label ?? `Req ${requestId.slice(0, 10)}`
+              }
+            ]
+      )
+      setActiveKey(key)
+    },
+    []
+  )
+
+  const openDeepSearch = useCallback((jobId: string, label?: string) => {
+    const key = `symphony-deep-search:${jobId}`
+    setTabs((prev) =>
+      prev.some((t) => tabKey(t) === key)
+        ? prev
+        : [...prev, { kind: 'symphony-deep-search', jobId, label: label ?? 'Deep search' }]
     )
     setActiveKey(key)
   }, [])
@@ -109,7 +150,10 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
 
   const loadTabs = useCallback(
     (next: CaseWorkspaceTab[]) => {
-      setTabs([LIST_TAB, ...next.filter((t) => t.kind !== 'list')])
+      // Saved tab sets come off disk as unknown[], so they get the same
+      // validation as the persisted open-tabs pref — a set written by a newer
+      // build must not be able to inject a tab shape this build can't render.
+      setTabs([LIST_TAB, ...sanitizeTabs(next)])
       setActiveKey('list')
       navigate('/')
     },
@@ -149,9 +193,16 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
   // adjustment: doing the tabs/activeKey update directly during render caused
   // them to oscillate indefinitely under StrictMode's double-render, since it
   // chains multiple interdependent state variables in one conditional block.
+  // Scalars, not the match objects: useMatch returns a fresh object every
+  // render, so depending on it directly re-runs this effect constantly.
   const caseIdParam = matchCase?.params.id
   const fieldConfigModel = matchFieldConfig?.params.model
   const fieldConfigRecord = matchFieldConfig?.params.record
+  const symphonyRequestId = matchSymphonyRequest?.params.requestId
+  const symphonyProcessId = matchSymphonyRequest?.params.processId
+  const deepSearchJobId = matchDeepSearch?.params.jobId
+  const isSymphonyList = !!matchSymphonyList
+  const isList = !!matchList
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect --
        Subscribing to the router (an external system), not deriving state
@@ -160,7 +211,16 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
       openCase(parseInt(caseIdParam, 10))
     } else if (fieldConfigModel && fieldConfigRecord) {
       openFieldConfig(fieldConfigModel, parseInt(fieldConfigRecord, 10))
-    } else if (matchList) {
+    } else if (symphonyRequestId && symphonyProcessId) {
+      openSymphonyRequest(
+        decodeURIComponent(symphonyRequestId),
+        decodeURIComponent(symphonyProcessId)
+      )
+    } else if (deepSearchJobId) {
+      openDeepSearch(decodeURIComponent(deepSearchJobId))
+    } else if (isSymphonyList) {
+      openSymphonyList()
+    } else if (isList) {
       setActive('list')
     }
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -168,9 +228,16 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
     caseIdParam,
     fieldConfigModel,
     fieldConfigRecord,
-    matchList,
+    symphonyRequestId,
+    symphonyProcessId,
+    deepSearchJobId,
+    isSymphonyList,
+    isList,
     openCase,
     openFieldConfig,
+    openSymphonyList,
+    openSymphonyRequest,
+    openDeepSearch,
     setActive
   ])
 
@@ -180,6 +247,9 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
       activeKey,
       openCase,
       openFieldConfig,
+      openSymphonyList,
+      openSymphonyRequest,
+      openDeepSearch,
       closeTab,
       closeAll,
       loadTabs,
@@ -192,6 +262,9 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
       activeKey,
       openCase,
       openFieldConfig,
+      openSymphonyList,
+      openSymphonyRequest,
+      openDeepSearch,
       closeTab,
       closeAll,
       loadTabs,
@@ -201,5 +274,18 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
     ]
   )
 
-  return <CaseTabsContext.Provider value={value}>{children}</CaseTabsContext.Provider>
+  return (
+    <CaseTabsContext.Provider value={value}>
+      <SweepProgressBridge />
+      {children}
+    </CaseTabsContext.Provider>
+  )
+}
+
+/** Single subscriber to the main-process deep-search progress push. Mounted here
+ *  so it lives for as long as the workspace does, regardless of which tabs are
+ *  open — a sweep keeps running with its tab closed. */
+function SweepProgressBridge(): null {
+  useSweepProgressBridge()
+  return null
 }

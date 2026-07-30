@@ -4,6 +4,20 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { registerIpcHandlers } from './ipc'
 import { initAutoUpdater } from './updater'
+import { initDeepSearch } from './backend/symphony/sweepEngine'
+import { demoteInterruptedJobs } from './backend/symphony/sweepStore'
+
+// Chromium picks its Linux password-store backend from XDG_CURRENT_DESKTOP.
+// Launched without a desktop session exported — `npm run dev` from a plain
+// terminal, tmux, ssh — that variable is missing, Chromium falls back to
+// `basic_text`, and safeStorage.isEncryptionAvailable() goes false: settings
+// written earlier with a keyring key then become unreadable, and anything saved
+// afterwards would land on disk unencrypted. Naming the backend explicitly in
+// that case keeps dev runs consistent with packaged ones. Must happen before
+// the first password-store access, hence module scope.
+if (process.platform === 'linux' && !process.env.XDG_CURRENT_DESKTOP) {
+  app.commandLine.appendSwitch('password-store', 'gnome-libsecret')
+}
 
 let mainWindow: BrowserWindow | null = null
 
@@ -59,9 +73,15 @@ app.whenReady().then(() => {
 
   registerIpcHandlers()
 
+  // Before the window exists: a sweep header left `running` by a crash or a
+  // quit would otherwise render as a phantom job with a frozen progress bar.
+  // A directory scan plus a few small reads — no network.
+  demoteInterruptedJobs()
+
   createWindow()
 
   initAutoUpdater(() => mainWindow)
+  initDeepSearch(() => mainWindow)
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

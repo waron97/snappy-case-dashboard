@@ -1,7 +1,8 @@
-import { app, safeStorage } from 'electron'
+import { app } from 'electron'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { randomUUID } from 'crypto'
+import { decodeStore, encodeStore } from './storeCodec'
 
 export interface ProfileCredentials {
   keycloakUrl: string
@@ -14,6 +15,9 @@ export interface ProfileCredentials {
   odooUid: string
   odooApiKey: string
   b2wUrl: string
+  // Optional. Symphony normally lives on the same host as Bit2win, so this is
+  // derived from b2wUrl's origin when blank — see symphony/client.ts.
+  symphonyUrl: string
   devopsOrg: string
   devopsPat: string
 }
@@ -39,6 +43,7 @@ const EMPTY_CREDENTIALS: ProfileCredentials = {
   odooUid: '',
   odooApiKey: '',
   b2wUrl: '',
+  symphonyUrl: '',
   devopsOrg: '',
   devopsPat: ''
 }
@@ -72,11 +77,7 @@ function load(): SettingsStore {
     return cache
   }
 
-  const buffer = readFileSync(path)
-  const json = safeStorage.isEncryptionAvailable()
-    ? safeStorage.decryptString(buffer)
-    : buffer.toString('utf-8')
-  const migrated = migrate(JSON.parse(json))
+  const migrated = migrate(decodeStore(readFileSync(path), 'settings.enc'))
   cache = migrated
   persist(migrated)
   return cache
@@ -84,18 +85,7 @@ function load(): SettingsStore {
 
 function persist(store: SettingsStore): void {
   cache = store
-  const json = JSON.stringify(store)
-
-  if (!safeStorage.isEncryptionAvailable()) {
-    console.warn(
-      'safeStorage encryption is unavailable on this system (no OS keychain provider found) — settings will be saved unencrypted.'
-    )
-  }
-
-  const buffer = safeStorage.isEncryptionAvailable()
-    ? safeStorage.encryptString(json)
-    : Buffer.from(json, 'utf-8')
-  writeFileSync(settingsPath(), buffer)
+  writeFileSync(settingsPath(), encodeStore(store, 'settings'))
 }
 
 export function getStore(): SettingsStore {

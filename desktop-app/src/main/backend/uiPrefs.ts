@@ -1,6 +1,7 @@
-import { app, safeStorage } from 'electron'
+import { app } from 'electron'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
+import { decodeStore, encodeStore } from './storeCodec'
 
 // Renderer-side UI preferences (color scheme, open tabs, editor toggles,
 // etc.) used to live in localStorage. Under Electron's file:// origin
@@ -28,12 +29,9 @@ function load(): UiPrefsStore {
   }
 
   try {
-    const buffer = readFileSync(path)
-    const json = safeStorage.isEncryptionAvailable()
-      ? safeStorage.decryptString(buffer)
-      : buffer.toString('utf-8')
-    cache = JSON.parse(json)
+    cache = decodeStore(readFileSync(path), 'ui-prefs.enc') as UiPrefsStore
   } catch {
+    // UI prefs are re-derivable, so an unreadable file is not worth failing over.
     cache = {}
   }
   return cache!
@@ -41,12 +39,7 @@ function load(): UiPrefsStore {
 
 function persist(store: UiPrefsStore): void {
   cache = store
-  const json = JSON.stringify(store)
-
-  const buffer = safeStorage.isEncryptionAvailable()
-    ? safeStorage.encryptString(json)
-    : Buffer.from(json, 'utf-8')
-  writeFileSync(uiPrefsPath(), buffer)
+  writeFileSync(uiPrefsPath(), encodeStore(store, 'UI preferences'))
 }
 
 export function getUiPrefs(): UiPrefsStore {

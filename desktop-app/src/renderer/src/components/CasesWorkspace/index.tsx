@@ -14,9 +14,8 @@ import {
   TextInput
 } from '@mantine/core'
 import CaseList from '@/routes/CaseList'
-import CaseDetail from '@/routes/CaseDetail'
-import FullFieldConfig from '@/routes/FullFieldConfig'
-import { CaseWorkspaceTab, tabKey, tabPath, useCaseTabs } from '@/lib/useCaseTabs'
+import TabPanelContent from '@/components/CasesWorkspace/TabPanelContent'
+import { CaseWorkspaceTab, OpenWorkspaceTab, tabKey, tabPath, useCaseTabs } from '@/lib/useCaseTabs'
 import { useSettings } from '@/lib/settings'
 import { useSavedTabSets } from '@/lib/savedTabSets'
 
@@ -137,19 +136,15 @@ export default function CasesWorkspace(): React.JSX.Element {
     navigate(tabPath(tab))
   }
 
-  const openTabs = tabs.filter(
-    (t): t is CaseWorkspaceTab & { kind: 'case' | 'field-config' } => t.kind !== 'list'
-  )
+  const openTabs = tabs.filter((t): t is OpenWorkspaceTab => t.kind !== 'list')
 
   const selectedSet = savedTabSets.find((s) => s.id === selectedSetId) ?? null
-  const tabSignature = (t: CaseWorkspaceTab & { kind: 'case' | 'field-config' }): string =>
-    `${tabKey(t)}::${t.label}`
+  // Label-sensitive as well as key-sensitive, so renaming a tab surfaces
+  // "Update" — and order-insensitive, so reordering doesn't.
+  const tabSignature = (t: OpenWorkspaceTab): string => `${tabKey(t)}::${t.label}`
   const currentSignature = openTabs.map(tabSignature).sort().join(',')
   const savedSignature = selectedSet
-    ? (selectedSet.tabs as (CaseWorkspaceTab & { kind: 'case' | 'field-config' })[])
-        .map(tabSignature)
-        .sort()
-        .join(',')
+    ? (selectedSet.tabs as OpenWorkspaceTab[]).map(tabSignature).sort().join(',')
     : null
   const isDirty = selectedSet != null && savedSignature !== currentSignature
 
@@ -294,20 +289,11 @@ export default function CasesWorkspace(): React.JSX.Element {
         const key = tabKey(tab)
         return (
           <Tabs.Panel key={key} value={key}>
-            {tab.kind === 'case' ? (
-              <CaseDetail
-                id={tab.id}
-                isActive={activeKey === key}
-                onNameResolved={(name) => setLabel(key, name)}
-              />
-            ) : (
-              <FullFieldConfig
-                model={tab.model}
-                recordId={tab.recordId}
-                isActive={activeKey === key}
-                onNameResolved={(name) => setLabel(key, name)}
-              />
-            )}
+            <TabPanelContent
+              tab={tab}
+              isActive={activeKey === key}
+              onNameResolved={(name) => setLabel(key, name)}
+            />
           </Tabs.Panel>
         )
       })}

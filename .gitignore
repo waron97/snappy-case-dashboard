@@ -2,3 +2,12 @@ odoo-15-base
 .env.*
 .env
 ssh-key
+creds.txt
+
+# Raw Symphony network captures used while building the Symphony feature.
+# They embed live JSESSIONID / bit2win_session_cookie / bearer tokens.
+data.txt
+data_with_subprocess.txt
+historic_activities.txt
+table.txt
+varibles.txt

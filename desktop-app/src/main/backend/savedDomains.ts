@@ -1,7 +1,8 @@
-import { app, safeStorage } from 'electron'
+import { app } from 'electron'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { randomUUID } from 'crypto'
+import { decodeStore, encodeStore } from './storeCodec'
 
 export interface SavedDomainQuery {
   id: string
@@ -32,28 +33,13 @@ function load(): SavedDomainsStore {
     return cache
   }
 
-  const buffer = readFileSync(path)
-  const json = safeStorage.isEncryptionAvailable()
-    ? safeStorage.decryptString(buffer)
-    : buffer.toString('utf-8')
-  cache = JSON.parse(json)
-  return cache as SavedDomainsStore
+  cache = decodeStore(readFileSync(path), 'saved-domains.enc') as SavedDomainsStore
+  return cache
 }
 
 function persist(store: SavedDomainsStore): void {
   cache = store
-  const json = JSON.stringify(store)
-
-  if (!safeStorage.isEncryptionAvailable()) {
-    console.warn(
-      'safeStorage encryption is unavailable on this system (no OS keychain provider found) — saved domains will be saved unencrypted.'
-    )
-  }
-
-  const buffer = safeStorage.isEncryptionAvailable()
-    ? safeStorage.encryptString(json)
-    : Buffer.from(json, 'utf-8')
-  writeFileSync(savedDomainsPath(), buffer)
+  writeFileSync(savedDomainsPath(), encodeStore(store, 'saved domains'))
 }
 
 export function listSavedDomains(): SavedDomainQuery[] {

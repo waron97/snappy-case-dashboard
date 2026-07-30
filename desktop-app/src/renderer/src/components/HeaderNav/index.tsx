@@ -19,6 +19,9 @@ export default function HeaderNav({ hasDevOpsToken }: Props): React.JSX.Element 
           <Menu.Item component={Link} to="/">
             Cases
           </Menu.Item>
+          <Menu.Item component={Link} to="/symphony/requests">
+            Symphony
+          </Menu.Item>
         </Menu.Dropdown>
       </Menu>
 

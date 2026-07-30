@@ -1,7 +1,8 @@
-import { app, safeStorage } from 'electron'
+import { app } from 'electron'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { randomUUID } from 'crypto'
+import { decodeStore, encodeStore } from './storeCodec'
 
 export interface SavedTabSet {
   id: string
@@ -33,28 +34,13 @@ function load(): SavedTabSetsStore {
     return cache
   }
 
-  const buffer = readFileSync(path)
-  const json = safeStorage.isEncryptionAvailable()
-    ? safeStorage.decryptString(buffer)
-    : buffer.toString('utf-8')
-  cache = JSON.parse(json)
-  return cache as SavedTabSetsStore
+  cache = decodeStore(readFileSync(path), 'saved-tab-sets.enc') as SavedTabSetsStore
+  return cache
 }
 
 function persist(store: SavedTabSetsStore): void {
   cache = store
-  const json = JSON.stringify(store)
-
-  if (!safeStorage.isEncryptionAvailable()) {
-    console.warn(
-      'safeStorage encryption is unavailable on this system (no OS keychain provider found) — saved tab sets will be saved unencrypted.'
-    )
-  }
-
-  const buffer = safeStorage.isEncryptionAvailable()
-    ? safeStorage.encryptString(json)
-    : Buffer.from(json, 'utf-8')
-  writeFileSync(savedTabSetsPath(), buffer)
+  writeFileSync(savedTabSetsPath(), encodeStore(store, 'saved tab sets'))
 }
 
 export function listSavedTabSets(profileId: string): SavedTabSet[] {

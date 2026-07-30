@@ -48,6 +48,56 @@ const api = {
   devops: {
     getMyWorkItems: (): Promise<unknown> => ipcRenderer.invoke('devops:getMyWorkItems')
   },
+  symphony: {
+    getRequestTree: (query: unknown): Promise<unknown> =>
+      ipcRenderer.invoke('symphony:getRequestTree', query),
+    getHistoricVariables: (
+      processInstanceId: string,
+      page?: number,
+      size?: number
+    ): Promise<unknown> =>
+      ipcRenderer.invoke('symphony:getHistoricVariables', processInstanceId, page, size),
+    getHistoricActivities: (
+      processInstanceId: string,
+      page?: number,
+      size?: number
+    ): Promise<unknown> =>
+      ipcRenderer.invoke('symphony:getHistoricActivities', processInstanceId, page, size),
+    getRequestDetailHtml: (
+      requestId: string,
+      parentId: string | null,
+      opts?: unknown
+    ): Promise<string> =>
+      ipcRenderer.invoke('symphony:getRequestDetailHtml', requestId, parentId, opts),
+    processKeys: {
+      listCached: (profileId: string): Promise<unknown> =>
+        ipcRenderer.invoke('symphony:listCachedProcessKeys', profileId),
+      refresh: (force?: boolean): Promise<unknown> =>
+        ipcRenderer.invoke('symphony:refreshProcessKeys', force),
+      search: (nameLike: string): Promise<unknown> =>
+        ipcRenderer.invoke('symphony:searchProcessKeys', nameLike)
+    },
+    deepSearch: {
+      list: (): Promise<unknown> => ipcRenderer.invoke('symphony:deepSearch:list'),
+      snapshot: (jobId: string): Promise<unknown> =>
+        ipcRenderer.invoke('symphony:deepSearch:snapshot', jobId),
+      create: (input: unknown): Promise<unknown> =>
+        ipcRenderer.invoke('symphony:deepSearch:create', input),
+      update: (jobId: string, patch: unknown): Promise<unknown> =>
+        ipcRenderer.invoke('symphony:deepSearch:update', jobId, patch),
+      start: (jobId: string): Promise<unknown> =>
+        ipcRenderer.invoke('symphony:deepSearch:start', jobId),
+      pause: (jobId: string): Promise<unknown> =>
+        ipcRenderer.invoke('symphony:deepSearch:pause', jobId),
+      remove: (jobId: string): Promise<void> =>
+        ipcRenderer.invoke('symphony:deepSearch:delete', jobId),
+      onProgress: (callback: (payload: unknown) => void): (() => void) => {
+        const listener = (_e: unknown, payload: unknown): void => callback(payload)
+        ipcRenderer.on('symphony:deepSearch:progress', listener)
+        return () => ipcRenderer.removeListener('symphony:deepSearch:progress', listener)
+      }
+    }
+  },
   settings: {
     getStore: (): Promise<unknown> => ipcRenderer.invoke('settings:getStore'),
     saveProfile: (profile: unknown): Promise<unknown> =>

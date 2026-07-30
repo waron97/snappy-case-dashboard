@@ -1,6 +1,24 @@
 import { ipcMain } from 'electron'
 import * as odoo from './backend/odoo'
 import * as devops from './backend/devops'
+import * as symphony from './backend/symphony/client'
+import { ensureCatalog, getCachedCatalog, searchProcessKeys } from './backend/symphony/catalog'
+import {
+  createSweep,
+  deleteSweep,
+  getSweepSnapshot,
+  listSweeps,
+  pauseAllForProfileSwitch,
+  pauseSweep,
+  startSweep,
+  updateSweep
+} from './backend/symphony/sweepEngine'
+import type { UpdateSweepPatch } from './backend/symphony/sweepEngine'
+import type { CreateSweepInput } from './backend/symphony/sweepTypes'
+import type {
+  SymphonyRequestDetailOptions,
+  SymphonyRequestTreeQuery
+} from './backend/symphony/types'
 import { invalidateToken } from './backend/keycloak'
 import {
   getStore,
@@ -48,10 +66,51 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle('devops:getMyWorkItems', () => devops.getMyWorkItems())
 
+  ipcMain.handle('symphony:getRequestTree', (_e, query: SymphonyRequestTreeQuery) =>
+    symphony.getRequestTree(query)
+  )
+  ipcMain.handle(
+    'symphony:getHistoricVariables',
+    (_e, processInstanceId: string, page?: number, size?: number) =>
+      symphony.getHistoricVariables(processInstanceId, page, size)
+  )
+  ipcMain.handle(
+    'symphony:getHistoricActivities',
+    (_e, processInstanceId: string, page?: number, size?: number) =>
+      symphony.getHistoricActivities(processInstanceId, page, size)
+  )
+  ipcMain.handle(
+    'symphony:getRequestDetailHtml',
+    (_e, requestId: string, parentId: string | null, opts?: SymphonyRequestDetailOptions) =>
+      symphony.getRequestDetailHtml(requestId, parentId, opts)
+  )
+  ipcMain.handle('symphony:listCachedProcessKeys', (_e, profileId: string) =>
+    getCachedCatalog(profileId)
+  )
+  ipcMain.handle('symphony:refreshProcessKeys', (_e, force?: boolean) =>
+    ensureCatalog({ force: force === true })
+  )
+  ipcMain.handle('symphony:searchProcessKeys', (_e, nameLike: string) =>
+    searchProcessKeys(nameLike)
+  )
+
+  ipcMain.handle('symphony:deepSearch:list', () => listSweeps())
+  ipcMain.handle('symphony:deepSearch:snapshot', (_e, jobId: string) => getSweepSnapshot(jobId))
+  ipcMain.handle('symphony:deepSearch:create', (_e, input: CreateSweepInput) => createSweep(input))
+  ipcMain.handle('symphony:deepSearch:update', (_e, jobId: string, patch: UpdateSweepPatch) =>
+    updateSweep(jobId, patch)
+  )
+  ipcMain.handle('symphony:deepSearch:start', (_e, jobId: string) => startSweep(jobId))
+  ipcMain.handle('symphony:deepSearch:pause', (_e, jobId: string) => pauseSweep(jobId))
+  ipcMain.handle('symphony:deepSearch:delete', (_e, jobId: string) => deleteSweep(jobId))
+
   ipcMain.handle('settings:getStore', () => getStore())
   ipcMain.handle('settings:saveProfile', (_e, profile: Profile) => saveProfile(profile))
   ipcMain.handle('settings:deleteProfile', (_e, id: string) => deleteProfile(id))
   ipcMain.handle('settings:setActiveProfile', (_e, id: string) => {
+    // Pause first: a running sweep resolves its base URL and token from the
+    // ACTIVE profile at request time, so it must stop before the switch lands.
+    pauseAllForProfileSwitch()
     setActiveProfile(id)
     invalidateToken()
   })

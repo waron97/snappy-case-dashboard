@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { Center, Loader, Tabs } from '@mantine/core'
 import CaseChildren from '@/components/CaseChildren'
+import CaseSymphonyProcesses from '@/components/CaseSymphonyProcesses'
 import CaseServicePoints from '@/components/CaseServicePoints'
 import CaseTimeline from '@/components/CaseTimeline'
 import UiCard from '@/components/UiCard'
@@ -27,6 +28,7 @@ export default function CaseTabs(props: Props) {
           <Tabs.Tab value="history">History</Tabs.Tab>
           <Tabs.Tab value="service_points">Service Points</Tabs.Tab>
           <Tabs.Tab value="children">Child cases</Tabs.Tab>
+          <Tabs.Tab value="symphony">Symphony processes</Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="history">
@@ -37,6 +39,9 @@ export default function CaseTabs(props: Props) {
         </Tabs.Panel>
         <Tabs.Panel value="children">
           <CaseChildren caseId={caseId} childIds={childIds} />
+        </Tabs.Panel>
+        <Tabs.Panel value="symphony">
+          <CaseSymphonyProcesses caseId={caseId} />
         </Tabs.Panel>
         <Tabs.Panel value="chart">
           <Suspense

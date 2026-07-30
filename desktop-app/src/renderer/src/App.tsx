@@ -8,6 +8,7 @@ import ProfileSwitcher from '@/components/ProfileSwitcher'
 import OdooNavigateModal from '@/components/OdooNavigateModal'
 import UpdateNotifier from '@/components/UpdateNotifier'
 import CasesWorkspace from '@/components/CasesWorkspace'
+import SymphonyCatalogWarmup from '@/components/SymphonyCatalogWarmup'
 import { CaseTabsProvider } from '@/lib/caseWorkspace'
 import { deferredUiPrefColorSchemeManager } from '@/lib/colorSchemeManager'
 import { SettingsProvider, useSettings } from '@/lib/settings'
@@ -19,11 +20,23 @@ const colorSchemeManager = deferredUiPrefColorSchemeManager()
 
 function Shell(): React.JSX.Element {
   const { isConfigured, loading, activeProfile } = useSettings()
+  // Routes owned by CasesWorkspace rather than <AppRoutes> — keep in sync with
+  // the URL -> tab sync effect in lib/caseWorkspace.tsx.
   const matchList = useMatch('/')
   const matchCase = useMatch('/helpdesk.ticket/:id')
   const matchFieldConfig = useMatch('/full-field-config/:model/:record')
+  const matchSymphonyList = useMatch('/symphony/requests')
+  const matchSymphonyRequest = useMatch('/symphony/request/:requestId/:processId')
+  const matchDeepSearch = useMatch('/symphony/deep-search/:jobId')
   const matchSettings = useMatch('/settings')
-  const isCasesRoute = !!(matchList || matchCase || matchFieldConfig)
+  const isWorkspaceRoute = !!(
+    matchList ||
+    matchCase ||
+    matchFieldConfig ||
+    matchSymphonyList ||
+    matchSymphonyRequest ||
+    matchDeepSearch
+  )
 
   return (
     <QueryProvider>
@@ -89,10 +102,11 @@ function Shell(): React.JSX.Element {
           <OdooNavigateModal />
           {isConfigured && (
             <CaseTabsProvider>
-              <div style={{ display: isCasesRoute ? 'block' : 'none' }}>
+              <SymphonyCatalogWarmup />
+              <div style={{ display: isWorkspaceRoute ? 'block' : 'none' }}>
                 <CasesWorkspace />
               </div>
-              <div style={{ display: isCasesRoute ? 'none' : 'block' }}>
+              <div style={{ display: isWorkspaceRoute ? 'none' : 'block' }}>
                 <AppRoutes />
               </div>
             </CaseTabsProvider>
