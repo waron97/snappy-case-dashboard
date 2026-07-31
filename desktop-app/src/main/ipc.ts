@@ -2,7 +2,12 @@ import { ipcMain } from 'electron'
 import * as odoo from './backend/odoo'
 import * as devops from './backend/devops'
 import * as symphony from './backend/symphony/client'
-import { ensureCatalog, getCachedCatalog, searchProcessKeys } from './backend/symphony/catalog'
+import {
+  ensureCatalog,
+  getObservedProcessKeys,
+  getUsableCachedCatalog,
+  searchProcessKeys
+} from './backend/symphony/catalog'
 import {
   createSweep,
   deleteSweep,
@@ -85,7 +90,10 @@ export function registerIpcHandlers(): void {
       symphony.getRequestDetailHtml(requestId, parentId, opts)
   )
   ipcMain.handle('symphony:listCachedProcessKeys', (_e, profileId: string) =>
-    getCachedCatalog(profileId)
+    getUsableCachedCatalog(profileId)
+  )
+  ipcMain.handle('symphony:listObservedProcessKeys', (_e, profileId: string) =>
+    getObservedProcessKeys(profileId)
   )
   ipcMain.handle('symphony:refreshProcessKeys', (_e, force?: boolean) =>
     ensureCatalog({ force: force === true })

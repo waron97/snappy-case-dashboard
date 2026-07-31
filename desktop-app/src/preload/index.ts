@@ -72,6 +72,8 @@ const api = {
     processKeys: {
       listCached: (profileId: string): Promise<unknown> =>
         ipcRenderer.invoke('symphony:listCachedProcessKeys', profileId),
+      listObserved: (profileId: string): Promise<unknown> =>
+        ipcRenderer.invoke('symphony:listObservedProcessKeys', profileId),
       refresh: (force?: boolean): Promise<unknown> =>
         ipcRenderer.invoke('symphony:refreshProcessKeys', force),
       search: (nameLike: string): Promise<unknown> =>

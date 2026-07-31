@@ -84,7 +84,7 @@ export default function ProcessKeySelect({ value, onChange, disabled }: Props): 
   // Autocomplete's value doubles as the search text, so the server-side
   // fallback query is driven straight off it.
   const [debouncedSearch] = useDebouncedValue(value ?? '', 300)
-  const { options, isCatalogReady, isSweeping } = useSymphonyProcessKeys()
+  const { options, observedOptions, isCatalogReady, isSweeping } = useSymphonyProcessKeys()
 
   // -------------------------------------
   // Queries
@@ -103,8 +103,15 @@ export default function ProcessKeySelect({ value, onChange, disabled }: Props): 
   // -------------------------------------
 
   const remoteOptions = (remote.data ?? []).map((k) => k.name)
+  // Observed keys come from real request rows, so they are always valid filter
+  // values — and they cover what the definition catalogs cannot (a request started
+  // against a BPMN version the `latestVersion=true` sweep excludes).
   const data = Array.from(
-    new Set([...(isCatalogReady ? options : remoteOptions), ...(value ? [value] : [])])
+    new Set([
+      ...(isCatalogReady ? options : remoteOptions),
+      ...observedOptions,
+      ...(value ? [value] : [])
+    ])
   )
 
   const placeholder = isCatalogReady

@@ -220,17 +220,18 @@ function dedupeByName(keys: SymphonyProcessKey[]): SymphonyProcessKey[] {
 /**
  * Process keys harvested from real request rows.
  *
- * The two definition catalogs are not a superset of what appears on requests:
- * measured live, BPMN + process builders covered 50 of 54 observed keys, and
- * `ml_voltura_data_input` is filterable yet exists in neither (not a BPMN file at
- * any version, not a builder `document_id`). Rather than keep guessing at where
- * such keys are defined, this records what the request list actually returns — by
- * construction that is exactly the set the `name` filter can match.
+ * The two definition catalogs still are not a superset of what appears on
+ * requests: the BPMN half is filtered to `latestVersion=true`, so a request
+ * started against an older version carries a key no longer in the catalog.
+ * (An earlier note here claimed `ml_voltura_data_input` was in neither source —
+ * that was measured against a stale v1 cache. Verified live: it is one of 291
+ * builder `document_id`s.) Rather than guess at where the remainder is defined,
+ * this records what the request list actually returns — by construction that is
+ * exactly the set the `name` filter can match.
  *
  * Called from the request-list fetch in client.ts, so the picker simply learns as
  * you browse. Persisting is coalesced because a paging session calls this often.
  */
-const observedDirty = new Set<string>()
 let observedFlushTimer: NodeJS.Timeout | null = null
 
 export function recordObservedProcessKeys(keys: (string | null | undefined)[]): void {
@@ -251,12 +252,10 @@ export function recordObservedProcessKeys(keys: (string | null | undefined)[]): 
     return
   }
   observed[profileId] = [...forProfile].sort()
-  observedDirty.add(profileId)
 
   if (!observedFlushTimer) {
     observedFlushTimer = setTimeout(() => {
       observedFlushTimer = null
-      observedDirty.clear()
       persist(load())
     }, 5000)
   }
@@ -270,12 +269,37 @@ export function getCachedCatalog(profileId: string): SymphonyProcessKeyCatalog |
   return load().catalogs.find((c) => c.profileId === profileId) ?? null
 }
 
+function hasCurrentSchema(catalog: SymphonyProcessKeyCatalog): boolean {
+  return (catalog.schemaVersion ?? 1) === SCHEMA_VERSION
+}
+
+/**
+ * The cached catalog only if the renderer may actually show it.
+ *
+ * This is what the IPC layer serves, NOT getCachedCatalog. The renderer hands the
+ * persisted copy to react-query as initialData with a 12h staleTime keyed off
+ * `fetchedAt`, so a returned catalog is treated as fresh and suppresses the
+ * network query entirely — meaning isFresh()'s schema check below never runs and
+ * a build that adds a source appears to do nothing for up to 12h. That is exactly
+ * how the process-builder source stayed invisible after it shipped.
+ *
+ * A foreign-schema catalog is therefore withheld rather than served stale: its
+ * keys are the pre-strip definition names, which the request-list `name` filter
+ * matches zero rows for, so showing them is worse than showing nothing for the
+ * ~20s a sweep takes. A current-schema catalog is served however old it is — that
+ * is the intended instant-render-then-refetch path.
+ */
+export function getUsableCachedCatalog(profileId: string): SymphonyProcessKeyCatalog | null {
+  const catalog = getCachedCatalog(profileId)
+  return catalog && hasCurrentSchema(catalog) ? catalog : null
+}
+
 function isFresh(catalog: SymphonyProcessKeyCatalog | null): boolean {
   if (!catalog || !catalog.complete) {
     return false
   }
   // A catalog written by an older build is stale regardless of its age.
-  if ((catalog.schemaVersion ?? 1) !== SCHEMA_VERSION) {
+  if (!hasCurrentSchema(catalog)) {
     return false
   }
   const age = Date.now() - Date.parse(catalog.fetchedAt)
@@ -320,7 +344,9 @@ async function sweep(profileId: string): Promise<SymphonyProcessKeyCatalog> {
   }
 
   const store = load()
+  // Spread the store: `observed` lives in the same file and a sweep must not drop it.
   persist({
+    ...store,
     catalogs: [...store.catalogs.filter((c) => c.profileId !== profileId), catalog]
   })
   return catalog
