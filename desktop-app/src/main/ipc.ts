@@ -21,6 +21,7 @@ import {
 import type { UpdateSweepPatch } from './backend/symphony/sweepEngine'
 import type { CreateSweepInput } from './backend/symphony/sweepTypes'
 import type {
+  SymphonyExecutionNodeQuery,
   SymphonyRequestDetailOptions,
   SymphonyRequestTreeQuery
 } from './backend/symphony/types'
@@ -88,6 +89,11 @@ export function registerIpcHandlers(): void {
     'symphony:getRequestDetailHtml',
     (_e, requestId: string, parentId: string | null, opts?: SymphonyRequestDetailOptions) =>
       symphony.getRequestDetailHtml(requestId, parentId, opts)
+  )
+  ipcMain.handle(
+    'symphony:getExecutionTreeNode',
+    (_e, nodeId: string, query: SymphonyExecutionNodeQuery) =>
+      symphony.getExecutionTreeNode(nodeId, query)
   )
   ipcMain.handle('symphony:listCachedProcessKeys', (_e, profileId: string) =>
     getUsableCachedCatalog(profileId)

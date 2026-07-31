@@ -4,6 +4,8 @@
 export type {
   SymphonyActivitiesPage,
   SymphonyActivity,
+  SymphonyExecutionNode,
+  SymphonyExecutionNodeQuery,
   SymphonyIconConfig,
   SymphonyProcessKey,
   SymphonyProcessKeyCatalog,
@@ -19,6 +21,7 @@ export type {
 
 import type {
   SymphonyActivitiesPage,
+  SymphonyExecutionNodeQuery,
   SymphonyRequestDetailOptions,
   SymphonyRequestTreePage,
   SymphonyRequestTreeQuery,
@@ -72,4 +75,11 @@ export async function getRequestDetailHtml(
   opts?: SymphonyRequestDetailOptions
 ): Promise<string> {
   return window.api.symphony.getRequestDetailHtml(requestId, parentId, opts)
+}
+
+export async function getExecutionTreeNode(
+  nodeId: string,
+  query: SymphonyExecutionNodeQuery
+): Promise<string> {
+  return window.api.symphony.getExecutionTreeNode(nodeId, query)
 }

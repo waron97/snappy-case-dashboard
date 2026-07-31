@@ -130,6 +130,41 @@ export type SymphonyRequestDetailOptions = {
   deadJob?: boolean
 }
 
+/**
+ * One node of the execution tree, parsed from the HTML `getRequestDetailHtml`
+ * (root + one embedded level) or `getExecutionTreeNode` (one expanded node)
+ * return. Every node's `id` is its own process/task instance and is safe to
+ * open via `getRequestTree({ requestId })` — `hasChildren` only says whether
+ * the tree goes deeper at this node (an expand call will return more nodes),
+ * not whether the node itself is a "real" request. `children` holds only
+ * whatever was already embedded in the fetched HTML, which is empty for a
+ * not-yet-expanded node.
+ */
+export type SymphonyExecutionNode = {
+  id: string
+  name: string
+  /** The status icon's `title`, e.g. "COMPLETED" | "FAILED" | "WORKING". */
+  status: string | null
+  /** The status icon's inline `color`, e.g. "green" | "#ff7e00". */
+  statusColor: string | null
+  hasChildren: boolean
+  children: SymphonyExecutionNode[]
+}
+
+/**
+ * Query for GET /symphony/execution-tree/node/{nodeId} — expands one node's
+ * children. `processKey`/`rootId` are the TREE ROOT's process key and request
+ * id, constant across every expand call in the tree, not the expanding node's
+ * own. Verified live: /execution-tree/node/{childId}?processKey=<rootProcessKey>&rootId=<rootRequestId>&viewType=PROCESS&deadJob=false&idSelected=<rootRequestId>.
+ */
+export type SymphonyExecutionNodeQuery = {
+  processKey: string
+  rootId: string
+  viewType?: 'PROCESS'
+  deadJob?: boolean
+  idSelected?: string
+}
+
 // ---- Process-key catalog ----
 
 export type SymphonyProcessKeySource = 'bpmn' | 'process-builder'

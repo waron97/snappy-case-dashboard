@@ -201,6 +201,8 @@ export default function SymphonyRequestDetail({
         <Grid.Col span={{ base: 12, lg: 4 }}>
           <SymphonyActivities
             processInstanceId={resolvedProcessId}
+            requestId={noRequestRow ? null : (row?.requestId ?? requestId)}
+            processKey={processKey}
             isActive={isActive}
             pending={isResolving}
           />

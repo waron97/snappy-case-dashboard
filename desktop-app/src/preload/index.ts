@@ -69,6 +69,8 @@ const api = {
       opts?: unknown
     ): Promise<string> =>
       ipcRenderer.invoke('symphony:getRequestDetailHtml', requestId, parentId, opts),
+    getExecutionTreeNode: (nodeId: string, query: unknown): Promise<string> =>
+      ipcRenderer.invoke('symphony:getExecutionTreeNode', nodeId, query),
     processKeys: {
       listCached: (profileId: string): Promise<unknown> =>
         ipcRenderer.invoke('symphony:listCachedProcessKeys', profileId),

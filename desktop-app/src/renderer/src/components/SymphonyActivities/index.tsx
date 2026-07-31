@@ -10,10 +10,12 @@ import {
   ScrollArea,
   Stack,
   Switch,
+  Tabs,
   Text,
   Tooltip
 } from '@mantine/core'
 import UiCard from '@/components/UiCard'
+import SymphonyChildProcesses from '@/components/SymphonyChildProcesses'
 import { useSymphonyActivities } from '@/lib/symphonyDetail'
 import {
   formatDuration,
@@ -24,6 +26,10 @@ import type { SymphonyActivity } from '@/lib/symphony-api'
 
 type Props = {
   processInstanceId: string | null
+  /** The tree root's request id, for the Child processes tab — null when
+   *  there's no request row to walk a tree from. */
+  requestId: string | null
+  processKey: string | null
   isActive: boolean
   /** The caller is still resolving which process instance to ask about, so an
    *  empty result here means "not known yet", not "none exist". */
@@ -87,6 +93,8 @@ function collapseRuns(activities: SymphonyActivity[]): ActivityRun[] {
 
 export default function SymphonyActivities({
   processInstanceId,
+  requestId,
+  processKey,
   isActive,
   pending = false
 }: Props): React.JSX.Element {
@@ -136,109 +144,125 @@ export default function SymphonyActivities({
   }, [all, showAll])
 
   return (
-    <UiCard
-      title="Activity history"
-      rightElement={
-        <Text size="xs" c="dimmed">
-          {all.length} steps · {formatDuration(spanMs)}
-        </Text>
-      }
-    >
-      <Stack gap="xs">
-        <Group justify="space-between">
-          <Switch
-            size="xs"
-            label="Show all"
-            checked={showAll}
-            onChange={(e) => setShowAll(e.currentTarget.checked)}
-          />
-          {!showAll && hidden > 0 && (
-            <Text size="xs" c="dimmed">
-              {hidden} routine hidden
-            </Text>
-          )}
-        </Group>
+    <UiCard>
+      <Tabs defaultValue="history" keepMounted={false}>
+        <Tabs.List>
+          <Tabs.Tab value="history">Activity history</Tabs.Tab>
+          <Tabs.Tab value="children">Child processes</Tabs.Tab>
+        </Tabs.List>
 
-        {isError && (
-          <Alert color="red" icon={<IconAlertTriangle size={16} />}>
-            {(error as Error)?.message ?? 'Failed to load activities'}
-          </Alert>
-        )}
-
-        {(isLoading || pending) && (
-          <Center py="lg">
-            <Loader size="sm" />
-          </Center>
-        )}
-
-        {!isLoading && !pending && !isError && (
-          <ScrollArea.Autosize mah={640}>
-            <Stack gap={2}>
-              {runs.map((run) => (
-                <Box
-                  key={run.key}
-                  px={6}
-                  py={4}
-                  style={{
-                    borderRadius: 4,
-                    borderLeft: `2px solid var(--mantine-color-${run.activity.deleteReason ? 'red' : run.totalMs > SLOW_MS ? 'yellow' : 'dark'}-5)`
-                  }}
-                >
-                  <Group gap={6} wrap="nowrap" justify="space-between">
-                    <Group gap={6} wrap="nowrap" style={{ minWidth: 0 }}>
-                      <Text size="xs" c="dimmed" ff="monospace" style={{ flexShrink: 0 }}>
-                        {formatSymphonyTimestamp(run.activity.startTime, 'HH:mm:ss')}
-                      </Text>
-                      <Tooltip label={run.activity.activityName || run.activity.activityId}>
-                        <Text size="xs" truncate>
-                          {run.activity.activityName || run.activity.activityId}
-                        </Text>
-                      </Tooltip>
-                      {run.count > 1 && (
-                        <Badge size="xs" variant="light" style={{ flexShrink: 0 }}>
-                          ×{run.count}
-                        </Badge>
-                      )}
-                    </Group>
-                    <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>
-                      {formatDuration(run.totalMs)}
-                    </Text>
-                  </Group>
-                  <Group gap={6} wrap="nowrap">
-                    <Text size="xs" c="dimmed" truncate>
-                      {run.activity.activityType}
-                    </Text>
-                    {run.activity.deleteReason && (
-                      <Tooltip label={run.activity.deleteReason}>
-                        <Badge size="xs" color="red" variant="light">
-                          deleted
-                        </Badge>
-                      </Tooltip>
-                    )}
-                  </Group>
-                  {/* Duration bar — makes "where did the time go" immediate. */}
-                  <Box
-                    mt={2}
-                    h={2}
-                    w={`${Math.max(1, (run.totalMs / maxMs) * 100)}%`}
-                    bg={run.totalMs > SLOW_MS ? 'yellow.6' : 'gray.6'}
-                  />
-                </Box>
-              ))}
-            </Stack>
-
-            {runs.length === 0 && (
-              <Center py="lg">
-                <Text size="sm" c="dimmed">
-                  {all.length === 0
-                    ? 'No activities recorded'
-                    : 'Nothing notable — enable Show all'}
+        <Tabs.Panel value="history" pt="xs">
+          <Stack gap="xs">
+            <Group justify="space-between">
+              <Switch
+                size="xs"
+                label="Show all"
+                checked={showAll}
+                onChange={(e) => setShowAll(e.currentTarget.checked)}
+              />
+              <Group gap="xs">
+                {!showAll && hidden > 0 && (
+                  <Text size="xs" c="dimmed">
+                    {hidden} routine hidden
+                  </Text>
+                )}
+                <Text size="xs" c="dimmed">
+                  {all.length} steps · {formatDuration(spanMs)}
                 </Text>
+              </Group>
+            </Group>
+
+            {isError && (
+              <Alert color="red" icon={<IconAlertTriangle size={16} />}>
+                {(error as Error)?.message ?? 'Failed to load activities'}
+              </Alert>
+            )}
+
+            {(isLoading || pending) && (
+              <Center py="lg">
+                <Loader size="sm" />
               </Center>
             )}
-          </ScrollArea.Autosize>
-        )}
-      </Stack>
+
+            {!isLoading && !pending && !isError && (
+              <ScrollArea.Autosize mah={640}>
+                <Stack gap={2}>
+                  {runs.map((run) => (
+                    <Box
+                      key={run.key}
+                      px={6}
+                      py={4}
+                      style={{
+                        borderRadius: 4,
+                        borderLeft: `2px solid var(--mantine-color-${run.activity.deleteReason ? 'red' : run.totalMs > SLOW_MS ? 'yellow' : 'dark'}-5)`
+                      }}
+                    >
+                      <Group gap={6} wrap="nowrap" justify="space-between">
+                        <Group gap={6} wrap="nowrap" style={{ minWidth: 0 }}>
+                          <Text size="xs" c="dimmed" ff="monospace" style={{ flexShrink: 0 }}>
+                            {formatSymphonyTimestamp(run.activity.startTime, 'HH:mm:ss')}
+                          </Text>
+                          <Tooltip label={run.activity.activityName || run.activity.activityId}>
+                            <Text size="xs" truncate>
+                              {run.activity.activityName || run.activity.activityId}
+                            </Text>
+                          </Tooltip>
+                          {run.count > 1 && (
+                            <Badge size="xs" variant="light" style={{ flexShrink: 0 }}>
+                              ×{run.count}
+                            </Badge>
+                          )}
+                        </Group>
+                        <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>
+                          {formatDuration(run.totalMs)}
+                        </Text>
+                      </Group>
+                      <Group gap={6} wrap="nowrap">
+                        <Text size="xs" c="dimmed" truncate>
+                          {run.activity.activityType}
+                        </Text>
+                        {run.activity.deleteReason && (
+                          <Tooltip label={run.activity.deleteReason}>
+                            <Badge size="xs" color="red" variant="light">
+                              deleted
+                            </Badge>
+                          </Tooltip>
+                        )}
+                      </Group>
+                      {/* Duration bar — makes "where did the time go" immediate. */}
+                      <Box
+                        mt={2}
+                        h={2}
+                        w={`${Math.max(1, (run.totalMs / maxMs) * 100)}%`}
+                        bg={run.totalMs > SLOW_MS ? 'yellow.6' : 'gray.6'}
+                      />
+                    </Box>
+                  ))}
+                </Stack>
+
+                {runs.length === 0 && (
+                  <Center py="lg">
+                    <Text size="sm" c="dimmed">
+                      {all.length === 0
+                        ? 'No activities recorded'
+                        : 'Nothing notable — enable Show all'}
+                    </Text>
+                  </Center>
+                )}
+              </ScrollArea.Autosize>
+            )}
+          </Stack>
+        </Tabs.Panel>
+
+        <Tabs.Panel value="children" pt="xs">
+          <SymphonyChildProcesses
+            requestId={requestId}
+            processKey={processKey}
+            isActive={isActive}
+            pending={pending}
+          />
+        </Tabs.Panel>
+      </Tabs>
     </UiCard>
   )
 }

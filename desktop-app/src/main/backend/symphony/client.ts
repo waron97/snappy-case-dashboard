@@ -17,6 +17,7 @@ import { ConnectError, getCachedToken, invalidateToken } from '../keycloak'
 import { AuthError } from '../odoo'
 import type {
   SymphonyActivitiesPage,
+  SymphonyExecutionNodeQuery,
   SymphonyRequestDetailOptions,
   SymphonyRequestRow,
   SymphonyRequestTreePage,
@@ -202,6 +203,34 @@ export async function getRequestDetailHtml(
   const parent = parentId ? encodeURIComponent(parentId) : 'null'
   const path = `/symphony/execution-tree/detail/${encodeURIComponent(requestId)}/${parent}`
 
+  return symphonyFetch<string>(path, params, 'text', signal)
+}
+
+/**
+ * Expands one execution-tree node's children — the call the legacy UI makes
+ * when a `has-children` node is toggled. Returns an HTML fragment (that one
+ * node, re-rendered with its `.children-container` now populated one level
+ * deep), parsed the same way as `getRequestDetailHtml` in
+ * lib/symphonyDetailHtml.ts.
+ *
+ * `processKey`/`rootId` must be the TREE ROOT's, not the expanding node's own
+ * — verified live against a nested subprocess node.
+ */
+export async function getExecutionTreeNode(
+  nodeId: string,
+  query: SymphonyExecutionNodeQuery,
+  signal?: AbortSignal
+): Promise<string> {
+  const params = new URLSearchParams()
+  params.set('processKey', query.processKey)
+  params.set('rootId', query.rootId)
+  params.set('viewType', query.viewType ?? 'PROCESS')
+  params.set('deadJob', String(query.deadJob ?? false))
+  if (query.idSelected) {
+    params.set('idSelected', query.idSelected)
+  }
+
+  const path = `/symphony/execution-tree/node/${encodeURIComponent(nodeId)}`
   return symphonyFetch<string>(path, params, 'text', signal)
 }
 
