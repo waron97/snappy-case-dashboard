@@ -47,6 +47,13 @@ export default function OdooNavigateModal() {
   }
 
   function handleSubmit() {
+    const trimmed = url.trim()
+    if (/^\d+$/.test(trimmed)) {
+      handleClose()
+      navigate(`/helpdesk.ticket/${trimmed}`)
+      return
+    }
+
     const parsed = parseOdooUrl(url)
     if (!parsed) {
       setError('Could not parse a model and ID from this URL.')
