@@ -70,19 +70,24 @@ function findBubble(entry: number, adjacency: Adjacency): Bubble | undefined {
   let bestDepth = Infinity
 
   for (const [node, routes] of routesByNode) {
-    // Keep at most one (the shortest) route per distinct first hop from
+    // Keep at most one (the shortest) route per distinct first EDGE from
     // entry, for RANKING candidate exits only (see below) — two routes that
     // only diverge deep inside an already-shared tail aren't a real fork for
-    // ranking purposes, they're the same branch found twice.
-    const shortestByFirstHop = new Map<number, ChartPath>()
+    // ranking purposes, they're the same branch found twice. Keying by the
+    // edge (resultId), not the node it lands on, matters when two distinct
+    // results from `entry` both target the same immediate next phase — that
+    // is two genuinely different decisions that happen to coincide on where
+    // they land, not one branch found twice, and must still count toward
+    // the >=2 check below.
+    const shortestByFirstEdge = new Map<number, ChartPath>()
     for (const route of routes) {
-      const firstHop = route.phaseIds[1]
-      const existing = shortestByFirstHop.get(firstHop)
+      const firstEdge = route.resultIds[0]
+      const existing = shortestByFirstEdge.get(firstEdge)
       if (!existing || route.resultIds.length < existing.resultIds.length) {
-        shortestByFirstHop.set(firstHop, route)
+        shortestByFirstEdge.set(firstEdge, route)
       }
     }
-    const dedupedRoutes = Array.from(shortestByFirstHop.values())
+    const dedupedRoutes = Array.from(shortestByFirstEdge.values())
 
     if (dedupedRoutes.length >= 2) {
       // Depth at which a *second* distinct branch is confirmed to have

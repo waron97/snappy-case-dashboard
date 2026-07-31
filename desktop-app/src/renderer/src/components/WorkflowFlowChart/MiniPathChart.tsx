@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Background, Edge, Node, ReactFlow } from '@xyflow/react'
+import { Background, Edge, Node, ReactFlow, SmoothStepPathOptions } from '@xyflow/react'
 import { Box, useMantineTheme } from '@mantine/core'
 import { ChartPhase, ChartResult, NODE_HEIGHT, NODE_WIDTH } from './layout'
 import { HighlightedGroup } from './pathGroups'
@@ -23,7 +23,7 @@ export default function MiniPathChart({ phases, results, group }: Props): React.
     const resultNameById = new Map(results.map((r) => [r.id, r.name]))
 
     const nodes: Node[] = []
-    const edges: Edge[] = []
+    const edges: (Edge & { pathOptions?: SmoothStepPathOptions })[] = []
     const placedIds = new Set<string>()
 
     function placeNode(
@@ -59,7 +59,17 @@ export default function MiniPathChart({ phases, results, group }: Props): React.
     // label sits near the step corner, not the true midpoint, so several
     // diagonal branches from/to the same node clump their labels together.
     // The transition name goes on the destination node instead (see above).
-    function placeEdge(id: string, source: string, target: string, label?: string): void {
+    // `offset` sideways-shifts a smoothstep edge's step — needed for a
+    // route with no interior node of its own (entry and exit adjacent):
+    // without it, two such routes share identical endpoints and render as
+    // one indistinguishable line.
+    function placeEdge(
+      id: string,
+      source: string,
+      target: string,
+      label?: string,
+      offset?: number
+    ): void {
       edges.push({
         id,
         source,
@@ -68,7 +78,8 @@ export default function MiniPathChart({ phases, results, group }: Props): React.
         label,
         labelShowBg: true,
         labelBgStyle: { fill: pinkColor },
-        style: { stroke: pinkColor, strokeWidth: 3 }
+        style: { stroke: pinkColor, strokeWidth: 3 },
+        pathOptions: offset !== undefined ? { offset } : undefined
       })
     }
 
@@ -118,7 +129,21 @@ export default function MiniPathChart({ phases, results, group }: Props): React.
             prevId = nodeId
           })
 
-          placeEdge(`${prevId}-${exitId}-r${r}`, prevId, exitId)
+          // A route with no interior (entry and exit adjacent) has nowhere
+          // else to show which decision it is — unlike the labeled-on-the-
+          // destination-node convention above, entry and exit are shared
+          // with every other route in this bubble, so the edge itself needs
+          // the label, offset so parallel direct routes don't coincide.
+          const isDirectRoute = interior.length === 0
+          placeEdge(
+            `${prevId}-${exitId}-r${r}`,
+            prevId,
+            exitId,
+            isDirectRoute && token.routes.length > 1
+              ? resultNameById.get(route.resultIds[0])
+              : undefined,
+            isDirectRoute && token.routes.length > 1 ? xOffset : undefined
+          )
         })
 
         placeNode(exitId, 0, exitY, phaseNameById.get(token.exit) ?? token.exit)
