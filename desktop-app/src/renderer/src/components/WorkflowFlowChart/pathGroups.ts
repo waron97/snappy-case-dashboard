@@ -62,15 +62,37 @@ export function findGroupedPaths(
 
   const adjacency = buildAdjacency(results)
   const groups: PathGroup[] = []
+  const seenBackbones = new Set<string>()
   const visited = new Set<number>([startPhaseId])
   const backbone: BackboneToken[] = [{ type: 'node', phaseId: startPhaseId }]
 
-  function dfs(current: number): void {
+  function pushGroup(): void {
+    // Defensive dedupe: nothing in the search below is expected to produce
+    // two identical backbones, but this keeps MAX_GROUPS bounding distinct
+    // groups (its documented contract) even if some future graph shape
+    // manages to reach the same backbone two different ways.
+    const signature = JSON.stringify(backbone)
+    if (seenBackbones.has(signature)) {
+      return
+    }
+    seenBackbones.add(signature)
+    groups.push({ backbone: [...backbone] })
+  }
+
+  // `chains`, when present, are remainders of an ancestor bubble's own
+  // recorded routes: the exact tail still expected from `current` onward
+  // before it rejoins that bubble's exit. Every node along the way is still
+  // recorded normally (the chain doesn't hide anything from the backbone) —
+  // it only tells the search where the *already-known* continuation ends,
+  // so that final step isn't re-explored past a bubble's own exit and
+  // duplicate the group its collapsed token (and sibling `dfs(exit)` call)
+  // already produced.
+  function dfs(current: number, chains?: ChartPath[]): void {
     if (groups.length >= MAX_GROUPS) {
       return
     }
     if (current === targetPhaseId) {
-      groups.push({ backbone: [...backbone] })
+      pushGroup()
       return
     }
 
@@ -82,14 +104,20 @@ export function findGroupedPaths(
     // be explored edge-by-edge instead of taken as a single hop.
     const bubbleContainsTarget =
       bubble?.routes.some((r) => r.phaseIds.slice(1, -1).includes(targetPhaseId)) ?? false
-    const bubbleTaken = bubble !== undefined && !visited.has(bubble.exit) && !bubbleContainsTarget
-    // Only exclude the bubble's first-hop edges from normal exploration when
-    // the contracted hop was actually taken. If the exit is already visited
-    // (common in a cyclic graph — some other branch already passed through
-    // it), we fall back to exploring those edges individually instead of
-    // silently pruning them. First hops with an escaping branch (something
-    // the deduped `routes` don't lead to `exit`) are excluded from the skip
-    // set too, so that branch stays individually reachable.
+    // A node reached while tracing an ancestor's inherited chain is already
+    // being walked edge-by-edge on that ancestor's behalf — taking a fresh
+    // collapse here too would represent the exact same reconverging cluster
+    // a second, redundant way (once flattened via the chain, once as its
+    // own bubble token). Collapse only applies when a node is reached fresh.
+    const bubbleTaken =
+      chains === undefined &&
+      bubble !== undefined &&
+      !visited.has(bubble.exit) &&
+      !bubbleContainsTarget
+    // Non-escaping first hops are fully absorbed by the bubble contraction
+    // below and excluded outright. Escaping first hops still need individual
+    // exploration (handled per-edge below), since the deduped `routes` alone
+    // don't capture what else hangs off them.
     const bubbleFirstHops = bubbleTaken
       ? new Set(
           bubble!.routes
@@ -108,7 +136,6 @@ export function findGroupedPaths(
       backbone.pop()
     }
 
-    // Any other edge not already covered by the bubble contraction above.
     for (const { target, resultId } of adjacency.get(current) ?? []) {
       if (groups.length >= MAX_GROUPS) {
         return
@@ -116,9 +143,48 @@ export function findGroupedPaths(
       if (bubbleFirstHops?.has(target) || visited.has(target)) {
         continue
       }
+
+      // Chains this exact edge continues — either inherited from an
+      // ancestor bubble (`chains`) or freshly started because this edge is
+      // one of the bubble just found at `current`'s escaping first hops.
+      // Matching is by the precise (phaseId, resultId) pair, never just the
+      // target node, so an unrelated edge that happens to land on the same
+      // node (e.g. a different bubble's own route reaching it) is never
+      // mistaken for a continuation of this one.
+      const matchedChains: ChartPath[] = []
+      if (chains) {
+        for (const chain of chains) {
+          if (chain.phaseIds[1] === target && chain.resultIds[0] === resultId) {
+            matchedChains.push(chain)
+          }
+        }
+      }
+      if (bubbleTaken && bubble!.escapingFirstHops.has(target)) {
+        for (const route of bubble!.routes) {
+          if (route.phaseIds[1] === target && route.resultIds[0] === resultId) {
+            matchedChains.push(route)
+          }
+        }
+      }
+
+      const survivors = matchedChains
+        .map((chain) => ({
+          phaseIds: chain.phaseIds.slice(1),
+          resultIds: chain.resultIds.slice(1)
+        }))
+        .filter((chain) => chain.phaseIds.length > 1)
+
+      // A matched chain with no surviving distance means this edge lands
+      // exactly on a bubble's own exit via its already-known route — that
+      // continuation is already owned by that bubble's `dfs(exit)` call, so
+      // skip it entirely (no node, no recursion) rather than re-deriving it.
+      if (matchedChains.length > 0 && survivors.length === 0) {
+        continue
+      }
+
       backbone.push({ type: 'node', phaseId: target, viaResultId: resultId })
       visited.add(target)
-      dfs(target)
+      dfs(target, survivors.length > 0 ? survivors : undefined)
       visited.delete(target)
       backbone.pop()
     }

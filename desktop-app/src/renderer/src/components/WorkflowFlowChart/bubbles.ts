@@ -68,12 +68,12 @@ function findBubble(entry: number, adjacency: Adjacency): Bubble | undefined {
 
   let bestNode: number | undefined
   let bestDepth = Infinity
-  let bestRoutes: ChartPath[] | undefined
 
   for (const [node, routes] of routesByNode) {
     // Keep at most one (the shortest) route per distinct first hop from
-    // entry. Two routes that only diverge deep inside an already-shared
-    // tail aren't a real fork — they're the same branch found twice.
+    // entry, for RANKING candidate exits only (see below) — two routes that
+    // only diverge deep inside an already-shared tail aren't a real fork for
+    // ranking purposes, they're the same branch found twice.
     const shortestByFirstHop = new Map<number, ChartPath>()
     for (const route of routes) {
       const firstHop = route.phaseIds[1]
@@ -95,7 +95,6 @@ function findBubble(entry: number, adjacency: Adjacency): Bubble | undefined {
       if (depth < bestDepth) {
         bestDepth = depth
         bestNode = node
-        bestRoutes = dedupedRoutes
       }
     }
   }
@@ -104,13 +103,33 @@ function findBubble(entry: number, adjacency: Adjacency): Bubble | undefined {
     return undefined
   }
 
+  // Final routes kept for the bubble: every distinct route (by exact
+  // resultIds sequence) the walk found into bestNode — not just one per
+  // first hop, so a first hop with multiple genuinely different-length
+  // reconverging routes keeps all of them instead of only the shortest.
+  const seenResultSequences = new Set<string>()
+  const bestRoutes: ChartPath[] = []
+  for (const route of routesByNode.get(bestNode) ?? []) {
+    const key = route.resultIds.join(',')
+    if (seenResultSequences.has(key)) {
+      continue
+    }
+    seenResultSequences.add(key)
+    bestRoutes.push(route)
+  }
+
   // Which node(s) does each first hop actually lead to, across every route
-  // the walk found (not just the deduped ones kept for rendering)? A first
-  // hop that only ever leads back to the exit is safe to fully absorb; one
-  // that also reaches some other node has a branch `routes` doesn't capture.
+  // the walk found (not just the ones kept in `routes`)? A first hop that
+  // only ever leads back to the exit is safe to fully absorb; one that also
+  // reaches some other node has a branch `routes` doesn't capture.
   const nodesByFirstHop = new Map<number, Set<number>>()
   for (const [node, routes] of routesByNode) {
     for (const route of routes) {
+      // Continuing the bounded walk past bestNode isn't a new destination —
+      // it's downstream of the exit, not a genuine branch for this first hop.
+      if (route.phaseIds.slice(0, -1).includes(bestNode)) {
+        continue
+      }
       const firstHop = route.phaseIds[1]
       const nodes = nodesByFirstHop.get(firstHop) ?? new Set<number>()
       nodes.add(node)
@@ -119,7 +138,7 @@ function findBubble(entry: number, adjacency: Adjacency): Bubble | undefined {
   }
 
   const escapingFirstHops = new Set<number>()
-  for (const route of bestRoutes!) {
+  for (const route of bestRoutes) {
     const firstHop = route.phaseIds[1]
     const reachableNodes = nodesByFirstHop.get(firstHop) ?? new Set<number>()
     if (reachableNodes.size > 1 || !reachableNodes.has(bestNode)) {
@@ -127,7 +146,7 @@ function findBubble(entry: number, adjacency: Adjacency): Bubble | undefined {
     }
   }
 
-  return { exit: bestNode, routes: bestRoutes!, escapingFirstHops }
+  return { exit: bestNode, routes: bestRoutes, escapingFirstHops }
 }
 
 // entry phase id -> its bubble (nearest reconvergence + the short routes
