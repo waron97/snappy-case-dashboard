@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow, Menu, type MenuItemConstructorOptions } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -20,6 +20,76 @@ if (process.platform === 'linux' && !process.env.XDG_CURRENT_DESKTOP) {
 }
 
 let mainWindow: BrowserWindow | null = null
+
+// Electron's implicit default menu (installed whenever setApplicationMenu is
+// never called) binds CmdOrCtrl+W to the 'close' role, which closes the sole
+// BrowserWindow and, via window-all-closed, quits the whole app. Rebuilding
+// the same menu minus that item lets the renderer's own Ctrl+W handler (see
+// lib/caseWorkspace.tsx) close just the active tab instead. Everything else
+// here mirrors Electron's default template so Edit/View shortcuts (copy,
+// paste, reload, devtools, zoom, mac Cmd+Q/Cmd+H) keep working.
+function buildAppMenu(): void {
+  const isMac = process.platform === 'darwin'
+
+  const template: MenuItemConstructorOptions[] = [
+    ...(isMac
+      ? ([
+          {
+            label: app.name,
+            submenu: [
+              { role: 'about' },
+              { type: 'separator' },
+              { role: 'services' },
+              { type: 'separator' },
+              { role: 'hide' },
+              { role: 'hideOthers' },
+              { role: 'unhide' },
+              { type: 'separator' },
+              { role: 'quit' }
+            ]
+          }
+        ] as MenuItemConstructorOptions[])
+      : []),
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'selectAll' }
+      ]
+    },
+    {
+      label: 'View',
+      submenu: [
+        { role: 'reload' },
+        { role: 'forceReload' },
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' }
+      ]
+    },
+    {
+      label: 'Window',
+      submenu: [
+        { role: 'minimize' },
+        { role: 'zoom' },
+        ...(isMac
+          ? ([{ type: 'separator' }, { role: 'front' }] as MenuItemConstructorOptions[])
+          : [])
+      ]
+    }
+  ]
+
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+}
 
 function createWindow(): void {
   // Create the browser window.
@@ -63,6 +133,8 @@ function createWindow(): void {
 app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
+
+  buildAppMenu()
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.

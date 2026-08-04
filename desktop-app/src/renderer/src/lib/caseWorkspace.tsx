@@ -142,6 +142,21 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
     [navigate]
   )
 
+  // The default Electron menu's CmdOrCtrl+W closes the whole window/app (see
+  // buildAppMenu in src/main/index.ts, which deliberately drops that
+  // accelerator) — here it instead closes just the active tab, matching
+  // browser-tab conventions. No-op on the permanent list tab.
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent): void {
+      const isCloseShortcut = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'w'
+      if (!isCloseShortcut || activeKey === 'list') return
+      e.preventDefault()
+      closeTab(activeKey)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [activeKey, closeTab])
+
   const closeAll = useCallback(() => {
     setTabs([LIST_TAB])
     setActiveKey('list')
