@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { Center, Loader } from '@mantine/core'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useNavigate } from 'react-router-dom'
+import ErrorBoundary from '@/components/ErrorBoundary'
 
 const MfaWorkspace = lazy(() => import('@/components/MfaWorkspace'))
 const RipLogs = lazy(() => import('./RipLogs'))
@@ -16,14 +17,17 @@ function RouteFallback(): React.JSX.Element {
 }
 
 export function AppRoutes(): React.JSX.Element {
+  const navigate = useNavigate()
   return (
-    <Suspense fallback={<RouteFallback />}>
-      <Routes>
-        <Route path="/rip/mfa/:id?" element={<MfaWorkspace />} />
-        <Route path="/rip/logs" element={<RipLogs />} />
-        <Route path="/symple.workflow/:id" element={<SympleWorkflowDetail />} />
-        <Route path="/devops/work-items" element={<DevOpsWorkItems />} />
-      </Routes>
-    </Suspense>
+    <ErrorBoundary onRecover={() => navigate('/')} recoverLabel="Back to cases">
+      <Suspense fallback={<RouteFallback />}>
+        <Routes>
+          <Route path="/rip/mfa/:id?" element={<MfaWorkspace />} />
+          <Route path="/rip/logs" element={<RipLogs />} />
+          <Route path="/symple.workflow/:id" element={<SympleWorkflowDetail />} />
+          <Route path="/devops/work-items" element={<DevOpsWorkItems />} />
+        </Routes>
+      </Suspense>
+    </ErrorBoundary>
   )
 }

@@ -14,6 +14,7 @@ import {
   TextInput
 } from '@mantine/core'
 import CaseList from '@/routes/CaseList'
+import ErrorBoundary from '@/components/ErrorBoundary'
 import TabPanelContent from '@/components/CasesWorkspace/TabPanelContent'
 import { CaseWorkspaceTab, OpenWorkspaceTab, tabKey, tabPath, useCaseTabs } from '@/lib/useCaseTabs'
 import { useSettings } from '@/lib/settings'
@@ -283,17 +284,21 @@ export default function CasesWorkspace(): React.JSX.Element {
       />
 
       <Tabs.Panel value="list">
-        <CaseList />
+        <ErrorBoundary>
+          <CaseList />
+        </ErrorBoundary>
       </Tabs.Panel>
       {openTabs.map((tab) => {
         const key = tabKey(tab)
         return (
           <Tabs.Panel key={key} value={key}>
-            <TabPanelContent
-              tab={tab}
-              isActive={activeKey === key}
-              onNameResolved={(name) => setLabel(key, name)}
-            />
+            <ErrorBoundary onRecover={() => closeTab(key)} recoverLabel="Close tab">
+              <TabPanelContent
+                tab={tab}
+                isActive={activeKey === key}
+                onNameResolved={(name) => setLabel(key, name)}
+              />
+            </ErrorBoundary>
           </Tabs.Panel>
         )
       })}

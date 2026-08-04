@@ -8,6 +8,7 @@ import ProfileSwitcher from '@/components/ProfileSwitcher'
 import OdooNavigateModal from '@/components/OdooNavigateModal'
 import UpdateNotifier from '@/components/UpdateNotifier'
 import CasesWorkspace from '@/components/CasesWorkspace'
+import ErrorBoundary from '@/components/ErrorBoundary'
 import SymphonyCatalogWarmup from '@/components/SymphonyCatalogWarmup'
 import { CaseTabsProvider } from '@/lib/caseWorkspace'
 import { deferredUiPrefColorSchemeManager } from '@/lib/colorSchemeManager'
@@ -74,7 +75,9 @@ function Shell(): React.JSX.Element {
         </header>
       </Box>
       {matchSettings ? (
-        <SettingsPage />
+        <ErrorBoundary>
+          <SettingsPage />
+        </ErrorBoundary>
       ) : (
         <>
           {!loading && !isConfigured && (
@@ -104,7 +107,9 @@ function Shell(): React.JSX.Element {
             <CaseTabsProvider>
               <SymphonyCatalogWarmup />
               <div style={{ display: isWorkspaceRoute ? 'block' : 'none' }}>
-                <CasesWorkspace />
+                <ErrorBoundary>
+                  <CasesWorkspace />
+                </ErrorBoundary>
               </div>
               <div style={{ display: isWorkspaceRoute ? 'none' : 'block' }}>
                 <AppRoutes />
