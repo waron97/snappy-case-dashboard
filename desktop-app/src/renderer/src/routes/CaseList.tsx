@@ -22,33 +22,24 @@ interface Case {
   create_date: string
 }
 
+const DEFAULT_FILTERS = {
+  name: [] as string[],
+  is_close: false as boolean | null,
+  workflow: [] as string[],
+  ticketType: [] as string[],
+  activePhase: [] as string[],
+  customer_id: [] as string[],
+  startDate: null as string | null,
+  endDate: null as string | null,
+  useCustomDomain: false,
+  customDomain: '[]'
+}
+
 export default function HomePage() {
   // -------------------------------------
   // Hooks
   // -------------------------------------
-  const [filters, setFilters] = useState<{
-    name: string[]
-    is_close: boolean | null
-    workflow: string[]
-    ticketType: string[]
-    activePhase: string[]
-    customer_id: string[]
-    startDate: string | null
-    endDate: string | null
-    useCustomDomain: boolean
-    customDomain: string
-  }>({
-    name: [],
-    is_close: false,
-    workflow: [],
-    ticketType: [],
-    activePhase: [],
-    customer_id: [],
-    startDate: null,
-    endDate: null,
-    useCustomDomain: false,
-    customDomain: '[]'
-  })
+  const [filters, setFilters] = useState(DEFAULT_FILTERS)
 
   const sentinelRef = useRef<HTMLDivElement>(null)
 
@@ -56,8 +47,16 @@ export default function HomePage() {
   // Queries
   // -------------------------------------
 
-  const { data, isLoading, isError, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteQuery({
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch
+  } = useInfiniteQuery({
       queryKey: ['cases', filters],
       queryFn: ({ pageParam = 0 }) =>
         odooSearchRead(
@@ -196,18 +195,6 @@ export default function HomePage() {
     </Table.Tr>
   ))
 
-  if (isError) {
-    return (
-      <Container size="lg" py="xl">
-        <Center py="xl">
-          <Text c="red">
-            Failed to load cases: {error instanceof Error ? error.message : 'Unknown error'}
-          </Text>
-        </Center>
-      </Container>
-    )
-  }
-
   return (
     <Container size="xl" py="sm">
       <Stack gap="md">
@@ -226,27 +213,48 @@ export default function HomePage() {
             ...(f.endDate ? [['create_date', '<=', f.endDate]] : [])
           ]}
         />
-        <Table striped highlightOnHover>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Name</Table.Th>
-              <Table.Th>Customer</Table.Th>
-              <Table.Th>Detail</Table.Th>
-              <Table.Th>Workflow</Table.Th>
-              <Table.Th>Active phase</Table.Th>
-              <Table.Th>Create date</Table.Th>
-              <Table.Th />
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{rows}</Table.Tbody>
-        </Table>
 
-        <div ref={sentinelRef} style={{ height: '1px' }} />
-
-        {(isLoading || isFetchingNextPage) && (
+        {isError ? (
           <Center py="xl">
-            <Loader size="sm" />
+            <Stack align="center" gap="sm">
+              <Text c="red">
+                Failed to load cases: {error instanceof Error ? error.message : 'Unknown error'}
+              </Text>
+              <Stack gap="xs" align="center">
+                <Button size="xs" onClick={() => refetch()}>
+                  Retry
+                </Button>
+                <Button size="xs" variant="subtle" onClick={() => setFilters(DEFAULT_FILTERS)}>
+                  Reset filters
+                </Button>
+              </Stack>
+            </Stack>
           </Center>
+        ) : (
+          <>
+            <Table striped highlightOnHover>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Name</Table.Th>
+                  <Table.Th>Customer</Table.Th>
+                  <Table.Th>Detail</Table.Th>
+                  <Table.Th>Workflow</Table.Th>
+                  <Table.Th>Active phase</Table.Th>
+                  <Table.Th>Create date</Table.Th>
+                  <Table.Th />
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>{rows}</Table.Tbody>
+            </Table>
+
+            <div ref={sentinelRef} style={{ height: '1px' }} />
+
+            {(isLoading || isFetchingNextPage) && (
+              <Center py="xl">
+                <Loader size="sm" />
+              </Center>
+            )}
+          </>
         )}
       </Stack>
     </Container>
