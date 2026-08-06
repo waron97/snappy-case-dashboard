@@ -5,6 +5,7 @@ import { Badge, Grid, Group, Input, NavLink, ScrollArea, Stack, Switch, Text } f
 import PythonEditor from '@/components/PythonEditor'
 import UiCard from '@/components/UiCard'
 import { odooRead, odooWrite } from '@/lib/odoo-api'
+import { useTabVisited } from '@/lib/tabActive'
 import { PhaseRecord, useWorkflowContext } from '../context'
 
 function fuzzyMatch(name: string, query: string): boolean {
@@ -27,6 +28,7 @@ function fuzzyMatch(name: string, query: string): boolean {
 export default function PhasesAndResults() {
   const { workflow, phases } = useWorkflowContext()
   const queryClient = useQueryClient()
+  const tabVisited = useTabVisited()
 
   const [selectedPhaseId, setSelectedPhaseId] = useState<number | null>(null)
   const [search, setSearch] = useState('')
@@ -44,7 +46,9 @@ export default function PhasesAndResults() {
   const codeQueryKey = ['symple.triplet.phase', selectedPhaseId, 'code']
 
   const { data: savedCode } = useQuery<string>({
-    enabled: selectedPhaseId !== null,
+    // Also gated on the tab having been visited: this query is what mounts the
+    // PythonEditor below, the heaviest thing on the page.
+    enabled: selectedPhaseId !== null && tabVisited,
     queryKey: codeQueryKey,
     queryFn: () =>
       odooRead('symple.triplet.phase', [selectedPhaseId!], ['code']).then((r) => r[0].code ?? '')

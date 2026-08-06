@@ -20,7 +20,9 @@ import {
 import { DateInput } from '@mantine/dates'
 import RelationLink from '@/components/RelationLink'
 import UiCard from '@/components/UiCard'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
+import { useVisitedGate } from '@/lib/tabActive'
 import { constructOdooDomain } from '@/utils/odoo'
 
 interface RipLog {
@@ -48,11 +50,17 @@ const parseJson = (str: string | undefined) => {
   }
 }
 
-export default function RipLogs() {
+type Props = {
+  isActive?: boolean
+}
+
+export default function RipLogs({ isActive = true }: Props) {
   // -------------------------------------
   // Hooks
   // -------------------------------------
 
+  // Filter and selection state live here rather than in the tab, which is what
+  // makes several RIP logs tabs independent of each other.
   const [filters, setFilters] = useState<{
     endpoint: string[]
     args: string[]
@@ -77,12 +85,17 @@ export default function RipLogs() {
 
   const sentinelRef = useRef<HTMLDivElement>(null)
 
+  const visited = useVisitedGate(isActive)
+
+  useDocumentTitle('RIP logs', isActive)
+
   // -------------------------------------
   // Queries
   // -------------------------------------
 
   const { data, isLoading, isError, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
+      enabled: visited,
       queryKey: ['rip.request.log', filters],
       queryFn: ({ pageParam = 0 }) =>
         odooSearchRead(

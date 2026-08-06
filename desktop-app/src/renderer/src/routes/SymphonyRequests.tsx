@@ -56,7 +56,7 @@ export default function SymphonyRequests({ isActive }: Props): React.JSX.Element
   const [filters, setFilters] = useState<SymphonyFilterState>(EMPTY_SYMPHONY_FILTERS)
   const [createError, setCreateError] = useState<string | null>(null)
   const sentinelRef = useRef<HTMLDivElement>(null)
-  const { openDeepSearch } = useCaseTabs()
+  const { openTab } = useCaseTabs()
   const { create } = useSweepActions()
 
   useDocumentTitle('Symphony', isActive)
@@ -87,7 +87,7 @@ export default function SymphonyRequests({ isActive }: Props): React.JSX.Element
         },
         filter: toSweepListFilter(draft)
       })
-      openDeepSearch(job.id, job.name)
+      openTab({ kind: 'symphony-deep-search', jobId: job.id }, job.name)
     } catch (err) {
       setCreateError(err instanceof Error ? err.message : String(err))
     }
@@ -206,8 +206,7 @@ export default function SymphonyRequests({ isActive }: Props): React.JSX.Element
                       to={tabPath({
                         kind: 'symphony-request',
                         requestId: row.requestId,
-                        processId: row.processId,
-                        label: row.processKey
+                        processId: row.processId
                       })}
                     >
                       <IconEye size={16} />

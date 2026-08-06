@@ -116,8 +116,7 @@ function SubprocessNode({ node, rootId, processKey }: NodeProps): React.JSX.Elem
             to={tabPath({
               kind: 'symphony-request',
               requestId: node.id,
-              processId: NO_PROCESS_ID,
-              label: node.name
+              processId: NO_PROCESS_ID
             })}
           >
             <IconEye size={14} />

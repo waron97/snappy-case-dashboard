@@ -1,7 +1,8 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { IconCode } from '@tabler/icons-react'
 import { Anchor, Button, Container, Group, Space, Tabs, Title } from '@mantine/core'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { useResolvedTabName, useVisitedGate } from '@/lib/tabActive'
 import { useSettings } from '@/lib/settings'
 import { WorkflowContext } from './context'
 import useActions from './useActions'
@@ -12,27 +13,35 @@ import PhasesAndResults from './tabs/PhasesAndResults'
 // Component
 // -------------------------------------
 
-export default function SympleWorkflow() {
+type Props = {
+  id: number
+  isActive?: boolean
+  onNameResolved?: (name: string) => void
+}
+
+export default function SympleWorkflow({ id, isActive = false, onNameResolved }: Props) {
   // -------------------------------------
   // Hooks
   // -------------------------------------
 
-  const params = useParams()
-  const id = Number(params.id)
+  // `id` arrives from the tab payload, not useParams: this renders outside
+  // <Routes>, so useParams would return {} and every read would hit NaN.
   const { activeProfile: settings } = useSettings()
+  const visited = useVisitedGate(isActive)
 
   // -------------------------------------
   // Queries
   // -------------------------------------
 
-  const data = useData(id)
+  const data = useData(id, visited)
   const actions = useActions(id)
 
   // -------------------------------------
   // Effects
   // -------------------------------------
 
-  useDocumentTitle(data.workflow ? `${data.workflow.name} (#${id})` : undefined)
+  useDocumentTitle(data.workflow ? `${data.workflow.name} (#${id})` : undefined, isActive)
+  useResolvedTabName(data.workflow?.name, onNameResolved)
 
   // -------------------------------------
   // Functions

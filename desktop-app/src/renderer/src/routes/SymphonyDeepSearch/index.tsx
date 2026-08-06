@@ -473,8 +473,7 @@ export default function SymphonyDeepSearch({
                         to={tabPath({
                           kind: 'symphony-request',
                           requestId: hit.requestId,
-                          processId: hit.processId,
-                          label: hit.processKey ?? hit.requestId
+                          processId: hit.processId
                         })}
                       >
                         <IconEye size={14} />

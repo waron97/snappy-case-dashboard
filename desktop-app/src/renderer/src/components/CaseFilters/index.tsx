@@ -15,6 +15,7 @@ import {
 } from '@mantine/core'
 import { DateInput } from '@mantine/dates'
 import { useSavedDomains } from '@/lib/savedDomains'
+import { useTabIsActive } from '@/lib/tabActive'
 
 const DomainEditor = lazy(() => import('./DomainEditor'))
 
@@ -35,6 +36,8 @@ export default function CaseFilters(props: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [saveModalOpen, setSaveModalOpen] = useState(false)
   const [saveName, setSaveName] = useState('')
+
+  const tabIsActive = useTabIsActive()
 
   const { items: savedDomains, save: saveDomain, remove: removeDomain } = useSavedDomains()
 
@@ -257,8 +260,10 @@ export default function CaseFilters(props: Props) {
           </Group>
         </>
       )}
+      {/* Portals to document.body, so it has to be gated on tab activity or it
+          floats over whichever tab the user switches to — see SearchableJsonModal. */}
       <Modal
-        opened={saveModalOpen}
+        opened={saveModalOpen && tabIsActive}
         onClose={() => setSaveModalOpen(false)}
         title="Save domain query"
         centered

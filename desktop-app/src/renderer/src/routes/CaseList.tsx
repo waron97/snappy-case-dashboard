@@ -57,57 +57,57 @@ export default function HomePage() {
     isFetchingNextPage,
     refetch
   } = useInfiniteQuery({
-      queryKey: ['cases', filters],
-      queryFn: ({ pageParam = 0 }) =>
-        odooSearchRead(
-          'helpdesk.ticket',
-          filters.useCustomDomain
-            ? (() => {
-                try {
-                  return JSON.parse(filters.customDomain)
-                } catch {
-                  return []
-                }
-              })()
-            : [
-                ...constructOdooDomain({
-                  'workflow_id.name': {
-                    operator: 'ilike',
-                    value: filters.workflow
-                  },
-                  'ticket_type_id.name': {
-                    operator: 'ilike',
-                    value: filters.ticketType
-                  },
-                  'triplet_active_phase_id.name': {
-                    operator: 'ilike',
-                    value: filters.activePhase
-                  },
-                  name: { operator: 'ilike', value: filters.name },
-                  is_close: { operator: '=', value: filters.is_close }
-                }),
-                ...(filters.startDate ? [['create_date', '>=', filters.startDate]] : []),
-                ...(filters.endDate ? [['create_date', '<=', filters.endDate]] : [])
-              ],
-          [
-            'name',
-            'id',
-            'ticket_type_id',
-            'workflow_id',
-            'customer_id',
-            'stage_id',
-            'triplet_active_phase_id',
-            'error_message',
-            'create_date'
-          ],
-          pageParam,
-          20,
-          'create_date DESC'
-        ),
-      getNextPageParam: (lastPage, allPages) =>
-        lastPage.length === 20 ? allPages.length * 20 : undefined,
-      initialPageParam: 0
-    })
+    queryKey: ['cases', filters],
+    queryFn: ({ pageParam = 0 }) =>
+      odooSearchRead(
+        'helpdesk.ticket',
+        filters.useCustomDomain
+          ? (() => {
+              try {
+                return JSON.parse(filters.customDomain)
+              } catch {
+                return []
+              }
+            })()
+          : [
+              ...constructOdooDomain({
+                'workflow_id.name': {
+                  operator: 'ilike',
+                  value: filters.workflow
+                },
+                'ticket_type_id.name': {
+                  operator: 'ilike',
+                  value: filters.ticketType
+                },
+                'triplet_active_phase_id.name': {
+                  operator: 'ilike',
+                  value: filters.activePhase
+                },
+                name: { operator: 'ilike', value: filters.name },
+                is_close: { operator: '=', value: filters.is_close }
+              }),
+              ...(filters.startDate ? [['create_date', '>=', filters.startDate]] : []),
+              ...(filters.endDate ? [['create_date', '<=', filters.endDate]] : [])
+            ],
+        [
+          'name',
+          'id',
+          'ticket_type_id',
+          'workflow_id',
+          'customer_id',
+          'stage_id',
+          'triplet_active_phase_id',
+          'error_message',
+          'create_date'
+        ],
+        pageParam,
+        20,
+        'create_date DESC'
+      ),
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length === 20 ? allPages.length * 20 : undefined,
+    initialPageParam: 0
+  })
 
   useInfiniteScroll({
     sentinelRef,

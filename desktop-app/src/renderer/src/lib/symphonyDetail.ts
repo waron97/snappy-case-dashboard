@@ -1,5 +1,5 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useResolvedTabName, useVisitedGate } from '@/lib/tabActive'
 import {
   getHistoricActivities,
   getHistoricVariables,
@@ -17,24 +17,9 @@ const MAX_PAGES = 10
 
 const FIVE_MINUTES = 5 * 60 * 1000
 
-/**
- * Every open Symphony tab's panel stays mounted (CasesWorkspace uses
- * keepMounted), and one process instance's variables can be several megabytes.
- * Restoring a saved tab set with eight request tabs would otherwise fetch all of
- * them at once. So a tab fetches only once it has actually been visited — and
- * keeps its data afterwards so switching back is instant.
- */
-export function useVisitedGate(isActive: boolean): boolean {
-  // Render-phase adjustment rather than an effect: the gate has to be true on
-  // the very first render in which the tab becomes active, or the query would
-  // stay disabled for one extra frame. This is React's documented pattern for
-  // deriving state from props (it re-renders immediately, before committing).
-  const [visited, setVisited] = useState(isActive)
-  if (isActive && !visited) {
-    setVisited(true)
-  }
-  return visited
-}
+// Moved to lib/tabActive once non-Symphony pages became tabs too; re-exported
+// here so the existing Symphony imports keep working.
+export { useVisitedGate }
 
 /**
  * Fetches ALL variables, not a page.
@@ -126,14 +111,4 @@ export function useSymphonyExecutionTree(
   })
 }
 
-/** Pushes a resolved label up to the tab strip, mirroring CaseDetail. */
-export function useResolvedTabName(
-  name: string | undefined,
-  onNameResolved: ((name: string) => void) | undefined
-): void {
-  useEffect(() => {
-    if (name) {
-      onNameResolved?.(name)
-    }
-  }, [name, onNameResolved])
-}
+export { useResolvedTabName }

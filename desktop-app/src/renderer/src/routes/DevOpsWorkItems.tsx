@@ -1,5 +1,7 @@
 import dayjs from 'dayjs'
 import { getMyWorkItems } from '@/lib/devops-api'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { useVisitedGate } from '@/lib/tabActive'
 import { useQuery } from '@tanstack/react-query'
 import { IconMessageCircle } from '@tabler/icons-react'
 import {
@@ -27,11 +29,20 @@ function truncate(text: string, length: number): string {
   return text.length > length ? `${text.slice(0, length)}…` : text
 }
 
-export default function DevOpsWorkItems() {
+type Props = {
+  isActive?: boolean
+}
+
+export default function DevOpsWorkItems({ isActive = true }: Props) {
+  const visited = useVisitedGate(isActive)
+
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['devops-work-items'],
-    queryFn: getMyWorkItems
+    queryFn: getMyWorkItems,
+    enabled: visited
   })
+
+  useDocumentTitle('My Work Items', isActive)
 
   if (isError) {
     return (

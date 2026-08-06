@@ -134,8 +134,7 @@ export default function CaseSymphonyProcesses({ caseId }: Props): React.JSX.Elem
                     to={tabPath({
                       kind: 'symphony-request',
                       requestId: row.id,
-                      processId: NO_PROCESS_ID,
-                      label: row.processName ?? row.id
+                      processId: NO_PROCESS_ID
                     })}
                   >
                     <IconEye size={14} />

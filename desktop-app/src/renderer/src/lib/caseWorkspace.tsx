@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useMatch, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   CaseTabsContext,
   CaseWorkspaceTab,
+  defaultLabel,
+  isNonTabPath,
   LIST_TAB,
-  NO_PROCESS_ID,
   sanitizeTabs,
+  TabIdentity,
+  tabFromPath,
   tabKey,
   tabPath
 } from '@/lib/caseWorkspaceContext'
@@ -30,81 +33,54 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
   // (see effect further down) has had a chance to run.
   const hasRestoredRef = useRef(false)
   const navigate = useNavigate()
-  // Keep these patterns in sync with the isWorkspaceRoute guard in App.tsx —
-  // both files have to agree on which routes CasesWorkspace owns.
-  const matchCase = useMatch('/helpdesk.ticket/:id')
-  const matchFieldConfig = useMatch('/full-field-config/:model/:record')
-  const matchSymphonyList = useMatch('/symphony/requests')
-  const matchSymphonyRequest = useMatch('/symphony/request/:requestId/:processId')
-  const matchDeepSearch = useMatch('/symphony/deep-search/:jobId')
-  const matchList = useMatch('/')
+  const { pathname } = useLocation()
 
-  const setActive = useCallback((key: string) => {
-    setActiveKey(key)
-  }, [])
+  // useNavigate hands back a new function identity after every navigation (there
+  // is no data router here, so useNavigateUnstable is what runs and its deps
+  // include the current pathname), and useLocation returns a fresh object every
+  // render. Both are mirrored into refs so that the callbacks below and the
+  // URL -> tab effect can depend on the pathname *string* alone.
+  const navigateRef = useRef(navigate)
+  const pathnameRef = useRef(pathname)
+  useEffect(() => {
+    navigateRef.current = navigate
+    pathnameRef.current = pathname
+  }, [navigate, pathname])
 
-  const openCase = useCallback((id: number) => {
-    const key = `case:${id}`
-    setTabs((prev) =>
-      prev.some((t) => tabKey(t) === key)
-        ? prev
-        : [...prev, { kind: 'case', id, label: `Case #${id}` }]
-    )
-    setActiveKey(key)
-  }, [])
-
-  const openFieldConfig = useCallback((model: string, recordId: number) => {
-    const key = `field-config:${model}:${recordId}`
-    setTabs((prev) =>
-      prev.some((t) => tabKey(t) === key)
-        ? prev
-        : [...prev, { kind: 'field-config', model, recordId, label: `${model} #${recordId}` }]
-    )
-    setActiveKey(key)
-  }, [])
-
-  // Singleton — there is only ever one Symphony list tab, so re-opening just
-  // focuses it. Unlike LIST_TAB it is an ordinary closable tab.
-  const openSymphonyList = useCallback(() => {
-    const key = 'symphony-list'
-    setTabs((prev) =>
-      prev.some((t) => tabKey(t) === key)
-        ? prev
-        : [...prev, { kind: 'symphony-list', label: 'Symphony' }]
-    )
-    setActiveKey(key)
-  }, [])
-
-  const openSymphonyRequest = useCallback(
-    (requestId: string, processId: string, label?: string) => {
-      const key = `symphony-request:${requestId}`
+  /**
+   * Pure state: adds the tab if it isn't open yet, then focuses it. Never
+   * navigates, which is what makes the URL -> tab effect a one-way sink and rules
+   * out a URL/state ping-pong entirely.
+   *
+   * Append-if-absent is a contract, not an optimisation. tabKey for
+   * symphony-request ignores processId so a '-' placeholder and its resolved
+   * counterpart share a key; upserting here would push the placeholder back over
+   * a resolved id, and would also wipe a label the user had renamed.
+   */
+  const applyTab = useCallback((tab: TabIdentity, label?: string) => {
+    const key = tabKey(tab)
+    if (tab.kind !== 'list') {
       setTabs((prev) =>
         prev.some((t) => tabKey(t) === key)
           ? prev
-          : [
-              ...prev,
-              {
-                kind: 'symphony-request',
-                requestId,
-                processId: processId || NO_PROCESS_ID,
-                label: label ?? `Req ${requestId.slice(0, 10)}`
-              }
-            ]
+          : [...prev, { ...tab, label: label ?? defaultLabel(tab) }]
       )
-      setActiveKey(key)
-    },
-    []
-  )
-
-  const openDeepSearch = useCallback((jobId: string, label?: string) => {
-    const key = `symphony-deep-search:${jobId}`
-    setTabs((prev) =>
-      prev.some((t) => tabKey(t) === key)
-        ? prev
-        : [...prev, { kind: 'symphony-deep-search', jobId, label: label ?? 'Deep search' }]
-    )
+    }
     setActiveKey(key)
   }, [])
+
+  /** The public opener: state plus the URL. Everything user-initiated goes
+   *  through here — the tab strip, the header nav, the one imperative caller. */
+  const openTab = useCallback(
+    (tab: TabIdentity, label?: string) => {
+      applyTab(tab, label)
+      const path = tabPath(tab)
+      // useNavigate always pushes, unlike <Link> which self-dedupes, so
+      // re-opening the tab you're already on would add a history entry per click.
+      navigateRef.current(path, { replace: pathnameRef.current === path })
+    },
+    [applyTab]
+  )
 
   const setLabel = useCallback((key: string, label: string) => {
     setTabs((prev) => {
@@ -124,56 +100,55 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
     )
   }, [])
 
+  // The side effects deliberately sit outside the setTabs updater: React 19's
+  // StrictMode double-invokes updater functions in development, so calling
+  // setActiveKey/navigate from inside one fired them repeatedly per close.
   const closeTab = useCallback(
     (key: string) => {
-      setTabs((prev) => {
-        const index = prev.findIndex((t) => tabKey(t) === key)
-        if (index === -1) return prev
-        const next = prev.filter((t) => tabKey(t) !== key)
-        setActiveKey((current) => {
-          if (current !== key) return current
-          const fallback = next[index - 1] ?? next[0] ?? LIST_TAB
-          navigate(tabPath(fallback))
-          return tabKey(fallback)
-        })
-        return next
-      })
+      const index = tabs.findIndex((t) => tabKey(t) === key)
+      if (index === -1) return
+      const next = tabs.filter((t) => tabKey(t) !== key)
+      setTabs(next)
+      if (activeKey !== key) return
+      const fallback = next[index - 1] ?? next[0] ?? LIST_TAB
+      setActiveKey(tabKey(fallback))
+      navigateRef.current(tabPath(fallback), { replace: true })
     },
-    [navigate]
+    [tabs, activeKey]
   )
 
   // The default Electron menu's CmdOrCtrl+W closes the whole window/app (see
   // buildAppMenu in src/main/index.ts, which deliberately drops that
   // accelerator) — here it instead closes just the active tab, matching
-  // browser-tab conventions. No-op on the permanent list tab.
+  // browser-tab conventions. No-op on the permanent list tab, and on paths that
+  // aren't part of the workspace at all: the provider stays mounted while
+  // /settings is open, where closing an invisible tab would also navigate the
+  // user off a half-filled credentials form.
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent): void {
       const isCloseShortcut = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'w'
-      if (!isCloseShortcut || activeKey === 'list') return
+      if (!isCloseShortcut || activeKey === 'list' || isNonTabPath(pathname)) return
       e.preventDefault()
       closeTab(activeKey)
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [activeKey, closeTab])
+  }, [activeKey, closeTab, pathname])
 
   const closeAll = useCallback(() => {
     setTabs([LIST_TAB])
     setActiveKey('list')
-    navigate('/')
-  }, [navigate])
+    navigateRef.current('/')
+  }, [])
 
-  const loadTabs = useCallback(
-    (next: CaseWorkspaceTab[]) => {
-      // Saved tab sets come off disk as unknown[], so they get the same
-      // validation as the persisted open-tabs pref — a set written by a newer
-      // build must not be able to inject a tab shape this build can't render.
-      setTabs([LIST_TAB, ...sanitizeTabs(next)])
-      setActiveKey('list')
-      navigate('/')
-    },
-    [navigate]
-  )
+  const loadTabs = useCallback((next: CaseWorkspaceTab[]) => {
+    // Saved tab sets come off disk as unknown[], so they get the same
+    // validation as the persisted open-tabs pref — a set written by a newer
+    // build must not be able to inject a tab shape this build can't render.
+    setTabs([LIST_TAB, ...sanitizeTabs(next)])
+    setActiveKey('list')
+    navigateRef.current('/')
+  }, [])
 
   useEffect(() => {
     if (!hasRestoredRef.current) return
@@ -204,89 +179,45 @@ export function CaseTabsProvider({ children }: { children: React.ReactNode }): R
   // Syncs URL -> tab state, so any plain <Link>/navigate() elsewhere in the
   // app (relation chips, parent/child links, Ctrl+E jump, the field-inspector
   // "</>" buttons) opens/focuses a tab without needing to know about the tab
-  // system at all. This has to be a real useEffect, not a render-phase state
-  // adjustment: doing the tabs/activeKey update directly during render caused
-  // them to oscillate indefinitely under StrictMode's double-render, since it
-  // chains multiple interdependent state variables in one conditional block.
-  // Scalars, not the match objects: useMatch returns a fresh object every
-  // render, so depending on it directly re-runs this effect constantly.
-  const caseIdParam = matchCase?.params.id
-  const fieldConfigModel = matchFieldConfig?.params.model
-  const fieldConfigRecord = matchFieldConfig?.params.record
-  const symphonyRequestId = matchSymphonyRequest?.params.requestId
-  const symphonyProcessId = matchSymphonyRequest?.params.processId
-  const deepSearchJobId = matchDeepSearch?.params.jobId
-  const isSymphonyList = !!matchSymphonyList
-  const isList = !!matchList
+  // system at all. TAB_ROUTES in caseWorkspaceContext.ts is the only route table
+  // in the app; there is no <Routes> switch to keep in sync with it.
+  //
+  // This has to be a real useEffect, not a render-phase state adjustment: doing
+  // the tabs/activeKey update directly during render caused them to oscillate
+  // indefinitely under StrictMode's double-render, since it chains multiple
+  // interdependent state variables in one conditional block. It is safe under
+  // that double-invocation because applyTab is idempotent — setTabs returns
+  // `prev` for a tab that's already open, and setActiveKey bails on an equal
+  // string.
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect --
        Subscribing to the router (an external system), not deriving state
        from a prop — the case this lint rule is meant to steer away from. */
-    if (caseIdParam) {
-      openCase(parseInt(caseIdParam, 10))
-    } else if (fieldConfigModel && fieldConfigRecord) {
-      openFieldConfig(fieldConfigModel, parseInt(fieldConfigRecord, 10))
-    } else if (symphonyRequestId && symphonyProcessId) {
-      openSymphonyRequest(
-        decodeURIComponent(symphonyRequestId),
-        decodeURIComponent(symphonyProcessId)
-      )
-    } else if (deepSearchJobId) {
-      openDeepSearch(decodeURIComponent(deepSearchJobId))
-    } else if (isSymphonyList) {
-      openSymphonyList()
-    } else if (isList) {
-      setActive('list')
+    const tab = tabFromPath(pathname)
+    if (tab) {
+      applyTab(tab)
+    } else if (!isNonTabPath(pathname)) {
+      // No <Routes> fallback exists any more, so an unknown URL would otherwise
+      // leave the last active tab on screen under a URL that disagrees with it —
+      // and a reload would make that mismatch stick. `replace` so Back doesn't
+      // bounce straight back into the bad URL.
+      navigateRef.current('/', { replace: true })
     }
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, [
-    caseIdParam,
-    fieldConfigModel,
-    fieldConfigRecord,
-    symphonyRequestId,
-    symphonyProcessId,
-    deepSearchJobId,
-    isSymphonyList,
-    isList,
-    openCase,
-    openFieldConfig,
-    openSymphonyList,
-    openSymphonyRequest,
-    openDeepSearch,
-    setActive
-  ])
+  }, [pathname, applyTab])
 
   const value = useMemo(
     () => ({
       tabs,
       activeKey,
-      openCase,
-      openFieldConfig,
-      openSymphonyList,
-      openSymphonyRequest,
-      openDeepSearch,
+      openTab,
       closeTab,
       closeAll,
       loadTabs,
-      setActive,
       setLabel,
       renameTab
     }),
-    [
-      tabs,
-      activeKey,
-      openCase,
-      openFieldConfig,
-      openSymphonyList,
-      openSymphonyRequest,
-      openDeepSearch,
-      closeTab,
-      closeAll,
-      loadTabs,
-      setActive,
-      setLabel,
-      renameTab
-    ]
+    [tabs, activeKey, openTab, closeTab, closeAll, loadTabs, setLabel, renameTab]
   )
 
   return (

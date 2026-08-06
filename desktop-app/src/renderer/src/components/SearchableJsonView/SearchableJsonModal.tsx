@@ -1,5 +1,6 @@
 import { Box, LoadingOverlay, Modal, ModalProps } from '@mantine/core'
 import { KeyboardEvent, ReactNode, useCallback, useRef } from 'react'
+import { useTabIsActive } from '@/lib/tabActive'
 import { JsonSearchHandle, JsonSearchModalContext } from './context'
 
 type Props = {
@@ -24,6 +25,12 @@ export default function SearchableJsonModal({
   children
 }: Props) {
   const handlesRef = useRef(new Set<JsonSearchHandle>())
+  // Mantine portals a Modal to document.body, so it is NOT hidden by the
+  // `display: none` its tab panel gets when another tab is selected — it would
+  // float over the tab the user actually switched to, holding the scroll lock
+  // and the focus trap with it. Deriving `opened` rather than clearing the
+  // caller's selection means the modal comes back exactly as they left it.
+  const tabIsActive = useTabIsActive()
 
   const register = useCallback((handle: JsonSearchHandle): (() => void) => {
     handlesRef.current.add(handle)
@@ -50,7 +57,7 @@ export default function SearchableJsonModal({
 
   return (
     <Modal
-      opened={opened}
+      opened={opened && tabIsActive}
       onClose={onClose}
       size={size}
       title={title}

@@ -87,20 +87,31 @@ Deep-search sweeps persist to `userData/sweeps/<profileId>/<jobId>.{job,log}` an
 
 ## App Routes
 
-Most routes are wired in `routes/index.tsx` under `<AppRoutes/>`. `/`, `/helpdesk.ticket/:id`, and `/full-field-config/:model/:record` are the exception: they're all owned by `components/CasesWorkspace/`, mounted as a permanent sibling of `<AppRoutes/>` in `App.tsx`'s `Shell()` (outside the `<Routes>` switch) rather than as `<Route>` entries, so it never unmounts when the user switches between tabs. Every open tab (case detail or field inspector) is a real Mantine `Tabs.Panel` kept mounted — see `lib/caseWorkspace.tsx` (`CaseTabsProvider`), `lib/caseWorkspaceContext.ts` (the `CaseWorkspaceTab` union + `tabKey`/`tabPath` helpers) for the tab state.
+**There is no `<Routes>` switch.** Every page is a tab in `components/CasesWorkspace/`, which is the only content renderer besides the settings page. `TAB_ROUTES` in `lib/caseWorkspaceContext.ts` is the app's single route table: `tabFromPath(pathname)` maps a URL to a tab, `tabPath(tab)` maps it back, and a `useLocation`-driven effect in `lib/caseWorkspace.tsx` applies the result. That indirection is what lets any plain `<Link>` anywhere in the app open a tab without knowing the tab system exists. `/settings` is the one exception (`NON_TAB_PATHS`): it renders in its own branch of `App.tsx`, outside the `isConfigured` gate, because it's the only way out of an unconfigured install.
 
-| Route                                  | File                          | Description                                              |
-| ---------------------------------------- | ------------------------------ | ----------------------------------------------------------- |
-| `/` *(outside `<Routes>`, see above)*     | `components/CasesWorkspace/`, `CaseList.tsx` | Case list + tab strip — the list is the permanent leftmost tab |
-| `/helpdesk.ticket/:id` *(outside `<Routes>`, see above)* | `components/CasesWorkspace/`, `CaseDetail.tsx` | Opening a case adds/focuses a closable tab; background tabs stay mounted |
-| `/full-field-config/:model/:record` *(outside `<Routes>`, see above)* | `components/CasesWorkspace/`, `FullFieldConfig.tsx` | Generic field inspector — any Odoo record (debug/admin); also opens as a closable tab (e.g. from the `</>` buttons or Ctrl+E) |
-| `/rip/mfa/:id?`                          | `components/MfaWorkspace/`, `RipMfaList.tsx`, `RipMfaDetail.tsx` | MFA list always visible; opening a record slides up a bottom `Drawer` |
-| `/rip/logs`                              | `RipLogs.tsx`                   | Log listing/viewer                                           |
-| `/symple.workflow/:id`                   | `SympleWorkflowDetail/`         | Workflow phase/results editor                                |
-| `/devops/work-items`                     | `DevOpsWorkItems.tsx`           | "My Work Items" from Azure DevOps                             |
-| `/symphony/requests` *(outside `<Routes>`, see above)* | `SymphonyRequests.tsx` | Symphony (Bit2win BPMN engine) request list — opens as an ordinary closable tab in the same strip as cases |
-| `/symphony/request/:requestId/:processId` *(outside `<Routes>`, see above)* | `SymphonyRequestDetail/` | One Symphony request: all variables (filterable as one set, JSON viewer) + condensed activity history. `:processId` is `-` when unknown, then resolved by an exact `requestId` lookup |
-| `/symphony/deep-search/:jobId` *(outside `<Routes>`, see above)* | `SymphonyDeepSearch/` | A resumable client-side sweep that pages requests and matches inside their variables (the API has no server-side variable filter) |
+Every open tab is a Mantine `Tabs.Panel` kept mounted, so switching tabs preserves filters, scroll and unsaved edits. Consequences worth knowing: a panel's queries keep running in the background (each page gates its *first* fetch behind `useVisitedGate`, so an unvisited restored tab costs nothing), and anything portalled out of a panel — `Modal`, `Drawer` — is **not** hidden by the panel's `display: none`, so it must gate `opened` on `useTabIsActive()` (`lib/tabActive.ts`) or it floats over whichever tab the user switched to.
+
+| Route | Tab kind | File | Description |
+| --- | --- | --- | --- |
+| `/` | `list` | `components/CasesWorkspace/`, `CaseList.tsx` | Case list — the permanent, non-closable leftmost tab |
+| `/helpdesk.ticket/:id` | `case` | `CaseDetail.tsx` | One case per tab |
+| `/full-field-config/:model/:record` | `field-config` | `FullFieldConfig.tsx` | Generic field inspector — any Odoo record (debug/admin); from the `</>` buttons or Ctrl+E |
+| `/symphony/requests` | `symphony-list` | `SymphonyRequests.tsx` | Symphony (Bit2win BPMN engine) request list. Singleton |
+| `/symphony/request/:requestId/:processId` | `symphony-request` | `SymphonyRequestDetail/` | One Symphony request: all variables (filterable as one set, JSON viewer) + condensed activity history. `:processId` is `-` when unknown, then resolved by an exact `requestId` lookup |
+| `/symphony/deep-search/:jobId` | `symphony-deep-search` | `SymphonyDeepSearch/` | A resumable client-side sweep that pages requests and matches inside their variables (the API has no server-side variable filter) |
+| `/rip/mfa/list/:instance` | `rip-mfa-list` | `RipMfaList.tsx` | MFA list. **Multi-instance** — every RIP → MFA click opens another one with its own filters |
+| `/rip/mfa/:id` | `rip-mfa` | `RipMfaDetail.tsx` | One MFA record per tab (code editor + metadata + recent calls) |
+| `/rip/logs/:instance` | `rip-logs` | `RipLogs.tsx` | Log listing/viewer. **Multi-instance**, as above |
+| `/symple.workflow/:id` | `symple-workflow` | `SympleWorkflowDetail/` | Workflow phase/results editor |
+| `/devops/work-items` | `devops-work-items` | `DevOpsWorkItems.tsx` | "My Work Items" from Azure DevOps. Singleton |
+
+`:instance` is a counter minted by `newInstance()` in an event handler (never in `tabFromPath`, which must stay pure — it runs in a StrictMode-double-invoked effect). It is what makes those two kinds multi-instance: it's part of both `tabKey` and the URL, so each tab stays individually addressable and append-if-absent still de-duplicates. `HeaderNav` therefore calls `openTab` rather than using `<Link>` — a second `<Link to="/rip/logs">` wouldn't change the pathname, so no second tab would appear.
+
+### Adding a tab kind
+
+Add the variant to `CaseWorkspaceTab` (it **must** carry `label`, or `sanitizeTabs` drops it) and the compiler walks you through the rest: `tabKey`, `tabPath`, `defaultLabel`, `TAB_ROUTES` and `TAB_VALIDATORS` are all keyed off the union, and `TabPanelContent`'s switch ends in a `never` guard. Not enforced, so easy to forget: the page itself must take its identity as **props, not `useParams`** (panels render outside any `<Route>`, so `useParams()` returns `{}` and every id becomes `NaN`), pass `isActive` to `useDocumentTitle` and to `useVisitedGate` for its `enabled:`, and report its resolved name via `useResolvedTabName`.
+
+Two invariants in `TAB_ROUTES` worth preserving: every pattern is matched with `end: true`, which makes them mutually exclusive and iteration order irrelevant (`/rip/mfa/:id` can't swallow `/rip/mfa/list/:instance`); and `toTab` returns `null` for anything it can't parse, so a junk URL yields no tab rather than one keyed `case:NaN`. The `decodeURIComponent` calls on Symphony ids are required, not redundant — `useMatch` decodes the pathname before matching, bare `matchPath` does not.
 
 ## Odoo Data Models
 

@@ -16,7 +16,9 @@ export default function MfaCode({ id }: Props) {
   // -------------------------------------
 
   const [draft, setDraft] = useState('')
-  const [initialized, setInitialized] = useState(false)
+  // Which record the draft was seeded from, rather than a plain boolean: the
+  // seed must happen exactly once per record (see the effect below).
+  const [seededFor, setSeededFor] = useState<number | null>(null)
 
   const queryClient = useQueryClient()
 
@@ -33,12 +35,19 @@ export default function MfaCode({ id }: Props) {
   // Effects
   // -------------------------------------
 
+  // Seeds the editor once per record, NOT on every `data` identity. `data` is an
+  // array, so it is a new object after every refetch — and the query client is a
+  // bare `new QueryClient()` (refetchOnWindowFocus: true, staleTime: 0), so
+  // syncing on `data` meant alt-tabbing away and back silently overwrote the
+  // user's unsaved code. This panel now stays mounted for the whole session, so
+  // that would have fired for every open MFA tab on every window focus.
   useEffect(() => {
-    if (data?.[0]?.code !== undefined) {
-      setDraft(data[0].code)
-      setInitialized(true)
-    }
-  }, [data])
+    if (seededFor === id) return
+    const code = data?.[0]?.code
+    if (code === undefined) return
+    setDraft(code)
+    setSeededFor(id)
+  }, [data, id, seededFor])
 
   // -------------------------------------
   // Functions
@@ -60,6 +69,7 @@ export default function MfaCode({ id }: Props) {
   // -------------------------------------
 
   const savedCode: string = data?.[0]?.code ?? ''
+  const initialized = seededFor === id
   const isDirty = initialized && draft !== savedCode
 
   // -------------------------------------

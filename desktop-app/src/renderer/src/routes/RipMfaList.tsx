@@ -16,7 +16,9 @@ import {
   Text
 } from '@mantine/core'
 import UiCard from '@/components/UiCard'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
+import { useVisitedGate } from '@/lib/tabActive'
 import { constructOdooDomain } from '@/utils/odoo'
 
 interface MFA {
@@ -28,11 +30,17 @@ interface MFA {
   enabled: boolean
 }
 
-export default function MFA() {
+type Props = {
+  isActive?: boolean
+}
+
+export default function MFA({ isActive = true }: Props) {
   // -------------------------------------
   // Hooks
   // -------------------------------------
 
+  // Filter state lives here rather than in the tab, which is what makes several
+  // MFA list tabs independent of each other.
   const [filters, setFilters] = useState<{
     name: string[]
     model: string[]
@@ -43,12 +51,17 @@ export default function MFA() {
 
   const sentinelRef = useRef<HTMLDivElement>(null)
 
+  const visited = useVisitedGate(isActive)
+
+  useDocumentTitle('MFA', isActive)
+
   // -------------------------------------
   // Queries
   // -------------------------------------
 
   const { data, isLoading, isError, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
+      enabled: visited,
       queryKey: ['mfa', filters],
       queryFn: ({ pageParam = 0 }) =>
         odooSearchRead(

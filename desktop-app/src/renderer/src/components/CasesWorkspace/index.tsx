@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { IconChevronDown, IconTrash, IconX } from '@tabler/icons-react'
 import {
   ActionIcon,
@@ -16,7 +15,9 @@ import {
 import CaseList from '@/routes/CaseList'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import TabPanelContent from '@/components/CasesWorkspace/TabPanelContent'
-import { CaseWorkspaceTab, OpenWorkspaceTab, tabKey, tabPath, useCaseTabs } from '@/lib/useCaseTabs'
+import { CaseWorkspaceTab, OpenWorkspaceTab, tabKey, useCaseTabs } from '@/lib/useCaseTabs'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { TabActiveProvider } from '@/lib/tabActive'
 import { useSettings } from '@/lib/settings'
 import { useSavedTabSets } from '@/lib/savedTabSets'
 
@@ -117,10 +118,13 @@ function SaveTabSetModal({
 }
 
 export default function CasesWorkspace(): React.JSX.Element {
-  const { tabs, activeKey, setActive, closeTab, closeAll, loadTabs, setLabel, renameTab } =
+  const { tabs, activeKey, openTab, closeTab, closeAll, loadTabs, setLabel, renameTab } =
     useCaseTabs()
-  const navigate = useNavigate()
   const { activeProfile } = useSettings()
+
+  // The list tab sets no title of its own, so without this the last closed tab's
+  // title would linger in the window bar.
+  useDocumentTitle('Cases', activeKey === 'list')
   const {
     items: savedTabSets,
     save: saveTabSet,
@@ -133,8 +137,9 @@ export default function CasesWorkspace(): React.JSX.Element {
     if (!key) return
     const tab = tabs.find((t) => tabKey(t) === key)
     if (!tab) return
-    setActive(key)
-    navigate(tabPath(tab))
+    // openTab both focuses and moves the URL; it already de-duplicates, so
+    // clicking the tab you're on is a no-op rather than a history entry.
+    openTab(tab)
   }
 
   const openTabs = tabs.filter((t): t is OpenWorkspaceTab => t.kind !== 'list')
@@ -284,21 +289,28 @@ export default function CasesWorkspace(): React.JSX.Element {
       />
 
       <Tabs.Panel value="list">
-        <ErrorBoundary>
-          <CaseList />
-        </ErrorBoundary>
+        <TabActiveProvider value={activeKey === 'list'}>
+          <ErrorBoundary>
+            <CaseList />
+          </ErrorBoundary>
+        </TabActiveProvider>
       </Tabs.Panel>
       {openTabs.map((tab) => {
         const key = tabKey(tab)
+        const isActive = activeKey === key
         return (
           <Tabs.Panel key={key} value={key}>
-            <ErrorBoundary onRecover={() => closeTab(key)} recoverLabel="Close tab">
-              <TabPanelContent
-                tab={tab}
-                isActive={activeKey === key}
-                onNameResolved={(name) => setLabel(key, name)}
-              />
-            </ErrorBoundary>
+            {/* Panels stay mounted, so anything portalled out of one (Modal,
+                Drawer) needs to know whether its tab is the visible one. */}
+            <TabActiveProvider value={isActive}>
+              <ErrorBoundary onRecover={() => closeTab(key)} recoverLabel="Close tab">
+                <TabPanelContent
+                  tab={tab}
+                  isActive={isActive}
+                  onNameResolved={(name) => setLabel(key, name)}
+                />
+              </ErrorBoundary>
+            </TabActiveProvider>
           </Tabs.Panel>
         )
       })}
