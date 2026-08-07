@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 import { Button, Menu } from '@mantine/core'
 import { odooSearchRead, odooWrite } from '@/lib/odoo-api'
+import { useRefreshQueries } from '@/lib/refresh'
 
 type Props = {
   caseId: number
@@ -14,6 +15,8 @@ export default function PhaseResultSelector({ caseId, activePhaseId }: Props) {
   const [submitting, setSubmitting] = useState(false)
 
   const queryClient = useQueryClient()
+
+  useRefreshQueries(['phase-results', { activePhaseId }])
 
   const { data: phaseResults } = useQuery<{ id: number; name: string }[]>({
     queryKey: ['phase-results', { activePhaseId }],
@@ -40,12 +43,12 @@ export default function PhaseResultSelector({ caseId, activePhaseId }: Props) {
     } catch (err) {
       if (err instanceof Error) {
         toast(err.message)
-        // eslint-disable-next-line
-                console.error(err);
+
+        console.error(err)
       } else {
         toast('Unknown error. Check browser console.')
-        // eslint-disable-next-line
-                console.error(err);
+
+        console.error(err)
       }
     } finally {
       setSubmitting(false)

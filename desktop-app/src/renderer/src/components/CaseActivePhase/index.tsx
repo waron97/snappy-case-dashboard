@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 import { Alert, Button, Center, Group, Loader, Select, Stack, Text } from '@mantine/core'
 import { odooCallMethod, odooRead, odooSearchRead, odooWrite } from '@/lib/odoo-api'
+import { useRefreshQueries } from '@/lib/refresh'
 import PhaseResultSelector from '../PhaseResultSelector'
 import UiCard from '../UiCard'
 
@@ -34,6 +35,14 @@ export default function CaseActivePhase(props: Props) {
   // -------------------------------------
   // Queries
   // -------------------------------------
+
+  // The phase list only. Deliberately NOT ['phase', …, 'for-active-phase']: the
+  // effect below re-seeds `form.code` whenever that query's data changes
+  // identity, so a refresh that picked up someone else's write would silently
+  // replace whatever the user has typed. Ordinary refetches are harmless —
+  // structural sharing keeps the reference stable when the payload is unchanged
+  // — which is exactly why the damage would only show up on a real conflict.
+  useRefreshQueries(['workflow', 'phases', { workflowId }])
 
   const { data: workflowPhases } = useQuery<{ id: number; name: string }[]>({
     queryKey: ['workflow', 'phases', { workflowId }],
@@ -94,12 +103,12 @@ export default function CaseActivePhase(props: Props) {
   async function handleSubmitError(err: unknown) {
     if (err instanceof Error) {
       toast(err.message)
-      // eslint-disable-next-line
-            console.error(err);
+
+      console.error(err)
     } else {
       toast('Unknown error. Check browser console.')
-      // eslint-disable-next-line
-            console.error(err);
+
+      console.error(err)
     }
   }
 
@@ -136,12 +145,12 @@ export default function CaseActivePhase(props: Props) {
     } catch (err) {
       if (err instanceof Error) {
         toast(err.message)
-        // eslint-disable-next-line
-                console.error(err);
+
+        console.error(err)
       } else {
         toast('Unknown error. Check browser console.')
-        // eslint-disable-next-line
-                console.error(err);
+
+        console.error(err)
       }
     } finally {
       setRelaunching(false)

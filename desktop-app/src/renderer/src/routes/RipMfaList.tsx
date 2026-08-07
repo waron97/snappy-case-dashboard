@@ -19,6 +19,7 @@ import UiCard from '@/components/UiCard'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import { useVisitedGate } from '@/lib/tabActive'
+import { useRefreshQueries } from '@/lib/refresh'
 import { constructOdooDomain } from '@/utils/odoo'
 
 interface MFA {
@@ -58,6 +59,10 @@ export default function MFA({ isActive = true }: Props) {
   // -------------------------------------
   // Queries
   // -------------------------------------
+
+  // The exact key, not the ['mfa'] prefix: that would also refetch every open
+  // MFA detail tab's title/code/metadata.
+  useRefreshQueries(['mfa', filters])
 
   const { data, isLoading, isError, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({

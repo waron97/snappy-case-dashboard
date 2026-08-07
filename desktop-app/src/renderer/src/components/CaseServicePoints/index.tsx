@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Box, Button, LoadingOverlay, Stack, Table } from '@mantine/core'
 import { odooSearchRead, OneToMany } from '@/lib/odoo-api'
+import { useRefreshQueries } from '@/lib/refresh'
 import RelationLink from '../RelationLink'
 
 type Props = {
@@ -31,6 +32,8 @@ export default function CaseServicePoints({ caseId, pointIds }: Props) {
   // -------------------------------------
   // Queries
   // -------------------------------------
+
+  useRefreshQueries(['case-service-points', caseId])
 
   const { data: points, isLoading } = useQuery<ServicePoint[]>({
     queryKey: ['case-service-points', caseId, { isShowAll }],

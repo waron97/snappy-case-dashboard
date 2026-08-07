@@ -6,8 +6,10 @@ import { IconHelpCircle, IconKeyboard, IconWand } from '@tabler/icons-react'
 import { vscodeDark } from '@uiw/codemirror-theme-vscode'
 import ReactCodeMirror, { EditorState, EditorView, keymap, Prec } from '@uiw/react-codemirror'
 import init, { format } from '@wasm-fmt/ruff_fmt/web'
+import { toast } from 'react-toastify'
 import { ActionIcon, Button, Group, Stack, Text, Tooltip } from '@mantine/core'
 import { useUiPref } from '@/lib/uiPrefs'
+import { useVimWrite } from '@/lib/vimWrite'
 
 const ruffReady = init()
 
@@ -41,6 +43,7 @@ export default function PythonEditor({
   maxHeight = '600px'
 }: Props) {
   const [saving, setSaving] = useState(false)
+  const [view, setView] = useState<EditorView | null>(null)
   const [vimEnabled, setVimEnabled] = useUiPref('pythonEditorVimEnabled', true)
 
   function toggleVim(): void {
@@ -67,6 +70,26 @@ export default function PythonEditor({
   async function handleFormat() {
     onChangeRef.current?.(await formatCode(valueRef.current))
   }
+
+  // The single save path, shared by the Save button and `:w`. Callers pass a
+  // bare write, so a rejection (invalid Python, a server-side constraint) has
+  // nowhere else to surface: without this catch it became an unhandled promise
+  // rejection and the save appeared to succeed.
+  async function handleSave(): Promise<void> {
+    if (!onSave) return
+    setSaving(true)
+    try {
+      await onSave()
+      toast.success('Saved')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Unknown error. Check browser console.')
+      console.error(err)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  useVimWrite(view, onSave ? handleSave : undefined)
 
   useEffect(() => {
     // Vim.defineEx registers this ex command globally across every mounted
@@ -96,19 +119,7 @@ export default function PythonEditor({
     <Stack gap="md">
       <Group justify="end">
         {onSave && (
-          <Button
-            size="compact-sm"
-            color="green"
-            loading={saving}
-            onClick={async () => {
-              setSaving(true)
-              try {
-                await onSave()
-              } finally {
-                setSaving(false)
-              }
-            }}
-          >
+          <Button size="compact-sm" color="green" loading={saving} onClick={handleSave}>
             Save
           </Button>
         )}
@@ -128,6 +139,7 @@ export default function PythonEditor({
               <Text fw={600} mb={4}>
                 Vim shortcuts
               </Text>
+              <Text>:w — save</Text>
               <Text>:f — format</Text>
               <Text>i / Esc — insert / normal</Text>
               <Text>yy / p — copy / paste line</Text>
@@ -152,6 +164,7 @@ export default function PythonEditor({
         extensions={extensions}
         maxHeight={maxHeight}
         height={height}
+        onCreateEditor={setView}
         basicSetup={{
           lineNumbers: true,
           foldGutter: true,

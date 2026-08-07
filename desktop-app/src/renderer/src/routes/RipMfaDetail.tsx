@@ -20,6 +20,7 @@ import MfaMetadata from '@/components/MfaMetadata'
 import MfaRecentCalls from '@/components/MfaRecentCalls'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useResolvedTabName, useVisitedGate } from '@/lib/tabActive'
+import { useRefreshQueries } from '@/lib/refresh'
 import { useSettings } from '@/lib/settings'
 
 type Props = {
@@ -41,6 +42,10 @@ export default function MFARecord({ id, isActive = false, onNameResolved }: Prop
   // -------------------------------------
   // Queries
   // -------------------------------------
+
+  // Prefix covers the whole tab — title here, plus MfaCode's 'code',
+  // MfaMetadata's 'metadata' and MfaRecentCalls' 'recent-calls'.
+  useRefreshQueries(['mfa', id])
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['mfa', id, 'title'],

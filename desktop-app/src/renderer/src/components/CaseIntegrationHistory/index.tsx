@@ -5,6 +5,7 @@ import { IconEye } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
 import { Box, Button, LoadingOverlay, Stack, Table } from '@mantine/core'
 import { odooRead, odooSearchRead } from '@/lib/odoo-api'
+import { useRefreshQueries } from '@/lib/refresh'
 
 type Props = { caseId: number }
 
@@ -19,6 +20,11 @@ export default function CaseIntegrationHistory({ caseId }: Props) {
   // -------------------------------------
   // Queries
   // -------------------------------------
+
+  useRefreshQueries(
+    ['integration-history', { caseId, isShowAll }],
+    ['integration-history', selected]
+  )
 
   const { data: logs, isLoading: logsLoading } = useQuery<
     { id: number; name: string; create_date: string }[]

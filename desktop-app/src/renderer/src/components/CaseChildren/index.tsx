@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Box, Button, LoadingOverlay, Stack, Table } from '@mantine/core'
 import { odooSearchRead, OneToMany } from '@/lib/odoo-api'
+import { useRefreshQueries } from '@/lib/refresh'
 
 type Props = { caseId: number; childIds: number[] }
 
@@ -27,6 +28,8 @@ export default function CaseChildren({ caseId, childIds }: Props) {
   // -------------------------------------
   // Queries
   // -------------------------------------
+
+  useRefreshQueries(['case-children', caseId])
 
   const { data: children, isLoading } = useQuery<Child[]>({
     queryKey: ['case-children', caseId, { isShowAll }],

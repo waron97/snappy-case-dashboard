@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { IconChevronDown, IconTrash, IconX } from '@tabler/icons-react'
+import { IconChevronDown, IconRefresh, IconTrash, IconX } from '@tabler/icons-react'
 import {
   ActionIcon,
   Box,
@@ -10,7 +10,8 @@ import {
   Modal,
   Stack,
   Tabs,
-  TextInput
+  TextInput,
+  Tooltip
 } from '@mantine/core'
 import CaseList from '@/routes/CaseList'
 import ErrorBoundary from '@/components/ErrorBoundary'
@@ -20,6 +21,7 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { TabActiveProvider } from '@/lib/tabActive'
 import { useSettings } from '@/lib/settings'
 import { useSavedTabSets } from '@/lib/savedTabSets'
+import { RefreshProvider } from '@/lib/refresh'
 
 function TabLabel({
   label,
@@ -133,6 +135,12 @@ export default function CasesWorkspace(): React.JSX.Element {
   const [selectedSetId, setSelectedSetId] = useState<string | null>(null)
   const [saveModalOpen, setSaveModalOpen] = useState(false)
 
+  // Bumping this is the whole refresh mechanism: every mounted panel reads it
+  // through RefreshProvider, and only the one whose tab is active acts on the
+  // change (see lib/refresh.ts). Nothing here knows which page is showing or
+  // what it would need to refetch.
+  const [refreshTick, setRefreshTick] = useState(0)
+
   function handleChange(key: string | null): void {
     if (!key) return
     const tab = tabs.find((t) => tabKey(t) === key)
@@ -166,154 +174,165 @@ export default function CasesWorkspace(): React.JSX.Element {
   }
 
   return (
-    <Tabs value={activeKey} onChange={handleChange} keepMounted>
-      <Box style={{ borderBottom: '1px solid var(--mantine-color-gray-8)' }}>
-        <Container size="xl">
-          <Group justify="space-between" wrap="nowrap" gap="sm">
-            <Tabs.List style={{ flex: 1, minWidth: 0 }}>
-              <Tabs.Tab value="list">Cases</Tabs.Tab>
-              {openTabs.map((tab) => {
-                const key = tabKey(tab)
-                return (
-                  <Tabs.Tab
-                    key={key}
-                    value={key}
-                    rightSection={
-                      <ActionIcon
-                        size="xs"
-                        variant="subtle"
-                        component="span"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          closeTab(key)
+    <RefreshProvider value={refreshTick}>
+      <Tabs value={activeKey} onChange={handleChange} keepMounted>
+        <Box style={{ borderBottom: '1px solid var(--mantine-color-gray-8)' }}>
+          <Container size="xl">
+            <Group justify="space-between" wrap="nowrap" gap="sm">
+              <Tabs.List style={{ flex: 1, minWidth: 0 }}>
+                <Tabs.Tab value="list">Cases</Tabs.Tab>
+                {openTabs.map((tab) => {
+                  const key = tabKey(tab)
+                  return (
+                    <Tabs.Tab
+                      key={key}
+                      value={key}
+                      rightSection={
+                        <ActionIcon
+                          size="xs"
+                          variant="subtle"
+                          component="span"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            closeTab(key)
+                          }}
+                        >
+                          <IconX size={12} />
+                        </ActionIcon>
+                      }
+                    >
+                      <TabLabel label={tab.label} onRename={(value) => renameTab(key, value)} />
+                    </Tabs.Tab>
+                  )
+                })}
+              </Tabs.List>
+              <Group gap="xs" wrap="nowrap">
+                <Tooltip label="Refresh this tab">
+                  <ActionIcon
+                    variant="subtle"
+                    color="gray"
+                    onClick={() => setRefreshTick((t) => t + 1)}
+                  >
+                    <IconRefresh size={16} />
+                  </ActionIcon>
+                </Tooltip>
+                <Menu trigger="click" position="bottom-end">
+                  <Menu.Target>
+                    <Button
+                      size="xs"
+                      variant="subtle"
+                      color="gray"
+                      rightSection={<IconChevronDown size={14} />}
+                    >
+                      {selectedSet ? selectedSet.name : 'Saved tab sets'}
+                    </Button>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    {savedTabSets.length === 0 && (
+                      <Menu.Item disabled>No saved tab sets yet</Menu.Item>
+                    )}
+                    {savedTabSets.map((s) => (
+                      <Menu.Item
+                        key={s.id}
+                        fw={s.id === selectedSetId ? 600 : undefined}
+                        onClick={() => handleLoad(s.id, s.tabs)}
+                        rightSection={
+                          <ActionIcon
+                            variant="subtle"
+                            color="red"
+                            size="sm"
+                            component="span"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDeleteSet(s.id, s.name)
+                            }}
+                          >
+                            <IconTrash size={14} />
+                          </ActionIcon>
+                        }
+                      >
+                        {s.name}
+                      </Menu.Item>
+                    ))}
+                    <Menu.Divider />
+                    <Menu.Item
+                      disabled={openTabs.length === 0}
+                      onClick={() => setSaveModalOpen(true)}
+                    >
+                      Save current as…
+                    </Menu.Item>
+                    {selectedSet && isDirty && (
+                      <Menu.Item
+                        onClick={async () => {
+                          await saveTabSet({
+                            id: selectedSet.id,
+                            name: selectedSet.name,
+                            tabs: openTabs
+                          })
                         }}
                       >
-                        <IconX size={12} />
-                      </ActionIcon>
-                    }
-                  >
-                    <TabLabel label={tab.label} onRename={(value) => renameTab(key, value)} />
-                  </Tabs.Tab>
-                )
-              })}
-            </Tabs.List>
-            <Group gap="xs" wrap="nowrap">
-              <Menu trigger="click" position="bottom-end">
-                <Menu.Target>
+                        Update &quot;{selectedSet.name}&quot;
+                      </Menu.Item>
+                    )}
+                  </Menu.Dropdown>
+                </Menu>
+                {openTabs.length > 0 && (
                   <Button
                     size="xs"
                     variant="subtle"
                     color="gray"
-                    rightSection={<IconChevronDown size={14} />}
+                    onClick={() => {
+                      setSelectedSetId(null)
+                      closeAll()
+                    }}
                   >
-                    {selectedSet ? selectedSet.name : 'Saved tab sets'}
+                    Close all
                   </Button>
-                </Menu.Target>
-                <Menu.Dropdown>
-                  {savedTabSets.length === 0 && (
-                    <Menu.Item disabled>No saved tab sets yet</Menu.Item>
-                  )}
-                  {savedTabSets.map((s) => (
-                    <Menu.Item
-                      key={s.id}
-                      fw={s.id === selectedSetId ? 600 : undefined}
-                      onClick={() => handleLoad(s.id, s.tabs)}
-                      rightSection={
-                        <ActionIcon
-                          variant="subtle"
-                          color="red"
-                          size="sm"
-                          component="span"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleDeleteSet(s.id, s.name)
-                          }}
-                        >
-                          <IconTrash size={14} />
-                        </ActionIcon>
-                      }
-                    >
-                      {s.name}
-                    </Menu.Item>
-                  ))}
-                  <Menu.Divider />
-                  <Menu.Item
-                    disabled={openTabs.length === 0}
-                    onClick={() => setSaveModalOpen(true)}
-                  >
-                    Save current as…
-                  </Menu.Item>
-                  {selectedSet && isDirty && (
-                    <Menu.Item
-                      onClick={async () => {
-                        await saveTabSet({
-                          id: selectedSet.id,
-                          name: selectedSet.name,
-                          tabs: openTabs
-                        })
-                      }}
-                    >
-                      Update &quot;{selectedSet.name}&quot;
-                    </Menu.Item>
-                  )}
-                </Menu.Dropdown>
-              </Menu>
-              {openTabs.length > 0 && (
-                <Button
-                  size="xs"
-                  variant="subtle"
-                  color="gray"
-                  onClick={() => {
-                    setSelectedSetId(null)
-                    closeAll()
-                  }}
-                >
-                  Close all
-                </Button>
-              )}
+                )}
+              </Group>
             </Group>
-          </Group>
-        </Container>
-      </Box>
+          </Container>
+        </Box>
 
-      <SaveTabSetModal
-        key={`${selectedSetId ?? 'new'}:${saveModalOpen}`}
-        opened={saveModalOpen}
-        initialName={selectedSet?.name ?? ''}
-        onClose={() => setSaveModalOpen(false)}
-        onSave={async (name) => {
-          const created = await saveTabSet({ name, tabs: openTabs })
-          setSelectedSetId(created.id)
-          setSaveModalOpen(false)
-        }}
-      />
+        <SaveTabSetModal
+          key={`${selectedSetId ?? 'new'}:${saveModalOpen}`}
+          opened={saveModalOpen}
+          initialName={selectedSet?.name ?? ''}
+          onClose={() => setSaveModalOpen(false)}
+          onSave={async (name) => {
+            const created = await saveTabSet({ name, tabs: openTabs })
+            setSelectedSetId(created.id)
+            setSaveModalOpen(false)
+          }}
+        />
 
-      <Tabs.Panel value="list">
-        <TabActiveProvider value={activeKey === 'list'}>
-          <ErrorBoundary>
-            <CaseList />
-          </ErrorBoundary>
-        </TabActiveProvider>
-      </Tabs.Panel>
-      {openTabs.map((tab) => {
-        const key = tabKey(tab)
-        const isActive = activeKey === key
-        return (
-          <Tabs.Panel key={key} value={key}>
-            {/* Panels stay mounted, so anything portalled out of one (Modal,
+        <Tabs.Panel value="list">
+          <TabActiveProvider value={activeKey === 'list'}>
+            <ErrorBoundary>
+              <CaseList />
+            </ErrorBoundary>
+          </TabActiveProvider>
+        </Tabs.Panel>
+        {openTabs.map((tab) => {
+          const key = tabKey(tab)
+          const isActive = activeKey === key
+          return (
+            <Tabs.Panel key={key} value={key}>
+              {/* Panels stay mounted, so anything portalled out of one (Modal,
                 Drawer) needs to know whether its tab is the visible one. */}
-            <TabActiveProvider value={isActive}>
-              <ErrorBoundary onRecover={() => closeTab(key)} recoverLabel="Close tab">
-                <TabPanelContent
-                  tab={tab}
-                  isActive={isActive}
-                  onNameResolved={(name) => setLabel(key, name)}
-                />
-              </ErrorBoundary>
-            </TabActiveProvider>
-          </Tabs.Panel>
-        )
-      })}
-    </Tabs>
+              <TabActiveProvider value={isActive}>
+                <ErrorBoundary onRecover={() => closeTab(key)} recoverLabel="Close tab">
+                  <TabPanelContent
+                    tab={tab}
+                    isActive={isActive}
+                    onNameResolved={(name) => setLabel(key, name)}
+                  />
+                </ErrorBoundary>
+              </TabActiveProvider>
+            </Tabs.Panel>
+          )
+        })}
+      </Tabs>
+    </RefreshProvider>
   )
 }

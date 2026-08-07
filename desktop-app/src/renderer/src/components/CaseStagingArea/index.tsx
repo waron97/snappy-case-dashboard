@@ -5,6 +5,7 @@ import { IconEye } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
 import { Box, Button, LoadingOverlay, Stack, Table } from '@mantine/core'
 import { odooRead, odooSearchRead } from '@/lib/odoo-api'
+import { useRefreshQueries } from '@/lib/refresh'
 
 type Props = { caseId: number }
 
@@ -18,6 +19,8 @@ export default function CaseStagingArea({ caseId }: Props) {
   // -------------------------------------
   // Queries
   // -------------------------------------
+
+  useRefreshQueries(['staging-area', { caseId }], ['staging-area', selected])
 
   const { data: logs, isLoading: logsLoading } = useQuery<
     { id: number; process_name: string; create_date: string }[]

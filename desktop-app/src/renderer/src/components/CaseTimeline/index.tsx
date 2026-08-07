@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Box, Button, LoadingOverlay, Stack, Table } from '@mantine/core'
 import RelationLink from '@/components/RelationLink'
 import { odooSearchRead, OneToMany } from '@/lib/odoo-api'
+import { useRefreshQueries } from '@/lib/refresh'
 
 type Props = {
   caseId: number
@@ -28,6 +29,8 @@ export default function CaseTimeline({ caseId }: Props) {
   // -------------------------------------
   // Queries
   // -------------------------------------
+
+  useRefreshQueries(['case-history', caseId])
 
   const { data: caseHistory, isLoading } = useQuery<CaseHistory[]>({
     queryKey: ['case-history', caseId, { isShowAll }],

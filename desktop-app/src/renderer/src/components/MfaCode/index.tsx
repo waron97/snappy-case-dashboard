@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { odooRead, odooWrite } from '@/lib/odoo-api'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'react-toastify'
 import { LoadingOverlay } from '@mantine/core'
 import PythonEditor from '@/components/PythonEditor'
 import UiCard from '@/components/UiCard'
@@ -53,15 +52,12 @@ export default function MfaCode({ id }: Props) {
   // Functions
   // -------------------------------------
 
+  // Errors deliberately propagate: PythonEditor's save path reports them (and
+  // reports success), so catching here would toast twice — once for the failure,
+  // once for the "Saved" this swallowed rejection would look like.
   async function handleSave() {
-    try {
-      await odooWrite('rip.model.function.access', [id], { code: draft })
-      queryClient.invalidateQueries({ queryKey: ['mfa', id, 'code'] })
-    } catch (err) {
-      toast(err instanceof Error ? err.message : 'Unknown error. Check browser console.')
-
-      console.error(err)
-    }
+    await odooWrite('rip.model.function.access', [id], { code: draft })
+    queryClient.invalidateQueries({ queryKey: ['mfa', id, 'code'] })
   }
 
   // -------------------------------------

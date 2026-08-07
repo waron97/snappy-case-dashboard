@@ -17,6 +17,7 @@ import SymphonyVariables from '@/components/SymphonyVariables'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { getRequestTree } from '@/lib/symphony-api'
 import { useResolvedTabName, useSymphonyVariables } from '@/lib/symphonyDetail'
+import { useRefreshQueries } from '@/lib/refresh'
 import { formatSymphonyTimestamp } from '@/lib/symphonyDates'
 import { NO_PROCESS_ID } from '@/lib/useCaseTabs'
 
@@ -41,6 +42,9 @@ export default function SymphonyRequestDetail({
   // when the tab was opened without one — a restored deep link, or a click on an
   // execution-tree child node, whose HTML has no processId.
   const needsLookup = !processId || processId === NO_PROCESS_ID
+
+  useRefreshQueries(['symphony', 'request', requestId])
+
   const {
     data: row,
     isError,

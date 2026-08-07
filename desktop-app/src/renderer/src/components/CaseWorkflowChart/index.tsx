@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { odooRead, odooSearchRead, OneToMany } from '@/lib/odoo-api'
 import { useQuery } from '@tanstack/react-query'
+import { useRefreshQueries } from '@/lib/refresh'
 import WorkflowFlowChart from '../WorkflowFlowChart'
 
 type CaseHistory = {
@@ -26,6 +27,11 @@ export default function CaseWorkflowChart({
   // -------------------------------------
   // Queries
   // -------------------------------------
+
+  useRefreshQueries(
+    ['symple.workflow', workflowId, 'for-workflow-chart'],
+    ['symple.triplet.phase.history', caseId]
+  )
 
   const { data: workflowFields } = useQuery<{ id: number; triplet_phase_id: OneToMany }>({
     queryKey: ['symple.workflow', workflowId, 'for-workflow-chart'],

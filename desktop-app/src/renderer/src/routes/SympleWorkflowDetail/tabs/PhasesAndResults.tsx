@@ -6,6 +6,7 @@ import PythonEditor from '@/components/PythonEditor'
 import UiCard from '@/components/UiCard'
 import { odooRead, odooWrite } from '@/lib/odoo-api'
 import { useTabVisited } from '@/lib/tabActive'
+import { useRefreshQueries } from '@/lib/refresh'
 import { PhaseRecord, useWorkflowContext } from '../context'
 
 function fuzzyMatch(name: string, query: string): boolean {
@@ -44,6 +45,8 @@ export default function PhasesAndResults() {
   const selectedPhase = phases.find((p) => p.id === selectedPhaseId) ?? null
 
   const codeQueryKey = ['symple.triplet.phase', selectedPhaseId, 'code']
+
+  useRefreshQueries(codeQueryKey)
 
   const { data: savedCode } = useQuery<string>({
     // Also gated on the tab having been visited: this query is what mounts the

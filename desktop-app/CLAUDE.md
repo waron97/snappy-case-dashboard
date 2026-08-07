@@ -113,6 +113,16 @@ Add the variant to `CaseWorkspaceTab` (it **must** carry `label`, or `sanitizeTa
 
 Two invariants in `TAB_ROUTES` worth preserving: every pattern is matched with `end: true`, which makes them mutually exclusive and iteration order irrelevant (`/rip/mfa/:id` can't swallow `/rip/mfa/list/:instance`); and `toTab` returns `null` for anything it can't parse, so a junk URL yields no tab rather than one keyed `case:NaN`. The `decodeURIComponent` calls on Symphony ids are required, not redundant — `useMatch` decodes the pathname before matching, bare `matchPath` does not.
 
+### The refresh button
+
+The ⟳ in the tab strip bumps a counter in `lib/refresh.ts`'s `RefreshProvider`. Every mounted panel already reads that context, so a bump re-renders all of them and each decides for itself — via `useTabIsActive` — whether it is the tab the user is looking at. **Only the active tab refetches**; an unscoped `queryClient.invalidateQueries()` would hit every open tab at once, which is exactly what `useVisitedGate` exists to avoid. Nothing is registered or keyed by tab, so nothing has to be cleaned up when a tab closes.
+
+The convention is to call `useRefreshQueries(...keys)` **next to the `useQuery` it refreshes**, at whatever depth that is, rather than hoisting a list of keys up to the page — `useTabIsActive` works anywhere inside a panel, so a query added later brings its own refresh with it. Keys match by prefix, so `['case', id]` covers `['case', id, 'symphony-processes']`.
+
+Three deliberate omissions, all of which would do harm rather than good: `['symphony', 'processKeys', …]` (the catalog is a ~20s/~58MB sweep behind a 12h `staleTime`); `['phase', …, 'for-active-phase']` in `CaseActivePhase`, and `WorkflowFlowChart`, which accumulates into local state and stops fetching once `isDone`. The `CaseActivePhase` case is the subtle one: it re-seeds `form.code` whenever that query's data changes *identity*, so a refresh that picked up someone else's write would silently replace unsaved edits. Structural sharing (on by default, and `QueryProvider` is a bare `new QueryClient()`) keeps the reference stable when a refetch returns the same payload, so ordinary window-focus refetches are harmless — the seed-once-per-record guard in `MfaCode` is what closes the remaining conflict window.
+
+Related but separate: `CaseDetail`'s base-view query drops its 3s `refetchInterval` while the case is unlocked (`refetchInterval: isCaseDone || !isLocked ? undefined : 3 * 1000`) so polling doesn't churn under an open editor. That guard is on the base-view poll only — it does not gate `enabled` on any `CaseActivePhase` query, and it does not affect window-focus refetches.
+
 ## Odoo Data Models
 
 Unchanged from the old app — see the original data-model diagram if needed (helpdesk.ticket / symple.workflow / symple.triplet.phase / symple.triplet.phase.result / symple.triplet.phase.history). Domain helpers live in `src/renderer/src/utils/odoo.ts` (`constructOdooDomain`, `OdooDomain`, `OdooFieldType`, `OdooFieldDefinition`).
@@ -122,6 +132,12 @@ Unchanged from the old app — see the original data-model diagram if needed (he
 ### Imports
 
 `@/*` resolves to `src/renderer/src/*` (renderer only — see `tsconfig.web.json` and `electron.vite.config.ts`). Prefer it over relative imports for anything crossing a directory boundary.
+
+### Vim ex commands in CodeMirror
+
+`Vim.defineEx` registers **globally**, across every mounted codemirror-vim instance — it is not per editor. So two editors cannot each define the same command in an effect: whichever mounted last silently answers it for both. `DomainEditor` did exactly that with `:w`, and because the case list is a permanently mounted tab, it won — `:w` in a Python editor applied the domain filter instead of saving.
+
+Either read and write through the `cm` argument the handler is given (what `:f`/format does in `PythonEditor`), or register per editor through `lib/vimWrite.ts`, which owns the single `:w` definition and dispatches via a `WeakMap` keyed by `EditorView` so the focused editor's handler runs. New shared commands should follow one of those two shapes.
 
 ### Checks
 

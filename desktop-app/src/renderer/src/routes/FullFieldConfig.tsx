@@ -40,6 +40,7 @@ import UiCard from '@/components/UiCard'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { odooNameGet, odooRead, odooWrite } from '@/lib/odoo-api'
 import { useSettings } from '@/lib/settings'
+import { useRefreshQueries } from '@/lib/refresh'
 import { fieldsGet, OdooFieldDefinition } from '@/utils/odoo'
 
 const PAGE_SIZE = 50
@@ -181,6 +182,8 @@ export default function FullRecordView({
   const [saving, setSaving] = useState(false)
   const queryClient = useQueryClient()
 
+  useRefreshQueries([model, recordId], ['fields-get', model], ['record', model, recordId])
+
   const { data: name } = useQuery({
     queryKey: [model, recordId, 'name'],
     queryFn: () => odooNameGet(String(model), [recordId]).then((res) => res[0][1])
@@ -243,8 +246,8 @@ export default function FullRecordView({
       setLocked(true)
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Unknown error. Check browser console.')
-      // eslint-disable-next-line
-            console.error(err);
+
+      console.error(err)
     } finally {
       setSaving(false)
     }

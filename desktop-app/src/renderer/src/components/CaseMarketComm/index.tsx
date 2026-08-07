@@ -5,6 +5,7 @@ import { IconEye } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
 import { Box, Button, LoadingOverlay, Stack, Table } from '@mantine/core'
 import { odooRead, odooSearchRead } from '@/lib/odoo-api'
+import { useRefreshQueries } from '@/lib/refresh'
 
 type Props = { caseId: number }
 
@@ -19,6 +20,8 @@ export default function CaseMarketComm({ caseId }: Props) {
   // -------------------------------------
   // Queries
   // -------------------------------------
+
+  useRefreshQueries(['market-comm', { caseId, isShowAll }], ['market-comm', selected])
 
   const { data: logs, isLoading: logsLoading } = useQuery<
     { id: number; flow_code: string; service_code: string; create_date: string }[]

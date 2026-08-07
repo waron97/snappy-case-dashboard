@@ -25,6 +25,7 @@ import UiCard from '@/components/UiCard'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useSettings } from '@/lib/settings'
 import { odooRead, odooWrite, OneToMany } from '@/lib/odoo-api'
+import { useRefreshQueries } from '@/lib/refresh'
 
 const CaseMarketComm = lazy(() => import('@/components/CaseMarketComm'))
 const CaseLogs = lazy(() => import('@/components/CaseLogs'))
@@ -74,6 +75,10 @@ export default function Ticket({ id, isActive = true, onNameResolved }: Props) {
   // -------------------------------------
   // Queries
   // -------------------------------------
+
+  // Prefix, so this also covers the Symphony-processes tab's
+  // ['case', id, 'symphony-processes']. The cards below each bring their own.
+  useRefreshQueries(['case', id])
 
   const {
     data: baseFields,

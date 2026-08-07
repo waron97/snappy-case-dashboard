@@ -9,6 +9,7 @@ import RelationLink from '@/components/RelationLink'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import { constructOdooDomain } from '@/utils/odoo'
 import { odooSearchRead } from '@/lib/odoo-api'
+import { useRefreshQueries } from '@/lib/refresh'
 
 interface Case {
   id: number
@@ -46,6 +47,8 @@ export default function HomePage() {
   // -------------------------------------
   // Queries
   // -------------------------------------
+
+  useRefreshQueries(['cases'])
 
   const {
     data,

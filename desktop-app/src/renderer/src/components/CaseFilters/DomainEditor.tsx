@@ -1,8 +1,9 @@
 import { json } from '@codemirror/lang-json'
-import { vim, Vim } from '@replit/codemirror-vim'
+import { vim } from '@replit/codemirror-vim'
 import { vscodeDark } from '@uiw/codemirror-theme-vscode'
-import ReactCodeMirror from '@uiw/react-codemirror'
-import { useEffect } from 'react'
+import ReactCodeMirror, { EditorView } from '@uiw/react-codemirror'
+import { useState } from 'react'
+import { useVimWrite } from '@/lib/vimWrite'
 
 type Props = {
   value: string
@@ -13,10 +14,12 @@ type Props = {
 export default function DomainEditor(props: Props) {
   const { value, onChange, onWriteCommand } = props
 
-  useEffect(() => {
-    Vim.defineEx('write', 'w', () => onWriteCommand())
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const [view, setView] = useState<EditorView | null>(null)
+
+  // Registered per editor rather than via a bare Vim.defineEx: the case list is
+  // permanently mounted, so a global definition here answered `:w` in the Python
+  // editors too.
+  useVimWrite(view, onWriteCommand)
 
   return (
     <ReactCodeMirror
@@ -26,6 +29,7 @@ export default function DomainEditor(props: Props) {
       onChange={onChange}
       basicSetup={{ lineNumbers: true }}
       minHeight="120px"
+      onCreateEditor={setView}
     />
   )
 }

@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import { getMyWorkItems } from '@/lib/devops-api'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useVisitedGate } from '@/lib/tabActive'
+import { useRefreshQueries } from '@/lib/refresh'
 import { useQuery } from '@tanstack/react-query'
 import { IconMessageCircle } from '@tabler/icons-react'
 import {
@@ -35,6 +36,8 @@ type Props = {
 
 export default function DevOpsWorkItems({ isActive = true }: Props) {
   const visited = useVisitedGate(isActive)
+
+  useRefreshQueries(['devops-work-items'])
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['devops-work-items'],

@@ -1,5 +1,6 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import { useResolvedTabName, useVisitedGate } from '@/lib/tabActive'
+import { useRefreshQueries } from '@/lib/refresh'
 import {
   getHistoricActivities,
   getHistoricVariables,
@@ -35,6 +36,10 @@ export function useSymphonyVariables(
 ): UseQueryResult<SymphonyVariable[], Error> {
   const enabled = useVisitedGate(isActive) && Boolean(processInstanceId)
 
+  // These three sit behind a 5-minute staleTime, so the refresh button is the
+  // only way to see a running process move without reopening the tab.
+  useRefreshQueries(['symphony', 'variables', processInstanceId])
+
   return useQuery({
     queryKey: ['symphony', 'variables', processInstanceId],
     queryFn: async () => {
@@ -63,6 +68,8 @@ export function useSymphonyActivities(
   isActive: boolean
 ): UseQueryResult<SymphonyActivity[], Error> {
   const enabled = useVisitedGate(isActive) && Boolean(processInstanceId)
+
+  useRefreshQueries(['symphony', 'activities', processInstanceId])
 
   return useQuery({
     queryKey: ['symphony', 'activities', processInstanceId],
@@ -97,6 +104,8 @@ export function useSymphonyExecutionTree(
   isActive: boolean
 ): UseQueryResult<SymphonyExecutionNode | null, Error> {
   const enabled = useVisitedGate(isActive) && Boolean(requestId)
+
+  useRefreshQueries(['symphony', 'executionTree', requestId])
 
   return useQuery({
     queryKey: ['symphony', 'executionTree', requestId],

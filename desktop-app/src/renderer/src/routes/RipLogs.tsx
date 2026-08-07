@@ -23,6 +23,7 @@ import UiCard from '@/components/UiCard'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import { useVisitedGate } from '@/lib/tabActive'
+import { useRefreshQueries } from '@/lib/refresh'
 import { constructOdooDomain } from '@/utils/odoo'
 
 interface RipLog {
@@ -92,6 +93,8 @@ export default function RipLogs({ isActive = true }: Props) {
   // -------------------------------------
   // Queries
   // -------------------------------------
+
+  useRefreshQueries(['rip.request.log'])
 
   const { data, isLoading, isError, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({

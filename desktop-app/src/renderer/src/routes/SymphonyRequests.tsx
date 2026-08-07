@@ -24,6 +24,7 @@ import {
   type SymphonyFilterState
 } from '@/components/SymphonyFilters/types'
 import { useSweepActions } from '@/lib/symphonyDeepSearch'
+import { useRefreshQueries } from '@/lib/refresh'
 import { useCaseTabs } from '@/lib/useCaseTabs'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
@@ -96,6 +97,10 @@ export default function SymphonyRequests({ isActive }: Props): React.JSX.Element
   // -------------------------------------
   // Queries
   // -------------------------------------
+
+  // Deliberately not the ['symphony'] prefix — that would drag in the
+  // process-key catalog, a ~20s/~58MB sweep kept behind a 12h staleTime.
+  useRefreshQueries(['symphony', 'requests'])
 
   const { data, isLoading, isError, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
