@@ -14,7 +14,6 @@ import { getStore } from '../settings'
 import { getHistoricVariables, getRequestTree } from './client'
 import {
   appendLog,
-  deleteJob as deleteJobFiles,
   flushAll,
   flushLog,
   getHeader,
@@ -314,6 +313,10 @@ type RunState = {
   consecutiveFailures: number
   /** Newest header, so a coalesced progress tick never emits a stale snapshot. */
   latestJob: SweepJob | null
+  /** Resolves once runJob's own catch/finally has finished writing its final
+   *  status. resetSweep awaits this so its draft write is never clobbered by
+   *  runJob's in-flight abort-handling save(). */
+  done: Promise<void> | null
 }
 
 const runs = new Map<string, RunState>()
@@ -585,7 +588,8 @@ async function runJob(jobId: string, profileId: string): Promise<void> {
     lastProgressAt: 0,
     progressTimer: null,
     consecutiveFailures: 0,
-    latestJob: null
+    latestJob: null,
+    done: null
   }
   runs.set(jobId, state)
   activeJobId = jobId
@@ -810,7 +814,11 @@ function promoteQueue(): void {
     promoteQueue()
     return
   }
-  void runJob(nextId, profileId)
+  const promise = runJob(nextId, profileId)
+  const state = runs.get(nextId)
+  if (state) {
+    state.done = promise
+  }
 }
 
 // ---------------------------------------------------------------- public API
@@ -914,6 +922,45 @@ function filterChanged(a: SweepListFilter, b: SweepListFilter): boolean {
   return key(a) !== key(b)
 }
 
+/**
+ * The run-state fields that describe a freshly created, never-started job for
+ * a given filter — i.e. what createSweep seeds and what discarding a job's
+ * results has to reproduce. Shared by updateSweep's filter-reset branch and
+ * resetSweep so both stay byte-for-byte identical to "just created".
+ */
+function draftFields(
+  filter: SweepListFilter
+): Pick<
+  SweepJob,
+  | 'filter'
+  | 'segments'
+  | 'segmentIndex'
+  | 'status'
+  | 'pauseReason'
+  | 'error'
+  | 'counters'
+  | 'hitsTruncated'
+  | 'truncated'
+  | 'driftDetected'
+  | 'startedAt'
+  | 'finishedAt'
+> {
+  return {
+    filter,
+    segments: buildSegments(filter.startTimeInitStr, filter.startTimeEndStr),
+    segmentIndex: 0,
+    status: 'draft',
+    pauseReason: null,
+    error: null,
+    counters: { listed: 0, scanned: 0, skipped: 0, hits: 0, requestErrors: 0 },
+    hitsTruncated: false,
+    truncated: false,
+    driftDetected: false,
+    startedAt: null,
+    finishedAt: null
+  }
+}
+
 export function updateSweep(jobId: string, patch: UpdateSweepPatch): SweepJob {
   const profileId = activeProfileId()
   const job = getHeader(profileId, jobId)
@@ -941,21 +988,7 @@ export function updateSweep(jobId: string, patch: UpdateSweepPatch): SweepJob {
     // Everything already recorded describes the old query, so it has to go. The
     // log is authoritative on load, so clearing it is the actual reset.
     resetLog(profileId, jobId)
-    next = touch({
-      ...next,
-      filter,
-      segments: buildSegments(filter.startTimeInitStr, filter.startTimeEndStr),
-      segmentIndex: 0,
-      status: 'draft',
-      pauseReason: null,
-      error: null,
-      counters: { listed: 0, scanned: 0, skipped: 0, hits: 0, requestErrors: 0 },
-      hitsTruncated: false,
-      truncated: false,
-      driftDetected: false,
-      startedAt: null,
-      finishedAt: null
-    })
+    next = touch({ ...next, ...draftFields(filter) })
   }
 
   putHeader(next, true)
@@ -990,7 +1023,11 @@ export function startSweep(jobId: string): SweepJob {
 
   const starting = touch({ ...job, status: 'running', pauseReason: null, error: null })
   putHeader(starting, true)
-  void runJob(jobId, profileId)
+  const promise = runJob(jobId, profileId)
+  const state = runs.get(jobId)
+  if (state) {
+    state.done = promise
+  }
   return starting
 }
 
@@ -1008,11 +1045,35 @@ export function pauseSweep(jobId: string): SweepJob {
   return paused
 }
 
-export function deleteSweep(jobId: string): void {
+/**
+ * Discards a sweep's run data and returns it to a fresh, never-started draft —
+ * same id, same name/predicate/filter/options, but zeroed counters/segments
+ * and an empty log. Works from any status, including running/queued: any live
+ * run is aborted and awaited to completion first, so this function's own
+ * header write is always the last one — runJob's abort-triggered save() would
+ * otherwise land afterward and clobber the draft reset back to 'paused'.
+ */
+export async function resetSweep(jobId: string): Promise<SweepJob> {
   const profileId = activeProfileId()
+  const job = getHeader(profileId, jobId)
+  if (!job) {
+    throw new Error('Sweep not found.')
+  }
   queue = queue.filter((id) => id !== jobId)
-  runs.get(jobId)?.controller.abort()
-  deleteJobFiles(profileId, jobId)
+  const state = runs.get(jobId)
+  state?.controller.abort()
+  if (state?.done) {
+    await state.done
+  }
+
+  // Re-read: if a run was in flight, its own abort-handling save() already
+  // landed by now (awaited above), and this is the header to build the reset
+  // from rather than the possibly-stale `job` read at the top.
+  const current = getHeader(profileId, jobId) ?? job
+  resetLog(profileId, jobId)
+  const draft = touch({ ...current, ...draftFields(current.filter) })
+  putHeader(draft, true)
+  return draft
 }
 
 /** Called from ipc.ts BEFORE the active profile actually changes. */

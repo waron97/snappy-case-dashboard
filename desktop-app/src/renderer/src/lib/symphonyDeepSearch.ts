@@ -114,7 +114,7 @@ export type SweepActions = {
   }) => Promise<SweepJob>
   start: (jobId: string) => Promise<SweepJob>
   pause: (jobId: string) => Promise<SweepJob>
-  remove: (jobId: string) => Promise<void>
+  reset: (jobId: string) => Promise<SweepJob>
 }
 
 export function useSweepActions(): SweepActions {
@@ -156,9 +156,9 @@ export function useSweepActions(): SweepActions {
     onSuccess: (job) => invalidate(job.id)
   })
 
-  const remove = useMutation({
-    mutationFn: (jobId: string) => api().remove(jobId),
-    onSuccess: () => invalidate()
+  const reset = useMutation({
+    mutationFn: (jobId: string) => api().reset(jobId) as Promise<SweepJob>,
+    onSuccess: (job) => invalidate(job.id)
   })
 
   return {
@@ -166,7 +166,7 @@ export function useSweepActions(): SweepActions {
     update: update.mutateAsync,
     start: start.mutateAsync,
     pause: pause.mutateAsync,
-    remove: remove.mutateAsync
+    reset: reset.mutateAsync
   }
 }
 

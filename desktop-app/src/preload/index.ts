@@ -93,8 +93,8 @@ const api = {
         ipcRenderer.invoke('symphony:deepSearch:start', jobId),
       pause: (jobId: string): Promise<unknown> =>
         ipcRenderer.invoke('symphony:deepSearch:pause', jobId),
-      remove: (jobId: string): Promise<void> =>
-        ipcRenderer.invoke('symphony:deepSearch:delete', jobId),
+      reset: (jobId: string): Promise<unknown> =>
+        ipcRenderer.invoke('symphony:deepSearch:reset', jobId),
       onProgress: (callback: (payload: unknown) => void): (() => void) => {
         const listener = (_e: unknown, payload: unknown): void => callback(payload)
         ipcRenderer.on('symphony:deepSearch:progress', listener)

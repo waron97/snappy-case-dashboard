@@ -10,11 +10,11 @@ import {
 } from './backend/symphony/catalog'
 import {
   createSweep,
-  deleteSweep,
   getSweepSnapshot,
   listSweeps,
   pauseAllForProfileSwitch,
   pauseSweep,
+  resetSweep,
   startSweep,
   updateSweep
 } from './backend/symphony/sweepEngine'
@@ -116,7 +116,7 @@ export function registerIpcHandlers(): void {
   )
   ipcMain.handle('symphony:deepSearch:start', (_e, jobId: string) => startSweep(jobId))
   ipcMain.handle('symphony:deepSearch:pause', (_e, jobId: string) => pauseSweep(jobId))
-  ipcMain.handle('symphony:deepSearch:delete', (_e, jobId: string) => deleteSweep(jobId))
+  ipcMain.handle('symphony:deepSearch:reset', (_e, jobId: string) => resetSweep(jobId))
 
   ipcMain.handle('settings:getStore', () => getStore())
   ipcMain.handle('settings:saveProfile', (_e, profile: Profile) => saveProfile(profile))

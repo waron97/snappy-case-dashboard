@@ -217,14 +217,18 @@ export default function SymphonyDeepSearch({
                 </Button>
               </Tooltip>
             )}
-            <Tooltip label="Delete this sweep and its stored results">
+            <Tooltip label="Clear this sweep's results and reset it to unstarted">
               <ActionIcon
                 variant="subtle"
                 color="red"
                 size="lg"
                 onClick={() => {
-                  if (window.confirm(`Delete sweep "${job.name}" and its results?`)) {
-                    run(() => actions.remove(job.id))
+                  if (
+                    window.confirm(
+                      `Clear "${job.name}" and reset it to unstarted? This discards all scanned results.`
+                    )
+                  ) {
+                    run(() => actions.reset(job.id))
                   }
                 }}
               >
