@@ -79,17 +79,19 @@ export default function MfaRecentCalls({ id }: Props) {
       <UiCard title="Recent Calls">
         <div style={{ position: 'relative', minHeight: 60 }}>
           <LoadingOverlay visible={isLoading} />
-          <Table striped highlightOnHover>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Method</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.Th>Date</Table.Th>
-                <Table.Th />
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>{rows}</Table.Tbody>
-          </Table>
+          <Table.ScrollContainer minWidth={320}>
+            <Table striped highlightOnHover>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th w={80}>Method</Table.Th>
+                  <Table.Th w={80}>Status</Table.Th>
+                  <Table.Th>Date</Table.Th>
+                  <Table.Th w={40} />
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>{rows}</Table.Tbody>
+            </Table>
+          </Table.ScrollContainer>
         </div>
       </UiCard>
 

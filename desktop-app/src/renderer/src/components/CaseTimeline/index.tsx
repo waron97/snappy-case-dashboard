@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Box, Button, LoadingOverlay, Stack, Table } from '@mantine/core'
+import { Box, Button, LoadingOverlay, ScrollArea, Stack, Table } from '@mantine/core'
 import RelationLink from '@/components/RelationLink'
 import { odooSearchRead, OneToMany } from '@/lib/odoo-api'
 import { useRefreshQueries } from '@/lib/refresh'
@@ -63,40 +63,44 @@ export default function CaseTimeline({ caseId }: Props) {
     <Stack gap="sm" justify="space-between">
       <Box pos="relative" mih={200}>
         <LoadingOverlay visible={isLoading} />
-        <Table>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Timestamp</Table.Th>
-              <Table.Th>Phase</Table.Th>
-              <Table.Th>Result</Table.Th>
-              <Table.Th>Error message</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {caseHistory?.map((h) => {
-              return (
-                <Table.Tr key={h.id}>
-                  <Table.Td>
-                    <RelationLink
-                      pgId={h.id}
-                      model="symple.triplet.phase.history"
-                      name={dayjs(h.date).format('DD/MM HH:mm')}
-                    />
-                  </Table.Td>
-                  <Table.Td>
-                    <RelationLink
-                      model="symple.triplet.phase"
-                      pgId={h.phase_id[0]}
-                      name={h.phase_id[1]}
-                    />
-                  </Table.Td>
-                  <Table.Td>{h.phase_result_id?.[1]}</Table.Td>
-                  <Table.Td>{h.error_message}</Table.Td>
+        <ScrollArea.Autosize mah={320}>
+          <Table.ScrollContainer minWidth={480}>
+            <Table>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th w={90}>Timestamp</Table.Th>
+                  <Table.Th>Phase</Table.Th>
+                  <Table.Th>Result</Table.Th>
+                  <Table.Th>Error message</Table.Th>
                 </Table.Tr>
-              )
-            })}
-          </Table.Tbody>
-        </Table>
+              </Table.Thead>
+              <Table.Tbody>
+                {caseHistory?.map((h) => {
+                  return (
+                    <Table.Tr key={h.id}>
+                      <Table.Td>
+                        <RelationLink
+                          pgId={h.id}
+                          model="symple.triplet.phase.history"
+                          name={dayjs(h.date).format('DD/MM HH:mm')}
+                        />
+                      </Table.Td>
+                      <Table.Td>
+                        <RelationLink
+                          model="symple.triplet.phase"
+                          pgId={h.phase_id[0]}
+                          name={h.phase_id[1]}
+                        />
+                      </Table.Td>
+                      <Table.Td>{h.phase_result_id?.[1]}</Table.Td>
+                      <Table.Td>{h.error_message}</Table.Td>
+                    </Table.Tr>
+                  )
+                })}
+              </Table.Tbody>
+            </Table>
+          </Table.ScrollContainer>
+        </ScrollArea.Autosize>
       </Box>
       {!isShowAll && caseHistory?.length === 20 && (
         <Button size="sm" onClick={() => setIsShowAll(true)}>

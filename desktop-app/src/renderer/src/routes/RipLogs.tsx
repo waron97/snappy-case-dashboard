@@ -255,21 +255,23 @@ export default function RipLogs({ isActive = true }: Props) {
           </Stack>
         </UiCard>
 
-        <Table striped highlightOnHover>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Endpoint</Table.Th>
-              <Table.Th>Method</Table.Th>
-              <Table.Th>Status</Table.Th>
-              <Table.Th>Args</Table.Th>
-              <Table.Th>Content</Table.Th>
-              <Table.Th>Response Content</Table.Th>
-              <Table.Th>Create Date</Table.Th>
-              <Table.Th />
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{rows}</Table.Tbody>
-        </Table>
+        <Table.ScrollContainer minWidth={800}>
+          <Table striped highlightOnHover>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Endpoint</Table.Th>
+                <Table.Th w={80}>Method</Table.Th>
+                <Table.Th w={80}>Status</Table.Th>
+                <Table.Th>Args</Table.Th>
+                <Table.Th>Content</Table.Th>
+                <Table.Th>Response Content</Table.Th>
+                <Table.Th w={110}>Create Date</Table.Th>
+                <Table.Th w={60} />
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>{rows}</Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
 
         <div ref={sentinelRef} style={{ height: '1px' }} />
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Box, Button, LoadingOverlay, Stack, Table } from '@mantine/core'
+import { Box, Button, LoadingOverlay, ScrollArea, Stack, Table } from '@mantine/core'
 import { odooSearchRead, OneToMany } from '@/lib/odoo-api'
 import { useRefreshQueries } from '@/lib/refresh'
 import RelationLink from '../RelationLink'
@@ -86,34 +86,38 @@ export default function CaseServicePoints({ caseId, pointIds }: Props) {
     <Stack gap="sm" justify="space-between">
       <Box pos="relative" mih={isLoading ? 200 : undefined}>
         <LoadingOverlay visible={isLoading} />
-        <Table>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>PR code</Table.Th>
-              <Table.Th>Commodity</Table.Th>
-              <Table.Th>Supply</Table.Th>
-              <Table.Th>State</Table.Th>
-              <Table.Th>Supply start date</Table.Th>
-              <Table.Th>Supply end date</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {points?.map((h) => {
-              return (
-                <Table.Tr key={h.id}>
-                  <Table.Td>
-                    <RelationLink name={h.code} pgId={h.id} model="service.point" />
-                  </Table.Td>
-                  <Table.Td>{h.commodity}</Table.Td>
-                  <Table.Td>{renderSupply(h)}</Table.Td>
-                  <Table.Td>{h.state}</Table.Td>
-                  <Table.Td>{h.supply_start_date}</Table.Td>
-                  <Table.Td>{h.supply_end_date}</Table.Td>
+        <ScrollArea.Autosize mah={320}>
+          <Table.ScrollContainer minWidth={560}>
+            <Table>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>PR code</Table.Th>
+                  <Table.Th w={110}>Commodity</Table.Th>
+                  <Table.Th>Supply</Table.Th>
+                  <Table.Th w={90}>State</Table.Th>
+                  <Table.Th w={120}>Supply start date</Table.Th>
+                  <Table.Th w={120}>Supply end date</Table.Th>
                 </Table.Tr>
-              )
-            })}
-          </Table.Tbody>
-        </Table>
+              </Table.Thead>
+              <Table.Tbody>
+                {points?.map((h) => {
+                  return (
+                    <Table.Tr key={h.id}>
+                      <Table.Td>
+                        <RelationLink name={h.code} pgId={h.id} model="service.point" />
+                      </Table.Td>
+                      <Table.Td>{h.commodity}</Table.Td>
+                      <Table.Td>{renderSupply(h)}</Table.Td>
+                      <Table.Td>{h.state}</Table.Td>
+                      <Table.Td>{h.supply_start_date}</Table.Td>
+                      <Table.Td>{h.supply_end_date}</Table.Td>
+                    </Table.Tr>
+                  )
+                })}
+              </Table.Tbody>
+            </Table>
+          </Table.ScrollContainer>
+        </ScrollArea.Autosize>
       </Box>
       {!isShowAll && points?.length === 20 && (
         <Button size="sm" onClick={() => setIsShowAll(true)}>

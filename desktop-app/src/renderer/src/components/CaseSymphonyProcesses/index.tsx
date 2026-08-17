@@ -1,6 +1,16 @@
 import { Link } from 'react-router-dom'
 import { IconAlertTriangle, IconEye } from '@tabler/icons-react'
-import { ActionIcon, Alert, Badge, Center, Loader, Table, Text, Tooltip } from '@mantine/core'
+import {
+  ActionIcon,
+  Alert,
+  Badge,
+  Center,
+  Loader,
+  ScrollArea,
+  Table,
+  Text,
+  Tooltip
+} from '@mantine/core'
 import { NO_PROCESS_ID, tabPath } from '@/lib/useCaseTabs'
 import {
   useCaseSymphonyProcesses,
@@ -73,78 +83,82 @@ export default function CaseSymphonyProcesses({ caseId }: Props): React.JSX.Elem
   }
 
   return (
-    <Table striped highlightOnHover>
-      <Table.Thead>
-        <Table.Tr>
-          <Table.Th w={100}>Origin</Table.Th>
-          <Table.Th>Process</Table.Th>
-          <Table.Th>Id</Table.Th>
-          <Table.Th w={150}>Wizard result</Table.Th>
-          <Table.Th w={50} />
-        </Table.Tr>
-      </Table.Thead>
-      <Table.Tbody>
-        {rows.map((row) => {
-          const origin = ORIGIN_LABELS[row.origin]
-          return (
-            <Table.Tr key={`${row.origin}:${row.id}`}>
-              <Table.Td>
-                <Tooltip label={origin.hint}>
-                  <Badge size="sm" variant="light" color={origin.color}>
-                    {origin.label}
-                  </Badge>
-                </Tooltip>
-              </Table.Td>
-              <Table.Td>
-                <Text size="xs">{row.processName ?? '—'}</Text>
-              </Table.Td>
-              <Table.Td>
-                <Text size="xs" ff="monospace">
-                  {row.id}
-                </Text>
-              </Table.Td>
-              <Table.Td>
-                {row.wizardStatus ? (
-                  <Tooltip
-                    label={
-                      row.cancelReason
-                        ? `${row.wizardStateCode ?? ''} — ${row.cancelReason}`
-                        : (row.wizardStateCode ?? row.wizardStatus)
-                    }
-                  >
-                    <Badge size="sm" variant="light" color={statusColor(row.wizardStatus)}>
-                      {row.wizardStatus}
-                    </Badge>
-                  </Tooltip>
-                ) : (
-                  <Text size="xs" c="dimmed">
-                    —
-                  </Text>
-                )}
-              </Table.Td>
-              <Table.Td>
-                <Tooltip label="Open this process in a tab">
-                  <ActionIcon
-                    component={Link}
-                    variant="subtle"
-                    size="sm"
-                    // Odoo stores a single id without recording whether it is a
-                    // request id or a process-instance id, so the process
-                    // instance stays unknown until the detail page resolves it.
-                    to={tabPath({
-                      kind: 'symphony-request',
-                      requestId: row.id,
-                      processId: NO_PROCESS_ID
-                    })}
-                  >
-                    <IconEye size={14} />
-                  </ActionIcon>
-                </Tooltip>
-              </Table.Td>
+    <ScrollArea.Autosize mah={320}>
+      <Table.ScrollContainer minWidth={480}>
+        <Table striped highlightOnHover>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th w={100}>Origin</Table.Th>
+              <Table.Th>Process</Table.Th>
+              <Table.Th>Id</Table.Th>
+              <Table.Th w={150}>Wizard result</Table.Th>
+              <Table.Th w={50} />
             </Table.Tr>
-          )
-        })}
-      </Table.Tbody>
-    </Table>
+          </Table.Thead>
+          <Table.Tbody>
+            {rows.map((row) => {
+              const origin = ORIGIN_LABELS[row.origin]
+              return (
+                <Table.Tr key={`${row.origin}:${row.id}`}>
+                  <Table.Td>
+                    <Tooltip label={origin.hint}>
+                      <Badge size="sm" variant="light" color={origin.color}>
+                        {origin.label}
+                      </Badge>
+                    </Tooltip>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="xs">{row.processName ?? '—'}</Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="xs" ff="monospace">
+                      {row.id}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td>
+                    {row.wizardStatus ? (
+                      <Tooltip
+                        label={
+                          row.cancelReason
+                            ? `${row.wizardStateCode ?? ''} — ${row.cancelReason}`
+                            : (row.wizardStateCode ?? row.wizardStatus)
+                        }
+                      >
+                        <Badge size="sm" variant="light" color={statusColor(row.wizardStatus)}>
+                          {row.wizardStatus}
+                        </Badge>
+                      </Tooltip>
+                    ) : (
+                      <Text size="xs" c="dimmed">
+                        —
+                      </Text>
+                    )}
+                  </Table.Td>
+                  <Table.Td>
+                    <Tooltip label="Open this process in a tab">
+                      <ActionIcon
+                        component={Link}
+                        variant="subtle"
+                        size="sm"
+                        // Odoo stores a single id without recording whether it is a
+                        // request id or a process-instance id, so the process
+                        // instance stays unknown until the detail page resolves it.
+                        to={tabPath({
+                          kind: 'symphony-request',
+                          requestId: row.id,
+                          processId: NO_PROCESS_ID
+                        })}
+                      >
+                        <IconEye size={14} />
+                      </ActionIcon>
+                    </Tooltip>
+                  </Table.Td>
+                </Table.Tr>
+              )
+            })}
+          </Table.Tbody>
+        </Table>
+      </Table.ScrollContainer>
+    </ScrollArea.Autosize>
   )
 }

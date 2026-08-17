@@ -160,67 +160,69 @@ export default function SymphonyRequests({ isActive }: Props): React.JSX.Element
             </Text>
           }
         >
-          <Table striped highlightOnHover>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Status</Table.Th>
-                <Table.Th>Process Key</Table.Th>
-                <Table.Th>Request Id</Table.Th>
-                <Table.Th>Received</Table.Th>
-                <Table.Th>Children</Table.Th>
-                <Table.Th />
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {rows.map((row) => (
-                <Table.Tr key={row.requestId}>
-                  <Table.Td>
-                    <Group gap={4} wrap="nowrap">
-                      <Badge color={statusColor(row)} variant="light">
-                        {row.status}
-                      </Badge>
-                      {row.deadJob && (
-                        <Badge color="grape" variant="outline">
-                          dead
-                        </Badge>
-                      )}
-                    </Group>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="sm">{row.processKey}</Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Tooltip label={row.requestId}>
-                      <Text size="xs" ff="monospace">
-                        {row.requestId.slice(0, 16)}…
-                      </Text>
-                    </Tooltip>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="xs">{formatSymphonyTimestamp(row.createdDate)}</Text>
-                  </Table.Td>
-                  <Table.Td>
-                    {row.hasChilds && (
-                      <Badge variant="default">{row.childs > 0 ? row.childs : '›'}</Badge>
-                    )}
-                  </Table.Td>
-                  <Table.Td>
-                    <ActionIcon
-                      component={Link}
-                      variant="subtle"
-                      to={tabPath({
-                        kind: 'symphony-request',
-                        requestId: row.requestId,
-                        processId: row.processId
-                      })}
-                    >
-                      <IconEye size={16} />
-                    </ActionIcon>
-                  </Table.Td>
+          <Table.ScrollContainer minWidth={600}>
+            <Table striped highlightOnHover>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th w={110}>Status</Table.Th>
+                  <Table.Th>Process Key</Table.Th>
+                  <Table.Th>Request Id</Table.Th>
+                  <Table.Th w={140}>Received</Table.Th>
+                  <Table.Th w={90}>Children</Table.Th>
+                  <Table.Th w={50} />
                 </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
+              </Table.Thead>
+              <Table.Tbody>
+                {rows.map((row) => (
+                  <Table.Tr key={row.requestId}>
+                    <Table.Td>
+                      <Group gap={4} wrap="nowrap">
+                        <Badge color={statusColor(row)} variant="light">
+                          {row.status}
+                        </Badge>
+                        {row.deadJob && (
+                          <Badge color="grape" variant="outline">
+                            dead
+                          </Badge>
+                        )}
+                      </Group>
+                    </Table.Td>
+                    <Table.Td>
+                      <Text size="sm">{row.processKey}</Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Tooltip label={row.requestId}>
+                        <Text size="xs" ff="monospace">
+                          {row.requestId.slice(0, 16)}…
+                        </Text>
+                      </Tooltip>
+                    </Table.Td>
+                    <Table.Td>
+                      <Text size="xs">{formatSymphonyTimestamp(row.createdDate)}</Text>
+                    </Table.Td>
+                    <Table.Td>
+                      {row.hasChilds && (
+                        <Badge variant="default">{row.childs > 0 ? row.childs : '›'}</Badge>
+                      )}
+                    </Table.Td>
+                    <Table.Td>
+                      <ActionIcon
+                        component={Link}
+                        variant="subtle"
+                        to={tabPath({
+                          kind: 'symphony-request',
+                          requestId: row.requestId,
+                          processId: row.processId
+                        })}
+                      >
+                        <IconEye size={16} />
+                      </ActionIcon>
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </Table.ScrollContainer>
 
           {!isLoading && rows.length === 0 && (
             <Center py="lg">

@@ -154,18 +154,20 @@ export default function MFA({ isActive = true }: Props) {
           </Group>
         </UiCard>
 
-        <Table striped highlightOnHover>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Name</Table.Th>
-              <Table.Th>Model</Table.Th>
-              {/* <Table.Th>Schema In</Table.Th> */}
-              {/* <Table.Th>Schema Out</Table.Th> */}
-              <Table.Th />
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{rows}</Table.Tbody>
-        </Table>
+        <Table.ScrollContainer minWidth={350}>
+          <Table striped highlightOnHover>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Name</Table.Th>
+                <Table.Th>Model</Table.Th>
+                {/* <Table.Th>Schema In</Table.Th> */}
+                {/* <Table.Th>Schema Out</Table.Th> */}
+                <Table.Th w={50} />
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>{rows}</Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
 
         <div ref={sentinelRef} style={{ height: '1px' }} />
 

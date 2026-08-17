@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Box, Button, LoadingOverlay, Stack, Table } from '@mantine/core'
+import { Box, Button, LoadingOverlay, ScrollArea, Stack, Table } from '@mantine/core'
 import { odooSearchRead, OneToMany } from '@/lib/odoo-api'
 import { useRefreshQueries } from '@/lib/refresh'
 
@@ -70,32 +70,36 @@ export default function CaseChildren({ caseId, childIds }: Props) {
       <Box pos="relative" mih={isLoading ? 200 : 0}>
         <LoadingOverlay visible={isLoading} />
 
-        <Table>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Td>Name</Table.Td>
-              <Table.Td>Ticket type</Table.Td>
-              <Table.Td>Workflow</Table.Td>
-              <Table.Td>Phase</Table.Td>
-              <Table.Td>Date</Table.Td>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {children?.map((child) => {
-              return (
-                <Table.Tr key={child.id}>
-                  <Table.Td>
-                    <Link to={`/helpdesk.ticket/${child.id}`}>{child.name}</Link>
-                  </Table.Td>
-                  <Table.Td>{child.ticket_type_id[1]}</Table.Td>
-                  <Table.Td>{child.workflow_id?.[1]}</Table.Td>
-                  <Table.Td>{child.triplet_active_phase_id?.[1]}</Table.Td>
-                  <Table.Td>{dayjs(child.create_date).format('DD/MM HH:mm')}</Table.Td>
+        <ScrollArea.Autosize mah={320}>
+          <Table.ScrollContainer minWidth={480}>
+            <Table>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Td>Name</Table.Td>
+                  <Table.Td>Ticket type</Table.Td>
+                  <Table.Td>Workflow</Table.Td>
+                  <Table.Td>Phase</Table.Td>
+                  <Table.Td w={90}>Date</Table.Td>
                 </Table.Tr>
-              )
-            })}
-          </Table.Tbody>
-        </Table>
+              </Table.Thead>
+              <Table.Tbody>
+                {children?.map((child) => {
+                  return (
+                    <Table.Tr key={child.id}>
+                      <Table.Td>
+                        <Link to={`/helpdesk.ticket/${child.id}`}>{child.name}</Link>
+                      </Table.Td>
+                      <Table.Td>{child.ticket_type_id[1]}</Table.Td>
+                      <Table.Td>{child.workflow_id?.[1]}</Table.Td>
+                      <Table.Td>{child.triplet_active_phase_id?.[1]}</Table.Td>
+                      <Table.Td>{dayjs(child.create_date).format('DD/MM HH:mm')}</Table.Td>
+                    </Table.Tr>
+                  )
+                })}
+              </Table.Tbody>
+            </Table>
+          </Table.ScrollContainer>
+        </ScrollArea.Autosize>
       </Box>
       {!isShowAll && children?.length === 20 && (
         <Button size="sm" onClick={() => setIsShowAll(true)}>

@@ -235,20 +235,22 @@ export default function HomePage() {
           </Center>
         ) : (
           <>
-            <Table striped highlightOnHover>
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>Name</Table.Th>
-                  <Table.Th>Customer</Table.Th>
-                  <Table.Th>Detail</Table.Th>
-                  <Table.Th>Workflow</Table.Th>
-                  <Table.Th>Active phase</Table.Th>
-                  <Table.Th>Create date</Table.Th>
-                  <Table.Th />
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>{rows}</Table.Tbody>
-            </Table>
+            <Table.ScrollContainer minWidth={700}>
+              <Table striped highlightOnHover>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Name</Table.Th>
+                    <Table.Th>Customer</Table.Th>
+                    <Table.Th>Detail</Table.Th>
+                    <Table.Th>Workflow</Table.Th>
+                    <Table.Th>Active phase</Table.Th>
+                    <Table.Th w={110}>Create date</Table.Th>
+                    <Table.Th w={50} />
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>{rows}</Table.Tbody>
+              </Table>
+            </Table.ScrollContainer>
 
             <div ref={sentinelRef} style={{ height: '1px' }} />
 

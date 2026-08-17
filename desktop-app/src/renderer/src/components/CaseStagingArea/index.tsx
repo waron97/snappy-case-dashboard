@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import SearchableJsonView, { SearchableJsonModal } from '@/components/SearchableJsonView'
 import { IconEye } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
-import { Box, Button, LoadingOverlay, Stack, Table } from '@mantine/core'
+import { Box, Button, LoadingOverlay, ScrollArea, Stack, Table } from '@mantine/core'
 import { odooRead, odooSearchRead } from '@/lib/odoo-api'
 import { useRefreshQueries } from '@/lib/refresh'
 
@@ -76,30 +76,34 @@ export default function CaseStagingArea({ caseId }: Props) {
     <Stack gap="sm">
       <Box pos="relative" mih={200}>
         <LoadingOverlay visible={logsLoading} />
-        <Table>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Timestamp</Table.Th>
-              <Table.Th>Name</Table.Th>
-              <Table.Th />
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {logs?.map((log) => {
-              return (
-                <Table.Tr key={log.id}>
-                  <Table.Td>{dayjs(log.create_date).format('DD/MM HH:mm')}</Table.Td>
-                  <Table.Td>{log.process_name}</Table.Td>
-                  <Table.Td>
-                    <Button size="xs" onClick={() => setSelected(log.id)}>
-                      <IconEye size={16} />
-                    </Button>
-                  </Table.Td>
+        <ScrollArea.Autosize mah={320}>
+          <Table.ScrollContainer minWidth={320}>
+            <Table>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th w={90}>Timestamp</Table.Th>
+                  <Table.Th>Name</Table.Th>
+                  <Table.Th w={40} />
                 </Table.Tr>
-              )
-            })}
-          </Table.Tbody>
-        </Table>
+              </Table.Thead>
+              <Table.Tbody>
+                {logs?.map((log) => {
+                  return (
+                    <Table.Tr key={log.id}>
+                      <Table.Td>{dayjs(log.create_date).format('DD/MM HH:mm')}</Table.Td>
+                      <Table.Td>{log.process_name}</Table.Td>
+                      <Table.Td>
+                        <Button size="xs" onClick={() => setSelected(log.id)}>
+                          <IconEye size={16} />
+                        </Button>
+                      </Table.Td>
+                    </Table.Tr>
+                  )
+                })}
+              </Table.Tbody>
+            </Table>
+          </Table.ScrollContainer>
+        </ScrollArea.Autosize>
       </Box>
       <SearchableJsonModal
         opened={!!selected}

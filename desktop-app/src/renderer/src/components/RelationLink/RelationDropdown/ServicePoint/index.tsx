@@ -154,28 +154,30 @@ export default function ServicePoint(props: Props) {
     }
 
     return (
-      <Table>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Td>ID</Table.Td>
-            <Table.Td>State</Table.Td>
-            <Table.Td>SM State</Table.Td>
-            <Table.Td>Create date</Table.Td>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {assets.map((asset) => {
-            return (
-              <Table.Tr key={asset._id}>
-                <Table.Td>{asset._id}</Table.Td>
-                <Table.Td>{asset.assetstatus}</Table.Td>
-                <Table.Td>{asset.sm_state}</Table.Td>
-                <Table.Td>{dayjs(asset.createdate).format('D/M/YY HH:mm')}</Table.Td>
-              </Table.Tr>
-            )
-          })}
-        </Table.Tbody>
-      </Table>
+      <Table.ScrollContainer minWidth={320}>
+        <Table>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Td w={70}>ID</Table.Td>
+              <Table.Td w={100}>State</Table.Td>
+              <Table.Td w={100}>SM State</Table.Td>
+              <Table.Td w={110}>Create date</Table.Td>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {assets.map((asset) => {
+              return (
+                <Table.Tr key={asset._id}>
+                  <Table.Td>{asset._id}</Table.Td>
+                  <Table.Td>{asset.assetstatus}</Table.Td>
+                  <Table.Td>{asset.sm_state}</Table.Td>
+                  <Table.Td>{dayjs(asset.createdate).format('D/M/YY HH:mm')}</Table.Td>
+                </Table.Tr>
+              )
+            })}
+          </Table.Tbody>
+        </Table>
+      </Table.ScrollContainer>
     )
   }
 
