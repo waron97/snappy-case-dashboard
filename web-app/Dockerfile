@@ -10,8 +10,6 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-ARG ODOO_URL
-ENV ODOO_URL=$ODOO_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN node .yarn/releases/yarn-4.13.0.cjs build
 

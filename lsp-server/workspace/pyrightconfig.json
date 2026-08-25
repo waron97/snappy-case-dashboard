@@ -1,6 +1,0 @@
-{
-  "pythonVersion": "3.10",
-  "stubPath": "typings",
-  "typeCheckingMode": "standard",
-  "reportArgumentType": "none"
-}

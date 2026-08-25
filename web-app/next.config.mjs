@@ -13,7 +13,6 @@ export default withBundleAnalyzer({
         },
     },
     env: {
-        ODOO_URL: process.env.ODOO_URL,
         ...(process.env.PORT && { PORT: process.env.PORT }),
     },
 });

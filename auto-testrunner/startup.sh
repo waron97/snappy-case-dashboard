@@ -6,11 +6,11 @@ export GIT_SSH_COMMAND="ssh -i /home/odoo/.ssh/id_rsa -o StrictHostKeyChecking=n
 REPO_SSH_URL="git@ssh.dev.azure.com:v3/${DEVOPS_ORG}/${DEVOPS_PROJECT}/${DEVOPS_REPO}"
 
 if [ "$ROLE" = "control" ]; then
-    # Control plane: poller + API + warmer + base restore. No repo needed.
-    if [ "$ENABLE_TEST01_INIT_TEST" = "1" ]; then
-        echo "Ensuring test-01 base DB is restored..."
-        python3 /opt/base_db.py ensure
-    fi
+    # Control plane: poller + API + warmer + base restore + the dev instance manager.
+    # Both dev sources restore unconditionally (the pool warmer stays gated below —
+    # that's test-01-only and only feeds the init test).
+    echo "Ensuring test-01 and test-02 base DBs are restored..."
+    python3 /opt/base_db.py ensure-all
 else
     # Worker: needs the repo checkout, pre-commit, and its own odoo-init.conf.
     if [ ! -d "/opt/repo/.git" ]; then

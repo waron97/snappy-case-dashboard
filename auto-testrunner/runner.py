@@ -9,7 +9,6 @@ from config import (
     DB_HOST,
     DB_PASSWORD,
     DB_USER,
-    ENABLE_TEST01_INIT_TEST,
     EXCLUDE,
     ODOO_BIN,
     ODOO_CONF,
@@ -19,10 +18,8 @@ from config import (
     TARGET_BRANCH,
     TEST01_BASE_DB,
     TEST01_INIT_PATH_PREFIX,
-    WORKER_ID,
-    WORKERS_KEY,
-    rdb,
 )
+from tasks import reset_tasks, set_stage
 from upgrade import detect_changed_modules, installed_modules
 
 log = logging.getLogger(__name__)
@@ -32,10 +29,26 @@ _PRE_COMMIT_RE = re.compile(r"PRE_COMMIT_STATUS: (OK|KO)")
 _INIT_RE = re.compile(r"INIT_STATUS: (OK|KO)")
 
 
+# Which log files each task produces. Doubles as the per-task idempotency marker: a
+# worker that pops a task whose logs already exist skips it instead of redoing an hour
+# of work, and the reaper deletes them before a retry so a partial log can't look done.
+TASK_LOGS = {
+    "tests": ("install.log", "test.log"),
+    "precommit": ("precommit.log",),
+    "init": ("init.log",),
+}
+
+
+def task_log_paths(commit_hash, task):
+    return [RESULTS_DIR / f"{commit_hash}.{s}" for s in TASK_LOGS[task]]
+
+
+def task_result_exists(commit_hash, task):
+    return any(p.exists() for p in task_log_paths(commit_hash, task))
+
+
 def result_exists(commit_hash):
-    return (RESULTS_DIR / f"{commit_hash}.install.log").exists() or (
-        RESULTS_DIR / f"{commit_hash}.test.log"
-    ).exists()
+    return task_result_exists(commit_hash, "tests")
 
 
 def parse_test_result(commit_hash):
@@ -92,11 +105,15 @@ def parse_init_result(commit_hash):
 
 
 def vacuum(active_hashes):
+    stale = set()
     for f in RESULTS_DIR.glob("*.log"):
         h = f.name.split(".")[0]
         if h not in active_hashes:
             f.unlink()
+            stale.add(h)
             log.info(f"Vacuumed {f.name}")
+    for h in stale:
+        reset_tasks(h)
 
 
 def pg_env():
@@ -120,6 +137,7 @@ def run_cmd(cmd, env_extra=None, log_file=None, cwd=None):
 
 def run_pre_commit(commit_hash):
     precommit_log = RESULTS_DIR / f"{commit_hash}.precommit.log"
+    set_stage("running pre-commit hooks")
     rc = run_cmd(
         ["python3", "-m", "pre_commit", "run", "--all-files"],
         log_file=precommit_log,
@@ -137,13 +155,14 @@ def _run_odoo_tests(commit_hash):
     test_log = RESULTS_DIR / f"{commit_hash}.test.log"
 
     try:
+        set_stage(f"creating {db_name}")
         subprocess.run(
             ["createdb", "-h", DB_HOST, "-U", DB_USER, db_name],
             env={**os.environ, **pg_env()},
             check=True,
         )
 
-        log.info(f"[{commit_hash[:8]}] Initializing base module...")
+        set_stage("installing base")
         subprocess.run(
             [
                 "python3", ODOO_BIN, "-c", ODOO_CONF, "-d", db_name,
@@ -152,6 +171,7 @@ def _run_odoo_tests(commit_hash):
             check=True,
         )
 
+        set_stage("activating it_IT")
         lang_script = (
             "lang = env['res.lang'].search([('code', '=', 'it_IT')], limit=1)\n"
             "if lang:\n    lang.active = True\n"
@@ -163,6 +183,7 @@ def _run_odoo_tests(commit_hash):
             capture_output=True,
         )
 
+        set_stage("resolving addon list")
         depends_raw = subprocess.run(
             [
                 "manifestoo", "--select-addons-dir", "/opt/odoo/addons",
@@ -184,7 +205,7 @@ def _run_odoo_tests(commit_hash):
         log.info(f"[{commit_hash[:8]}] {len(addons_list.split(','))} addons to test")
 
         if depends_list:
-            log.info(f"[{commit_hash[:8]}] Installing dependencies...")
+            set_stage(f"installing {len(depends_list.split(','))} dependencies")
             run_cmd(
                 [
                     "python3", ODOO_BIN, "-c", ODOO_CONF, "-d", db_name,
@@ -194,7 +215,7 @@ def _run_odoo_tests(commit_hash):
             )
 
         if addons_list:
-            log.info(f"[{commit_hash[:8]}] Running tests...")
+            set_stage(f"running tests on {len(addons_list.split(','))} addons")
             run_cmd(
                 [
                     "python3", ODOO_BIN, "-c", ODOO_CONF, "-d", db_name,
@@ -215,6 +236,7 @@ def _run_odoo_tests(commit_hash):
             pass
         raise
     finally:
+        set_stage(f"dropping {db_name}")
         subprocess.run(
             ["dropdb", "-h", DB_HOST, "-U", DB_USER, "--if-exists", db_name],
             env={**os.environ, **pg_env()},
@@ -229,16 +251,31 @@ def _write_init_status(init_log, status):
 def rebase_onto_target():
     """Rebase the current detached HEAD (PR head) onto a fresh origin/TARGET_BRANCH so
     the init test runs the PR's config changes on top of the latest dev, matching a
-    dump that may be newer than the PR's base. `git fetch --all` (top of run_test)
-    already refreshed the remote ref. Returns 'clean' or 'conflict'; on conflict the
-    rebase is aborted, restoring HEAD to the PR head."""
-    rc = subprocess.run(
-        ["git", "-C", str(REPO_DIR), "rebase", f"origin/{TARGET_BRANCH}"],
-    ).returncode
-    if rc == 0:
-        return "clean"
-    subprocess.run(["git", "-C", str(REPO_DIR), "rebase", "--abort"])
-    return "conflict"
+    dump that may be newer than the PR's base. `git fetch --all` (in _prepare_checkout)
+    already refreshed the remote ref.
+
+    Returns (status, output) where status is 'clean', 'conflict', or 'error'. Replaying
+    commits needs a committer identity, which a fresh clone has not got — pass one
+    inline rather than relying on container-level git config. Anything that is not a
+    real merge conflict is reported as 'error': calling it a conflict tells the author
+    to go fix a rebase that was never actually attempted."""
+    proc = subprocess.run(
+        [
+            "git", "-C", str(REPO_DIR),
+            "-c", "user.name=auto-testrunner",
+            "-c", "user.email=auto-testrunner@localhost",
+            "rebase", f"origin/{TARGET_BRANCH}",
+        ],
+        capture_output=True, text=True,
+    )
+    output = (proc.stdout or "") + (proc.stderr or "")
+    if proc.returncode == 0:
+        return "clean", output
+    conflicted = "CONFLICT" in output or "could not apply" in output
+    subprocess.run(
+        ["git", "-C", str(REPO_DIR), "rebase", "--abort"], capture_output=True
+    )
+    return ("conflict" if conflicted else "error"), output
 
 
 def changed_config_modules(commit_hash):
@@ -276,14 +313,14 @@ def _run_init_test(commit_hash, config_mods):
 
     # Grab a pre-warmed copy from the pool for an instant start; if the pool is empty,
     # fall back to an on-demand template copy so a run never blocks on an empty pool.
-    copy_db = claim_pool_db()
+    copy_db = claim_pool_db(on_wait=lambda w: set_stage(f"waiting for warm DB ({w}s)"))
     try:
         if copy_db:
-            log.info(f"[{commit_hash[:8]}] Init test: claimed pooled DB {copy_db}")
+            set_stage(f"claimed {copy_db}")
         else:
-            ensure_base_db()
+            ensure_base_db("test-01")
             copy_db = f"init_{commit_hash[:12]}"
-            log.info(f"[{commit_hash[:8]}] Init test: pool empty, creating on-demand copy {copy_db}")
+            set_stage(f"pool empty, copying template into {copy_db}")
             subprocess.run(
                 ["createdb", "-h", DB_HOST, "-U", DB_USER, "-T", TEST01_BASE_DB, copy_db],
                 env={**os.environ, **pg_env()},
@@ -294,6 +331,7 @@ def _run_init_test(commit_hash, config_mods):
         # that already exist (an XML-only change still needs -u). Config modules the PR
         # *adds* (not yet installed on the base) are installed instead with -i, so a
         # brand-new config_wf_* module is exercised too.
+        set_stage("diffing module versions")
         changed = set(detect_changed_modules(ODOO_INIT_CONF, copy_db))
         installed = installed_modules(copy_db)
         to_upgrade = sorted(changed | (config_mods & installed))
@@ -305,10 +343,7 @@ def _run_init_test(commit_hash, config_mods):
             _write_init_status(init_log, "OK")
             return
 
-        log.info(
-            f"[{commit_hash[:8]}] Init test: installing {len(to_install)}, "
-            f"upgrading {len(to_upgrade)} module(s)..."
-        )
+        set_stage(f"installing {len(to_install)} / upgrading {len(to_upgrade)} modules")
         with open(init_log, "ab") as f:
             f.write(f"INSTALL_MODULES: {','.join(to_install) or '(none)'}\n".encode())
             f.write(f"CHANGED_MODULES: {','.join(to_upgrade) or '(none)'}\n".encode())
@@ -334,84 +369,103 @@ def _run_init_test(commit_hash, config_mods):
         # Copies are single-use: -u mutates them (partially, even on failure), so a
         # used copy can never return to the pool — always drop; the warmer replenishes.
         if copy_db:
+            set_stage(f"dropping {copy_db}")
             subprocess.run(
                 ["dropdb", "-h", DB_HOST, "-U", DB_USER, "--if-exists", copy_db],
                 env={**os.environ, **pg_env()},
             )
 
 
-def run_test(commit_hash):
-    rdb.hset(WORKERS_KEY, WORKER_ID, commit_hash)
-    log.info(f"Starting test run for {commit_hash}")
+def _rsync_addons(source_dir=REPO_DIR):
+    """Mirror `source_dir` into ADDONS_DIR. Default caller is the PR checkout in
+    REPO_DIR; instances.sync_local() reuses this with an arbitrary local folder as the
+    source, same target and exclusions either way."""
+    subprocess.run(
+        [
+            "rsync", "-a", "--delete", "--exclude=.git", "--exclude=symple_addons",
+            str(source_dir) + "/", str(ADDONS_DIR) + "/",
+        ],
+        check=True,
+    )
 
+
+def _prepare_checkout(commit_hash, rsync_addons=True):
+    """Shared prologue for every task: put REPO_DIR on the PR head, and for the tasks
+    that run Odoo, mirror it into ADDONS_DIR. Each worker container owns a private
+    /opt/repo and /opt/odoo/addons and runs one task at a time, so tasks of the same
+    commit never collide here even though they run concurrently on different replicas."""
+    set_stage("fetching repo")
+    subprocess.run(["git", "-C", str(REPO_DIR), "fetch", "--all"], check=True)
+    subprocess.run(["git", "-C", str(REPO_DIR), "reset", "--hard", "HEAD"], check=True)
+    subprocess.run(["git", "-C", str(REPO_DIR), "checkout", "-f", commit_hash], check=True)
+    if rsync_addons:
+        set_stage("syncing addons")
+        _rsync_addons()
+    # GitHub outage workaround: skip pip installs temporarily
+    # subprocess.run(
+    #     "find /opt/odoo/addons -name 'requirements.txt' -not -path '*/symple_addons/*'"
+    #     " -exec pip install --no-cache-dir -r {} \\; 2>/dev/null || true",
+    #     shell=True,
+    # )
+    # subprocess.run(
+    #     ["pip", "install", "cryptography==37.0.0", "pyopenssl==22.0.0", "paramiko<3.0"],
+    #     check=True,
+    # )
+
+
+def run_tests_task(commit_hash):
+    _prepare_checkout(commit_hash)
+    _run_odoo_tests(commit_hash)
+
+
+def run_precommit_task(commit_hash):
+    # pre-commit reads REPO_DIR only, so skip the addons rsync entirely.
+    _prepare_checkout(commit_hash, rsync_addons=False)
     try:
-        subprocess.run(["git", "-C", str(REPO_DIR), "fetch", "--all"], check=True)
-        subprocess.run(["git", "-C", str(REPO_DIR), "reset", "--hard", "HEAD"], check=True)
-        subprocess.run(["git", "-C", str(REPO_DIR), "checkout", "-f", commit_hash], check=True)
-        subprocess.run(
-            [
-                "rsync", "-a", "--delete", "--exclude=.git", "--exclude=symple_addons",
-                str(REPO_DIR) + "/", str(ADDONS_DIR) + "/",
-            ],
-            check=True,
+        result = run_pre_commit(commit_hash)
+        log.info(f"[{commit_hash[:8]}] Pre-commit: {result}")
+    except Exception as pre_err:
+        log.error(f"[{commit_hash[:8]}] Pre-commit error: {pre_err}")
+        precommit_log = RESULTS_DIR / f"{commit_hash}.precommit.log"
+        with open(precommit_log, "ab") as f:
+            f.write(f"\nPRE_COMMIT_ERROR: {pre_err}\nPRE_COMMIT_STATUS: KO\n".encode())
+
+
+def run_init_task(commit_hash):
+    _prepare_checkout(commit_hash)
+    # Compute the PR's changed config modules BEFORE rebasing: it diffs explicit
+    # merge-base..commit_hash refs, so it stays correct regardless of HEAD. The set no
+    # longer gates the run (the init test is a fixture on every PR now) — it only scopes
+    # which config/ modules get -i / -u inside _run_init_test.
+    config_mods = changed_config_modules(commit_hash)
+    # Rebase the PR onto the latest dev so init runs against code that matches a
+    # (possibly newer) dump; conflicts fail the init test.
+    set_stage(f"rebasing onto origin/{TARGET_BRANCH}")
+    rebase, rebase_output = rebase_onto_target()
+    if rebase != "clean":
+        log.warning(f"[{commit_hash[:8]}] Init test: rebase onto {TARGET_BRANCH} -> {rebase}")
+        init_log = RESULTS_DIR / f"{commit_hash}.init.log"
+        reason = (
+            "PR conflicts with the latest dev; resolve before merge."
+            if rebase == "conflict"
+            else "The rebase could not be run at all; this is a testrunner problem, "
+            "not a problem with the PR."
         )
-        # GitHub outage workaround: skip pip installs temporarily
-        # subprocess.run(
-        #     "find /opt/odoo/addons -name 'requirements.txt' -not -path '*/symple_addons/*'"
-        #     " -exec pip install --no-cache-dir -r {} \\; 2>/dev/null || true",
-        #     shell=True,
-        # )
-        # subprocess.run(
-        #     ["pip", "install", "cryptography==37.0.0", "pyopenssl==22.0.0", "paramiko<3.0"],
-        #     check=True,
-        # )
+        with open(init_log, "ab") as f:
+            f.write(f"Rebase onto origin/{TARGET_BRANCH} failed: {rebase}. {reason}\n".encode())
+            f.write(b"\n--- git output ---\n")
+            f.write(rebase_output.encode())
+        _write_init_status(init_log, "KO")
+        return
+    # Re-sync the rebased tree so the init test reads the latest manifests and code
+    # (rebase mutated REPO_DIR only, not ADDONS_DIR).
+    set_stage("syncing addons")
+    _rsync_addons()
+    _run_init_test(commit_hash, config_mods)
 
-        _run_odoo_tests(commit_hash)
 
-        log.info(f"[{commit_hash[:8]}] Running pre-commit checks...")
-        try:
-            result = run_pre_commit(commit_hash)
-            log.info(f"[{commit_hash[:8]}] Pre-commit: {result}")
-        except Exception as pre_err:
-            log.error(f"[{commit_hash[:8]}] Pre-commit error: {pre_err}")
-            precommit_log = RESULTS_DIR / f"{commit_hash}.precommit.log"
-            with open(precommit_log, "ab") as f:
-                f.write(f"\nPRE_COMMIT_ERROR: {pre_err}\nPRE_COMMIT_STATUS: KO\n".encode())
-
-        if ENABLE_TEST01_INIT_TEST:
-            # Compute the PR's changed config modules BEFORE rebasing: it diffs explicit
-            # merge-base..commit_hash refs, so it stays correct regardless of HEAD.
-            config_mods = changed_config_modules(commit_hash)
-            if config_mods:
-                log.info(f"[{commit_hash[:8]}] config/ changes detected, running test-01 initialization test...")
-                # Rebase the PR onto the latest dev so init runs against code that
-                # matches a (possibly newer) dump; conflicts fail the init test.
-                rebase = rebase_onto_target()
-                if rebase != "clean":
-                    log.warning(f"[{commit_hash[:8]}] Init test: rebase onto {TARGET_BRANCH} -> {rebase}")
-                    init_log = RESULTS_DIR / f"{commit_hash}.init.log"
-                    with open(init_log, "ab") as f:
-                        f.write(
-                            f"Rebase onto origin/{TARGET_BRANCH} failed: {rebase}. "
-                            "PR conflicts with the latest dev; resolve before merge.\n".encode()
-                        )
-                    _write_init_status(init_log, "KO")
-                else:
-                    # Re-sync the rebased tree so the init test reads the latest
-                    # manifests and code (rebase mutated REPO_DIR only, not ADDONS_DIR).
-                    subprocess.run(
-                        [
-                            "rsync", "-a", "--delete", "--exclude=.git", "--exclude=symple_addons",
-                            str(REPO_DIR) + "/", str(ADDONS_DIR) + "/",
-                        ],
-                        check=True,
-                    )
-                    _run_init_test(commit_hash, config_mods)
-            else:
-                log.info(f"[{commit_hash[:8]}] No config/ changes, skipping test-01 initialization test")
-
-    except Exception as e:
-        log.error(f"[{commit_hash[:8]}] Run failed: {e}")
-        raise
-    finally:
-        rdb.hdel(WORKERS_KEY, WORKER_ID)
+TASK_RUNNERS = {
+    "tests": run_tests_task,
+    "precommit": run_precommit_task,
+    "init": run_init_task,
+}

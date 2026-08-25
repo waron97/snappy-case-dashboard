@@ -3,3 +3,4 @@ odoo-15-base
 .env
 __pycache__
 dump-test-01
+dump-test-02

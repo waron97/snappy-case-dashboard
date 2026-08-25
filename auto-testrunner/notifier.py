@@ -8,8 +8,15 @@ from ado import (
     post_pr_comment,
     upload_pr_attachment,
 )
-from config import DEVOPS_DRYRUN, RESULTS_DIR, STATE_TTL, rdb
-from runner import parse_init_result, parse_pre_commit_result, parse_test_result
+from config import DEVOPS_DRYRUN, MAX_TASK_ATTEMPTS, RESULTS_DIR, STATE_TTL, rdb
+from poller import enqueue_task
+from runner import (
+    parse_init_result,
+    parse_pre_commit_result,
+    parse_test_result,
+    task_log_paths,
+)
+from tasks import bump_attempts, iter_task_commits, live_jobs, mark_task, task_states
 
 log = logging.getLogger(__name__)
 
@@ -85,21 +92,33 @@ def notify_pr(commit_hash, force=False):
         return
 
     if not force:
+        # Both of these are terminal, not transient: mark notified so the messenger,
+        # which retries every MESSENGER_INTERVAL, stops reconsidering this commit.
         pr = fetch_pr_details(pr_id)
         if pr["status"] != "active":
             log.info(f"[{h8}] PR#{pr_id} is {pr['status']}, skipping notification")
+            mark_notified(commit_hash)
             return
         if pr["head"] != commit_hash:
             current = (pr["head"] or "unknown")[:8]
             log.info(f"[{h8}] PR#{pr_id} HEAD is now {current}, skipping stale notification")
+            mark_notified(commit_hash)
             return
 
-    test_status = parse_test_result(commit_hash)
     pre_commit_status = parse_pre_commit_result(commit_hash)
     pre_label = pre_commit_status.upper() if pre_commit_status else "N/A"
     pre_icon = (_PRE_COMMIT_ICON.get(pre_commit_status, "") + " ") if pre_commit_status else ""
-    test_icon = _TEST_ICON.get(test_status, "")
-    test_label = _TEST_STATUS_LABEL.get(test_status, test_status)
+
+    # The messenger reports as soon as every task is terminal, including a task that
+    # crashed before writing anything. Distinguish "no test log at all" (⚠️ Not run) from
+    # parse_test_result's "done" (it ran, but produced no runner summary line).
+    test_status = parse_test_result(commit_hash)
+    if (RESULTS_DIR / f"{commit_hash}.test.log").exists():
+        test_icon = _TEST_ICON.get(test_status, "")
+        test_label = _TEST_STATUS_LABEL.get(test_status, test_status)
+    else:
+        test_status = "unknown"  # so the install log gets attached below
+        test_icon, test_label = "⚠️", "Not run"
 
     lines = [
         f"### Automated Test Report [HEAD {h8}]",
@@ -110,11 +129,12 @@ def notify_pr(commit_hash, force=False):
         f"| Tests | {test_icon} {test_label} |",
     ]
 
+    # The init test runs on every PR now, so always render the row: a missing init.log
+    # means the task did not produce a result, which should be visible, not omitted.
     init_status = parse_init_result(commit_hash)
-    if init_status:
-        init_icon = _INIT_ICON.get(init_status, "")
-        init_label = _INIT_LABEL.get(init_status, init_status)
-        lines.append(f"| Initialization (live dump) | {init_icon} {init_label} |")
+    init_icon = _INIT_ICON.get(init_status, "⚠️")
+    init_label = _INIT_LABEL.get(init_status, "Not run")
+    lines.append(f"| Initialization (live dump) | {init_icon} {init_label} |")
 
     attachment_lines = []
 
@@ -172,3 +192,53 @@ def notify_pr(commit_hash, force=False):
     if not DEVOPS_DRYRUN:
         mark_notified(commit_hash)
     log.info(f"[{h8}] Posted test result comment on PR#{pr_id}")
+
+
+def dispatch_ready():
+    """Post the report for every commit whose whole task set has finished.
+
+    Workers each run a single task and no longer notify; this runs as a thread on the
+    single control replica, so exactly one process ever assembles and posts a comment,
+    and only once all of the commit's tasks are terminal (never a partial report)."""
+    for commit_hash in iter_task_commits():
+        if has_notified(commit_hash):
+            continue
+        states = task_states(commit_hash)
+        if not states or any(s != "done" for s in states.values()):
+            continue
+        try:
+            notify_pr(commit_hash)
+        except Exception as e:
+            # Transient (ADO hiccup): leave it unmarked so the next pass retries.
+            log.error(f"[{commit_hash[:8]}] Notification error: {e}")
+
+
+def reap_dead_tasks():
+    """Requeue tasks whose worker died mid-run.
+
+    A SIGKILLed worker never marks its task done, which would leave dispatch_ready
+    waiting on that commit forever. live_jobs() drops workers whose heartbeat lapsed;
+    any task still 'running' but held by no live worker is retried. Its partial logs are
+    deleted first, otherwise task_result_exists would short-circuit the retry."""
+    running = {
+        (j.get("commit"), j.get("task")) for j in live_jobs().values()
+    }
+    for commit_hash in iter_task_commits():
+        for task, state in task_states(commit_hash).items():
+            if state != "running" or (commit_hash, task) in running:
+                continue
+            attempts = bump_attempts(commit_hash, task)
+            if attempts > MAX_TASK_ATTEMPTS:
+                # Give up rather than loop forever: mark done so the report goes out,
+                # with the missing log rendering as "Not run".
+                mark_task(commit_hash, task, "done")
+                log.error(
+                    f"[{commit_hash[:8]}] {task} died {attempts} times, giving up"
+                )
+                continue
+            for p in task_log_paths(commit_hash, task):
+                p.unlink(missing_ok=True)
+            enqueue_task(commit_hash, task, force=True)
+            log.warning(
+                f"[{commit_hash[:8]}] {task} worker died, requeued (attempt {attempts})"
+            )

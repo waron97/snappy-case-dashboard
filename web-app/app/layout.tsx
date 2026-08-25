@@ -1,44 +1,23 @@
 import '@mantine/core/styles.css';
-import '@mantine/dates/styles.css';
-import '@xyflow/react/dist/style.css';
 
 import { Metadata } from 'next';
 import { JetBrains_Mono } from 'next/font/google';
-import {
-    Box,
-    ColorSchemeScript,
-    Container,
-    Group,
-    mantineHtmlProps,
-    MantineProvider,
-    Title,
-} from '@mantine/core';
-import CredentialsModal from '@/components/CredentialsModal';
+import { Box, ColorSchemeScript, Container, Group, mantineHtmlProps, MantineProvider } from '@mantine/core';
 import HeaderNav from '@/components/HeaderNav';
-import OdooNavigateModal from '@/components/OdooNavigateModal';
 import { QueryProvider } from '@/components/QueryProvider';
 import { theme } from '../theme';
-import { getCredentials } from './credentials-reader';
 
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'] });
 
-const db = process.env.ODOO_DB;
-const prefix = db === 'sorgenia-test-02' ? '[T02] ' : db === 'sorgenia-test-01' ? '[T01] ' : '';
-
 export const metadata: Metadata = {
     title: {
-        template: `${prefix}%s`,
-        default: `${prefix}Snappy`,
+        template: '%s',
+        default: 'Snappy',
     },
-    description: 'Case management dashboard',
+    description: 'Test-runner control panel',
 };
 
-const showDevops = process.env.ENABLE_DEVOPS === 'true';
-const perUserAuth = process.env.ENABLE_PER_USER_AUTH !== '0';
-
-export default async function RootLayout({ children }: { children: any }) {
-    const credentials = await getCredentials();
-
+export default function RootLayout({ children }: { children: any }) {
     return (
         <html lang="en" {...mantineHtmlProps} className={jetbrainsMono.className}>
             <head>
@@ -78,39 +57,13 @@ export default async function RootLayout({ children }: { children: any }) {
                                                 />
                                             </a>
                                         </Group>
-                                        <HeaderNav showDevops={showDevops} />
-                                        <Group justify="flex-end">
-                                            {perUserAuth && <CredentialsModal currentValues={credentials} />}
-                                        </Group>
+                                        <HeaderNav />
+                                        <Group justify="flex-end" />
                                     </div>
                                 </Container>
                             </header>
                         </Box>
-                        {credentials === null && (
-                            <Box
-                                style={{
-                                    position: 'fixed',
-                                    inset: 0,
-                                    zIndex: 100,
-                                    backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    flexDirection: 'column',
-                                    gap: '1rem',
-                                }}
-                            >
-                                <Title order={2} c="white">
-                                    Please Configure Your Credentials
-                                </Title>
-                                <Title order={4} c="dimmed">
-                                    Click the settings icon (⚙️) in the top right to configure your
-                                    Odoo credentials.
-                                </Title>
-                            </Box>
-                        )}
-                        <OdooNavigateModal />
-                        {credentials !== null && children}
+                        {children}
                     </QueryProvider>
                 </MantineProvider>
             </body>

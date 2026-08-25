@@ -10,35 +10,41 @@ services:
       - /dev/null:/etc/nginx/conf.d/default.conf
     depends_on:
       - web
-      - lsp-server
 
   web:
     build:
       context: ./web-app
-      args:
-        ODOO_URL: ${ODOO_URL}
     restart: unless-stopped
     env_file:
       - ./.env
     environment:
-      - ENABLE_DEVOPS=true
-      - ENABLE_PER_USER_AUTH=1
       - TESTRUNNER_API_URL=http://testrunner-control:8765
       - RESULTS_DIR=/results
       - REDIS_URL=redis://redis:6379
     volumes:
       - test_results:/results
 
-  lsp-server:
-    build: ./lsp-server
-    restart: unless-stopped
-
   postgres:
     image: postgres:17
+    shm_size: 1gb
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=12GB"
+      - "-c"
+      - "effective_cache_size=32GB"
+      - "-c"
+      - "maintenance_work_mem=1GB"
+      - "-c"
+      - "work_mem=32MB"
+      - "-c"
+      - "max_connections=200"
     environment:
       POSTGRES_USER: odoo
       POSTGRES_PASSWORD: odoo
       POSTGRES_DB: odoo_base
+    ports:
+      - "5432:5432"
     volumes:
       - /mnt/sda1/pg_testrunner_data:/var/lib/postgresql/data
     healthcheck:
@@ -64,9 +70,14 @@ services:
       - REDIS_URL=redis://redis:6379
       - RESULTS_DIR=/results
       - ENABLE_TEST01_INIT_TEST=1
+      - TEST01_POOL_SIZE=5
+    ports:
+      - "8069:8069"
     volumes:
       - test_results:/results
       - ./dump-test-01:/opt/dump-test-01:ro
+      - ./dump-test-02:/opt/dump-test-02:ro
+      - ${LOCAL_ADDONS_HOST_PATH}:/opt/local-code:ro
 
   testrunner-worker:
     build: ./auto-testrunner
@@ -85,7 +96,7 @@ services:
     volumes:
       - test_results:/results
     deploy:
-      replicas: 2
+      replicas: 3
 
 volumes:
   test_results:

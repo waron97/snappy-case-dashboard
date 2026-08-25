@@ -3,47 +3,8 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Anchor, Badge, Button, Container, Group, Space, Table, Text, Title } from '@mantine/core';
-import { fetchPrs, InitStatus, PreCommitStatus, PrRecord, PrStatus, triggerDiscover } from '../actions';
-
-const STATUS_COLOR: Record<PrStatus, string> = {
-    passed: 'green',
-    failed: 'red',
-    unknown: 'orange',
-    done: 'teal',
-    running: 'yellow',
-    queued: 'blue',
-    pending: 'gray',
-};
-
-const STATUS_LABEL: Record<PrStatus, string> = {
-    passed: 'All tests passed',
-    failed: 'Test failures detected',
-    unknown: 'Unknown failure',
-    done: 'Done',
-    running: 'Running',
-    queued: 'Queued',
-    pending: 'Pending',
-};
-
-const PRE_COMMIT_COLOR: Record<PreCommitStatus, string> = {
-    ok: 'green',
-    ko: 'red',
-};
-
-const PRE_COMMIT_LABEL: Record<PreCommitStatus, string> = {
-    ok: 'pre-commit OK',
-    ko: 'pre-commit KO',
-};
-
-const INIT_COLOR: Record<InitStatus, string> = {
-    ok: 'green',
-    ko: 'red',
-};
-
-const INIT_LABEL: Record<InitStatus, string> = {
-    ok: 'init OK',
-    ko: 'init KO',
-};
+import { TASK_NAMES, TaskBadge } from '@/components/TaskBadge';
+import { fetchPrs, PrRecord, triggerDiscover } from '../actions';
 
 export default function PrListPage() {
     const queryClient = useQueryClient();
@@ -132,32 +93,18 @@ export default function PrListPage() {
                                     </Text>
                                 </Table.Td>
                                 <Table.Td>
-                                    <Group gap="xs" wrap="nowrap">
-                                        <Badge
-                                            color={STATUS_COLOR[pr.status]}
-                                            variant="light"
-                                            size="sm"
-                                        >
-                                            {STATUS_LABEL[pr.status]}
-                                        </Badge>
-                                        {pr.preCommitStatus && (
-                                            <Badge
-                                                color={PRE_COMMIT_COLOR[pr.preCommitStatus]}
-                                                variant="outline"
-                                                size="sm"
-                                            >
-                                                {PRE_COMMIT_LABEL[pr.preCommitStatus]}
-                                            </Badge>
-                                        )}
-                                        {pr.initStatus && (
-                                            <Badge
-                                                color={INIT_COLOR[pr.initStatus]}
-                                                variant="outline"
-                                                size="sm"
-                                            >
-                                                {INIT_LABEL[pr.initStatus]}
-                                            </Badge>
-                                        )}
+                                    {/* One badge per task. The old single "all tests
+                                        passed" badge is gone: it only ever restated the
+                                        tests result, which the tests badge now carries. */}
+                                    <Group gap="xs">
+                                        {TASK_NAMES.map((task) => (
+                                            <TaskBadge
+                                                key={task}
+                                                task={task}
+                                                state={pr.tasks?.[task]}
+                                                pr={pr}
+                                            />
+                                        ))}
                                     </Group>
                                 </Table.Td>
                             </Table.Tr>
