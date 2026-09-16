@@ -3,7 +3,10 @@ FROM waron97/testrunner
 USER root
 
 RUN apt-get update && apt-get install -y git openssh-client rsync && rm -rf /var/lib/apt/lists/*
-RUN pip3 install redis requests flask
+RUN pip3 install redis requests flask \
+    opentelemetry-api opentelemetry-sdk opentelemetry-exporter-otlp-proto-http \
+    opentelemetry-instrumentation-psycopg2 opentelemetry-instrumentation-requests \
+    opentelemetry-instrumentation-urllib3
 
 RUN mkdir -p /home/odoo/.ssh
 COPY ./ssh-key /home/odoo/.ssh/id_rsa
@@ -24,13 +27,14 @@ COPY ./base_db.py /opt/base_db.py
 COPY ./upgrade.py /opt/upgrade.py
 COPY ./tasks.py /opt/tasks.py
 COPY ./instances.py /opt/instances.py
+COPY ./profiling /opt/profiling
 RUN mkdir -p /opt/repo /results \
     && chmod +x /opt/startup.sh \
     && chown odoo:odoo /opt/startup.sh /opt/config.py /opt/ado.py /opt/runner.py \
                        /opt/notifier.py /opt/poller.py /opt/api.py /opt/orchestrator.py \
                        /opt/base_db.py /opt/upgrade.py /opt/tasks.py /opt/instances.py \
                        /opt/repo /results \
-    && chown -R odoo:odoo /opt/odoo/addons
+    && chown -R odoo:odoo /opt/odoo/addons /opt/profiling
 
 USER odoo
 ENTRYPOINT ["/opt/startup.sh"]

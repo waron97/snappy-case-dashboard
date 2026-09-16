@@ -245,7 +245,12 @@ def api_instance_attach():
             return jsonify({"error": f"copy {name!r} is still being created"}), 409
         return jsonify({"error": f"no such copy {name!r}"}), 404
     try:
-        instances.attach(db_name, install=body.get("install") or None, upgrade=body.get("upgrade") or None)
+        instances.attach(
+            db_name,
+            install=body.get("install") or None,
+            upgrade=body.get("upgrade") or None,
+            profile=body.get("profile"),
+        )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     return jsonify(instances.status())
@@ -255,7 +260,17 @@ def api_instance_attach():
 def api_instance_restart():
     body = request.get_json(force=True, silent=True) or {}
     try:
-        instances.restart(install=body.get("install") or None, upgrade=body.get("upgrade") or None)
+        # Pass install/upgrade through as-is rather than `or None`-collapsing an explicit ""
+        # to None: instances.restart() treats None as "keep the last-used value", so
+        # collapsing an intentionally-cleared field to None made it indistinguishable from
+        # not specifying the field at all, silently re-applying the previous -u/-i on every
+        # restart no matter what the UI's field actually showed. A genuinely omitted key
+        # still comes back from body.get() as None, so "keep previous" still works for that.
+        instances.restart(
+            install=body.get("install"),
+            upgrade=body.get("upgrade"),
+            profile=body.get("profile"),
+        )
     except RuntimeError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:

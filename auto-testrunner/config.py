@@ -127,3 +127,9 @@ INSTANCE_LOG_PATH = Path("/tmp/odoo-instance.log")
 # discovery just reports no candidates rather than erroring.
 LOCAL_CODE_ROOT = Path("/opt/local-code")
 LOCAL_SCAN_MAX_DEPTH = 6
+
+# Opt-in request tracing for the instance (see auto-testrunner/profiling/). Jaeger isn't
+# always running (it's a docker-compose "debug" profile service), so these are only read
+# when tracing is actually enabled for an attach.
+OTEL_EXPORTER_OTLP_ENDPOINT = os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT", "http://jaeger:4318")
+JAEGER_UI_URL = os.environ.get("JAEGER_UI_URL", "http://localhost:16686")

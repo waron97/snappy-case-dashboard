@@ -13,6 +13,7 @@ import {
     Loader,
     Select,
     Space,
+    Switch,
     Table,
     Text,
     TextInput,
@@ -41,6 +42,8 @@ import {
     syncInstance,
     syncLocalInstance,
 } from '../actions';
+
+const DEFAULT_TRACE_METHODS = 'read';
 
 function formatCreatedAt(unixSeconds: number): string {
     return new Date(unixSeconds * 1000).toLocaleString();
@@ -209,7 +212,12 @@ export default function InstancesPage() {
     async function handleAttachCopy(name: string) {
         setAttachingCopy(name);
         setInstanceError(null);
-        const result = await attachInstance(name, installField || undefined, upgradeField || undefined);
+        const result = await attachInstance(
+            name,
+            installField || undefined,
+            upgradeField || undefined,
+            currentProfile()
+        );
         if (!result.ok) {
             setInstanceError(result.error);
         } else {
@@ -222,6 +230,9 @@ export default function InstancesPage() {
 
     const [installField, setInstallField] = useState('');
     const [upgradeField, setUpgradeField] = useState('');
+    const [tracingEnabled, setTracingEnabled] = useState(false);
+    const [tracingModel, setTracingModel] = useState('');
+    const [tracingMethods, setTracingMethods] = useState(DEFAULT_TRACE_METHODS);
     const lastDbRef = useRef<string | null | undefined>(undefined);
 
     useEffect(() => {
@@ -230,12 +241,21 @@ export default function InstancesPage() {
         }
         // Only reset the fields when the attached copy itself changes (attach/detach),
         // not on every poll — otherwise in-progress edits would be clobbered every 3s.
+        // Profiling config resets alongside db on detach too (see instances.py), so it
+        // belongs in the same guard.
         if (instance.db !== lastDbRef.current) {
             lastDbRef.current = instance.db;
             setInstallField(instance.install ?? '');
             setUpgradeField(instance.upgrade ?? '');
+            setTracingEnabled(instance.profile?.enabled ?? false);
+            setTracingModel(instance.profile?.model ?? '');
+            setTracingMethods(instance.profile?.methods ?? DEFAULT_TRACE_METHODS);
         }
     }, [instance]);
+
+    function currentProfile() {
+        return { enabled: tracingEnabled, model: tracingModel, methods: tracingMethods };
+    }
 
     const [instanceError, setInstanceError] = useState<string | null>(null);
     const [restarting, setRestarting] = useState(false);
@@ -247,7 +267,11 @@ export default function InstancesPage() {
     async function handleRestart() {
         setRestarting(true);
         setInstanceError(null);
-        const result = await restartInstance(installField || undefined, upgradeField || undefined);
+        // Send the field's literal current value, including "" for a cleared field — the
+        // field is always populated from instance state, so there's no "unset" case to
+        // collapse to undefined here, and doing so anyway would make a cleared field
+        // indistinguishable from an unspecified one and silently re-apply the last -u/-i.
+        const result = await restartInstance(installField, upgradeField, currentProfile());
         if (!result.ok) {
             setInstanceError(result.error);
         } else {
@@ -358,7 +382,12 @@ export default function InstancesPage() {
                                         </Group>
                                     </Badge>
                                 ) : (
-                                    <Badge color={s.ready ? 'green' : 'gray'} variant="light" size="sm" tt="none">
+                                    <Badge
+                                        color={s.ready ? 'green' : 'gray'}
+                                        variant="light"
+                                        size="sm"
+                                        tt="none"
+                                    >
                                         {s.ready ? 'ready' : 'not ready'}
                                     </Badge>
                                 )}
@@ -511,11 +540,18 @@ export default function InstancesPage() {
                             {instance?.db ?? '—'}
                         </Text>
                     </Group>
-                    {instance?.url && (
-                        <Anchor href={instance.url} target="_blank" size="sm">
-                            Open Odoo (localhost:8069)
-                        </Anchor>
-                    )}
+                    <Group gap="md">
+                        {instance?.profile?.enabled && instance.jaegerUrl && (
+                            <Anchor href={instance.jaegerUrl} target="_blank" size="sm">
+                                Open Jaeger ↗
+                            </Anchor>
+                        )}
+                        {instance?.url && (
+                            <Anchor href={instance.url} target="_blank" size="sm">
+                                Open Odoo (localhost:8069)
+                            </Anchor>
+                        )}
+                    </Group>
                 </Group>
 
                 <Space h={8} />
@@ -523,7 +559,11 @@ export default function InstancesPage() {
                     <Text size="sm" c="dimmed">
                         Synced:{' '}
                         {instance?.syncedPr ? (
-                            <Anchor href={`/devops/${instance.syncedCommit}`} size="sm" ff="monospace">
+                            <Anchor
+                                href={`/devops/${instance.syncedCommit}`}
+                                size="sm"
+                                ff="monospace"
+                            >
                                 #{instance.syncedPr} ({instance.syncedCommit?.slice(0, 8)})
                             </Anchor>
                         ) : instance?.syncedLocal ? (
@@ -557,7 +597,12 @@ export default function InstancesPage() {
                         w={320}
                         searchable
                     />
-                    <Button size="sm" loading={syncing} disabled={!selectedPrId} onClick={handleSync}>
+                    <Button
+                        size="sm"
+                        loading={syncing}
+                        disabled={!selectedPrId}
+                        onClick={handleSync}
+                    >
                         Sync
                     </Button>
                 </Group>
@@ -566,7 +611,11 @@ export default function InstancesPage() {
                 <Group align="flex-end">
                     <Select
                         label="Sync local folder"
-                        placeholder={localFolderOptions.length ? 'pick a folder' : 'none found (mount not configured?)'}
+                        placeholder={
+                            localFolderOptions.length
+                                ? 'pick a folder'
+                                : 'none found (mount not configured?)'
+                        }
                         data={localFolderOptions}
                         value={selectedLocalPath}
                         onChange={setSelectedLocalPath}
@@ -613,6 +662,39 @@ export default function InstancesPage() {
                         Suggest -u
                     </Button>
                 </Group>
+
+                <Space h={16} />
+                <Switch
+                    label="Request tracing"
+                    description="Traces ORM calls and every computed field they evaluate (e.g. helpdesk.ticket.read) via OpenTelemetry — view in Jaeger. Applied on the next Attach/Restart."
+                    checked={tracingEnabled}
+                    onChange={(e) => setTracingEnabled(e.currentTarget.checked)}
+                />
+                {tracingEnabled && (
+                    <>
+                        <Space h={8} />
+                        <Group align="flex-end">
+                            <TextInput
+                                label="Model"
+                                description="blank = every model"
+                                placeholder="helpdesk.ticket"
+                                value={tracingModel}
+                                onChange={(e) => setTracingModel(e.currentTarget.value)}
+                                size="sm"
+                                w={220}
+                            />
+                            <TextInput
+                                label="Methods"
+                                description="comma-separated, blank = every DB-touching method"
+                                placeholder="read"
+                                value={tracingMethods}
+                                onChange={(e) => setTracingMethods(e.currentTarget.value)}
+                                size="sm"
+                                w={220}
+                            />
+                        </Group>
+                    </>
+                )}
 
                 <Space h={16} />
                 <Text size="xs" c="dimmed">

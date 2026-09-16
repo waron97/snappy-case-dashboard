@@ -73,7 +73,10 @@ export async function triggerRecheck(hash: string): Promise<void> {
 }
 
 export async function triggerRecheckByPrId(prId: number): Promise<void> {
-    const res = await fetch(`${TESTRUNNER}/recheck/pr/${prId}`, { method: 'POST', cache: 'no-store' });
+    const res = await fetch(`${TESTRUNNER}/recheck/pr/${prId}`, {
+        method: 'POST',
+        cache: 'no-store',
+    });
     if (!res.ok) {
         throw new Error(`/recheck/pr returned ${res.status}`);
     }
@@ -137,7 +140,10 @@ export async function fetchPoolStatus(): Promise<PoolStatus> {
     return { ready, building };
 }
 
-export async function readLog(hash: string, type: 'install' | 'test' | 'init'): Promise<string | null> {
+export async function readLog(
+    hash: string,
+    type: 'install' | 'test' | 'init'
+): Promise<string | null> {
     const filePath = path.join(RESULTS, `${hash}.${type}.log`);
     try {
         return await fs.readFile(filePath, 'utf-8');
@@ -180,7 +186,11 @@ export async function triggerNotify(hash: string): Promise<void> {
  */
 export type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
-async function callApi<T>(url: string, init: RequestInit, fallback: string): Promise<ActionResult<T>> {
+async function callApi<T>(
+    url: string,
+    init: RequestInit,
+    fallback: string
+): Promise<ActionResult<T>> {
     try {
         const res = await fetch(url, { cache: 'no-store', ...init });
         if (!res.ok) {
@@ -209,7 +219,11 @@ export async function fetchSources(): Promise<Source[]> {
 }
 
 export async function resetSource(source: string): Promise<ActionResult<{ resetting: string }>> {
-    return callApi(`${TESTRUNNER}/sources/${source}/reset`, { method: 'POST' }, `/sources/${source}/reset failed`);
+    return callApi(
+        `${TESTRUNNER}/sources/${source}/reset`,
+        { method: 'POST' },
+        `/sources/${source}/reset failed`
+    );
 }
 
 export type CopyStatus = 'creating' | 'ready' | 'failed';
@@ -230,7 +244,10 @@ export async function fetchCopies(): Promise<Copy[]> {
     return res.json();
 }
 
-export async function createCopy(name: string, source: string): Promise<ActionResult<{ created: string }>> {
+export async function createCopy(
+    name: string,
+    source: string
+): Promise<ActionResult<{ created: string }>> {
     return callApi(
         `${TESTRUNNER}/copies`,
         {
@@ -243,8 +260,30 @@ export async function createCopy(name: string, source: string): Promise<ActionRe
 }
 
 export async function deleteCopy(name: string): Promise<ActionResult<{ deleted: string }>> {
-    return callApi(`${TESTRUNNER}/copies/${name}`, { method: 'DELETE' }, `/copies/${name} (delete) failed`);
+    return callApi(
+        `${TESTRUNNER}/copies/${name}`,
+        { method: 'DELETE' },
+        `/copies/${name} (delete) failed`
+    );
 }
+
+/**
+ * Opt-in OpenTelemetry request tracing for the instance (see
+ * auto-testrunner/profiling/sitecustomize.py), viewed in Jaeger rather than a page here.
+ * Traces ORM method calls (odoo.models.BaseModel.<method>), so it fires for a call from the
+ * web client, an external XML-RPC/JSON-RPC caller, or internal Python code alike.
+ */
+export type ProfileConfig = {
+    enabled: boolean;
+    /** Odoo model name (e.g. "helpdesk.ticket"); blank traces every model. */
+    model: string;
+    /**
+     * Comma-separated ORM method names (e.g. "read,search_read"); blank traces every
+     * BaseModel method that can plausibly touch the DB (pure in-memory recordset helpers
+     * like browse/sudo/filtered are always excluded, regardless of this setting).
+     */
+    methods: string;
+};
 
 export type InstanceStatus = {
     status: 'stopped' | 'starting' | 'running' | 'error';
@@ -258,6 +297,10 @@ export type InstanceStatus = {
     startedAt: number | null;
     error: string | null;
     url: string | null;
+    profile: ProfileConfig;
+    /** Where to view captured traces once profile.enabled — Jaeger isn't always running (it's
+     * a docker-compose "debug" profile service), so this is just a link, not a health check. */
+    jaegerUrl: string;
 };
 
 export async function fetchInstance(): Promise<InstanceStatus> {
@@ -271,14 +314,15 @@ export async function fetchInstance(): Promise<InstanceStatus> {
 export async function attachInstance(
     name: string,
     install?: string,
-    upgrade?: string
+    upgrade?: string,
+    profile?: Partial<ProfileConfig>
 ): Promise<ActionResult<InstanceStatus>> {
     return callApi(
         `${TESTRUNNER}/instance/attach`,
         {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, install, upgrade }),
+            body: JSON.stringify({ name, install, upgrade, profile }),
         },
         '/instance/attach failed'
     );
@@ -286,14 +330,15 @@ export async function attachInstance(
 
 export async function restartInstance(
     install?: string,
-    upgrade?: string
+    upgrade?: string,
+    profile?: Partial<ProfileConfig>
 ): Promise<ActionResult<InstanceStatus>> {
     return callApi(
         `${TESTRUNNER}/instance/restart`,
         {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ install, upgrade }),
+            body: JSON.stringify({ install, upgrade, profile }),
         },
         '/instance/restart failed'
     );
@@ -303,7 +348,9 @@ export async function detachInstance(): Promise<ActionResult<InstanceStatus>> {
     return callApi(`${TESTRUNNER}/instance/detach`, { method: 'POST' }, '/instance/detach failed');
 }
 
-export async function syncInstance(prId: number): Promise<ActionResult<{ prId: number; commit: string }>> {
+export async function syncInstance(
+    prId: number
+): Promise<ActionResult<{ prId: number; commit: string }>> {
     return callApi(
         `${TESTRUNNER}/instance/sync`,
         {
@@ -345,5 +392,9 @@ export async function fetchInstanceLog(): Promise<{ log: string }> {
 }
 
 export async function fetchSuggestedUpgrades(): Promise<ActionResult<{ modules: string[] }>> {
-    return callApi(`${TESTRUNNER}/instance/suggested-upgrades`, {}, '/instance/suggested-upgrades failed');
+    return callApi(
+        `${TESTRUNNER}/instance/suggested-upgrades`,
+        {},
+        '/instance/suggested-upgrades failed'
+    );
 }

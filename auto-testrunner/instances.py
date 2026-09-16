@@ -15,6 +15,7 @@ import subprocess
 import sys
 import threading
 import time
+from pathlib import Path
 
 import requests
 
@@ -26,9 +27,11 @@ from config import (
     INSTANCE_LOG_PATH,
     LOCAL_CODE_ROOT,
     LOCAL_SCAN_MAX_DEPTH,
+    JAEGER_UI_URL,
     ODOO_BIN,
     ODOO_CONF,
     ODOO_PORT,
+    OTEL_EXPORTER_OTLP_ENDPOINT,
     REPO_DIR,
     TARGET_BRANCH,
 )
@@ -42,6 +45,15 @@ HEALTH_TIMEOUT = 3600  # generous backstop against a genuine hang, not a normal-
 # this only exists to eventually give up on a process that's alive but truly stuck.
 STOP_TIMEOUT = 15  # seconds to wait for a graceful terminate before kill
 
+# Opt-in request tracing (see profiling/sitecustomize.py): traces ORM method calls
+# (odoo.models.BaseModel.<method>), so it fires regardless of whether the call came from the
+# web client, an external XML-RPC/JSON-RPC caller, or internal Python code. "methods"
+# defaults to "read" to match the symptom this was built for; clear it to trace every
+# BaseModel method that can plausibly touch the DB (sitecustomize.py excludes the zero-IO
+# recordset helpers like browse/sudo/filtered), or clear "model" too to do that across every
+# model.
+PROFILE_DEFAULTS = {"enabled": False, "model": "", "methods": "read"}
+
 _lock = threading.Lock()
 _proc = None  # subprocess.Popen of the current odoo-bin, or None
 _state = {
@@ -54,6 +66,7 @@ _state = {
     "syncedLocal": None,  # relative path under LOCAL_CODE_ROOT, mutually exclusive with syncedPr
     "startedAt": None,
     "error": None,
+    "profile": dict(PROFILE_DEFAULTS),
 }
 
 
@@ -61,6 +74,8 @@ def status():
     with _lock:
         view = dict(_state)
     view["url"] = f"http://localhost:{ODOO_PORT}" if view["status"] == "running" else None
+    # Static regardless of instance/Jaeger state — the UI only shows it when profile.enabled.
+    view["jaegerUrl"] = JAEGER_UI_URL
     return view
 
 
@@ -117,14 +132,20 @@ def _wait_healthy():
             _state["error"] = f"Odoo did not answer :{ODOO_PORT} without a server error within {HEALTH_TIMEOUT}s"
 
 
-def attach(db_name, install=None, upgrade=None):
+def attach(db_name, install=None, upgrade=None, profile=None):
     """Stop whatever's running and start odoo-bin against db_name, then return
     immediately with status 'starting' — -i/-u are applied at startup before Odoo opens
     its port, and a large upgrade (e.g. -u all) can legitimately take far longer than
     any single HTTP request should stay open for (Flask's dev server is also
     single-threaded, so blocking here would stall every other request too). The health
     check runs in the background instead; poll GET /instance to see it resolve to
-    'running' or 'error'."""
+    'running' or 'error'.
+
+    `profile` is an optional partial dict ({"enabled": ..., "model": ..., "methods": ...})
+    merged over the last-used profiling config — None (or a partial dict) preserves
+    whatever wasn't given, same "don't silently clear it" convention as install/upgrade in
+    restart() below, just merged per-key instead of whole-value since this is UI toggle
+    state rather than a one-shot CLI flag."""
     global _proc
     with _lock:
         _stop_locked()
@@ -138,28 +159,50 @@ def attach(db_name, install=None, upgrade=None):
         # side effects on test data and exhausting Odoo's own internal db connection
         # pool (default 64) well before Postgres's own max_connections is anywhere
         # near full.
+        # Odoo's default memory cap (~2/2.5 GB soft/hard via RLIMIT_AS) is sized for a
+        # prefork worker, not a single process loading this monorepo's full ~480-module
+        # registry plus first-time asset compilation — it trips MemoryError mid-request
+        # well before the host is under any real memory pressure. Same fix as
+        # base_db.generate_init_conf() applies to workers' -u runs, via CLI flags here
+        # instead of the shared odoo.conf since this is control's own one-off process.
         cmd = [
             sys.executable, "-u", ODOO_BIN, "-c", ODOO_CONF, "-d", db_name,
             "--max-cron-threads=0",
+            "--limit-memory-soft=0", "--limit-memory-hard=0",
         ]
         if install:
             cmd += ["-i", install]
         if upgrade:
             cmd += ["-u", upgrade]
+
+        profile_cfg = {**_state["profile"], **(profile or {})}
+        env = None
+        if profile_cfg["enabled"]:
+            # Only touch the child's environment at all when tracing is on: the unprofiled
+            # path must inherit the parent environment exactly as before (env=None does
+            # this natively), so a profiling bug in this branch can't affect normal usage.
+            env = dict(os.environ)
+            env["ODOO_PROFILE_ENABLED"] = "1"
+            env["ODOO_PROFILE_MODEL"] = profile_cfg["model"] or ""
+            env["ODOO_PROFILE_METHODS"] = profile_cfg["methods"] or ""
+            env["OTEL_EXPORTER_OTLP_ENDPOINT"] = OTEL_EXPORTER_OTLP_ENDPOINT
+            profiling_dir = str(Path(__file__).resolve().parent / "profiling")
+            env["PYTHONPATH"] = os.pathsep.join(filter(None, [profiling_dir, env.get("PYTHONPATH", "")]))
+
         _state.update(
             status="starting", db=db_name, install=install, upgrade=upgrade,
-            error=None, startedAt=time.time(),
+            error=None, startedAt=time.time(), profile=profile_cfg,
         )
         with open(INSTANCE_LOG_PATH, "wb") as log_f:
             # The child inherits its own duplicated fd, so closing our end (via the
             # `with` block) as soon as Popen returns doesn't affect its writes and
             # avoids leaking a parent-side fd on every attach/restart.
-            _proc = subprocess.Popen(cmd, stdout=log_f, stderr=subprocess.STDOUT)
+            _proc = subprocess.Popen(cmd, stdout=log_f, stderr=subprocess.STDOUT, env=env)
         threading.Thread(target=_watch, args=(_proc,), daemon=True, name="instance-watch").start()
         threading.Thread(target=_wait_healthy, daemon=True, name="instance-health").start()
 
 
-def restart(install=None, upgrade=None):
+def restart(install=None, upgrade=None, profile=None):
     """Re-sync from whichever source is currently active — the PR's latest head commit,
     or the mounted local folder — before relaunching, so a restart always reflects the
     freshest code rather than whatever was on disk at the last explicit sync. (For a PR,
@@ -167,7 +210,8 @@ def restart(install=None, upgrade=None):
     pushed since the last sync — the same "pull fresh data" semantics as the initial
     sync, not just a fixed commit replay.) None for install/upgrade keeps the last-used
     value, so a plain restart doesn't silently clear it — this doubles as the UI's
-    'apply -u' button."""
+    'apply -u' button. profile=None keeps the last-used profiling config too — attach()
+    itself merges it over _state["profile"], so there's nothing to re-fetch here."""
     with _lock:
         db = _state["db"]
         if not db:
@@ -184,13 +228,18 @@ def restart(install=None, upgrade=None):
     elif local_path is not None:
         sync_local(local_path)
 
-    attach(db, install=install, upgrade=upgrade)
+    attach(db, install=install, upgrade=upgrade, profile=profile)
 
 
 def detach():
     with _lock:
         _stop_locked()
-        _state.update(status="stopped", db=None, install=None, upgrade=None, error=None, startedAt=None)
+        # profile resets too: it's investigation-specific and shouldn't leak onto whatever
+        # gets attached next.
+        _state.update(
+            status="stopped", db=None, install=None, upgrade=None, error=None, startedAt=None,
+            profile=dict(PROFILE_DEFAULTS),
+        )
 
 
 def detach_if_attached(db_name):
@@ -207,6 +256,7 @@ def reset_to_stopped_on_boot():
         _state.update(
             status="stopped", db=None, install=None, upgrade=None,
             syncedPr=None, syncedCommit=None, syncedLocal=None, startedAt=None, error=None,
+            profile=dict(PROFILE_DEFAULTS),
         )
 
 
