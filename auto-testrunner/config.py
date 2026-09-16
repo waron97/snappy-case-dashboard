@@ -49,6 +49,10 @@ SERIES = "15.0"
 # Init test runs only for PRs touching this repo subdir: heavy XML "workflow"
 # modules with no logic, excluded from unit tests, but must still upgrade cleanly.
 TEST01_INIT_PATH_PREFIX = "config/"
+# Second init-test pass: -u/-i with --test-enable, scoped to config_wf_ml_* modules that
+# ship their own tests/ folder. Today that's none (the family is XML-only, see above) —
+# this exists so a future one with tests is picked up automatically, no code change needed.
+CONFIG_WF_ML_TEST_PREFIX = "config_wf_ml_"
 TARGET_BRANCH = "15.0-dev"
 # Pool of pre-created base-DB copies kept warm so init tests grab one instantly
 # instead of waiting for a ~13 min template copy. Size ~= replica_count + 2.

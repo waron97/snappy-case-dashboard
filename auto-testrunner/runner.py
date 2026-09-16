@@ -6,6 +6,7 @@ import subprocess
 from base_db import claim_pool_db, ensure_base_db
 from config import (
     ADDONS_DIR,
+    CONFIG_WF_ML_TEST_PREFIX,
     DB_HOST,
     DB_PASSWORD,
     DB_USER,
@@ -306,6 +307,18 @@ def changed_config_modules(commit_hash):
     return mods
 
 
+def _config_wf_ml_test_modules():
+    """config_wf_ml_* directories under ADDONS_DIR that contain a tests/ subfolder.
+    Filesystem-based and PR-independent by design: this exercises the standing
+    config_wf_ml_* + tests/ population on every init run, not just what the PR touched."""
+    if not ADDONS_DIR.is_dir():
+        return set()
+    return {
+        p.name for p in ADDONS_DIR.iterdir()
+        if p.name.startswith(CONFIG_WF_ML_TEST_PREFIX) and (p / "tests").is_dir()
+    }
+
+
 def _run_init_test(commit_hash, config_mods):
     """Upgrade the PR's changed config/ modules on an isolated copy of the restored
     test-01 base DB, to verify initialization succeeds on production-like data."""
@@ -336,26 +349,53 @@ def _run_init_test(commit_hash, config_mods):
         installed = installed_modules(copy_db)
         to_upgrade = sorted(changed | (config_mods & installed))
         to_install = sorted(config_mods - installed)
-        if not to_upgrade and not to_install:
+
+        rc = 0
+        if to_upgrade or to_install:
+            set_stage(f"installing {len(to_install)} / upgrading {len(to_upgrade)} modules")
+            with open(init_log, "ab") as f:
+                f.write(f"INSTALL_MODULES: {','.join(to_install) or '(none)'}\n".encode())
+                f.write(f"CHANGED_MODULES: {','.join(to_upgrade) or '(none)'}\n".encode())
+            cmd = ["python3", ODOO_BIN, "-c", ODOO_INIT_CONF, "-d", copy_db]
+            if to_install:
+                cmd += ["-i", ",".join(to_install)]
+            if to_upgrade:
+                cmd += ["-u", ",".join(to_upgrade)]
+            cmd += ["--stop-after-init", "--i18n-overwrite", "--log-level=info"]
+            rc = run_cmd(cmd, log_file=init_log)
+        else:
             log.info(f"[{commit_hash[:8]}] Init test: nothing to install or upgrade")
             with open(init_log, "ab") as f:
                 f.write(b"No modules to install or upgrade.\n")
-            _write_init_status(init_log, "OK")
-            return
 
-        set_stage(f"installing {len(to_install)} / upgrading {len(to_upgrade)} modules")
-        with open(init_log, "ab") as f:
-            f.write(f"INSTALL_MODULES: {','.join(to_install) or '(none)'}\n".encode())
-            f.write(f"CHANGED_MODULES: {','.join(to_upgrade) or '(none)'}\n".encode())
-        cmd = ["python3", ODOO_BIN, "-c", ODOO_INIT_CONF, "-d", copy_db]
-        if to_install:
-            cmd += ["-i", ",".join(to_install)]
-        if to_upgrade:
-            cmd += ["-u", ",".join(to_upgrade)]
-        cmd += ["--stop-after-init", "--i18n-overwrite", "--log-level=info"]
-        rc = run_cmd(cmd, log_file=init_log)
-        _write_init_status(init_log, "OK" if rc == 0 else "KO")
-        log.info(f"[{commit_hash[:8]}] Init test complete (rc={rc})")
+        # Second pass: -u/-i --test-enable, scoped to config_wf_ml_* modules with a
+        # tests/ folder (none today). Only runs after a clean pass 1 (testing atop a
+        # failed upgrade isn't meaningful) and only starts Odoo again if there's
+        # something to test, so this is a no-op until such a module exists.
+        test_rc = 0
+        if rc == 0:
+            installed = installed_modules(copy_db)
+            test_mods = _config_wf_ml_test_modules()
+            test_upgrade = sorted(test_mods & installed)
+            test_install = sorted(test_mods - installed)
+            if test_upgrade or test_install:
+                set_stage(f"testing {len(test_mods)} config_wf_ml_* modules")
+                with open(init_log, "ab") as f:
+                    f.write(f"TEST_INSTALL_MODULES: {','.join(test_install) or '(none)'}\n".encode())
+                    f.write(f"TEST_UPGRADE_MODULES: {','.join(test_upgrade) or '(none)'}\n".encode())
+                test_cmd = ["python3", ODOO_BIN, "-c", ODOO_INIT_CONF, "-d", copy_db]
+                if test_install:
+                    test_cmd += ["-i", ",".join(test_install)]
+                if test_upgrade:
+                    test_cmd += ["-u", ",".join(test_upgrade)]
+                test_cmd += [
+                    "--stop-after-init", "--i18n-overwrite", "--log-level=info",
+                    "--test-enable",
+                ]
+                test_rc = run_cmd(test_cmd, log_file=init_log)
+
+        _write_init_status(init_log, "OK" if rc == 0 and test_rc == 0 else "KO")
+        log.info(f"[{commit_hash[:8]}] Init test complete (rc={rc}, test_rc={test_rc})")
 
     except Exception as e:
         log.error(f"[{commit_hash[:8]}] Init test failed: {e}")
