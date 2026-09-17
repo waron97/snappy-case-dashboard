@@ -6,7 +6,7 @@ import { IconDownload } from '@tabler/icons-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Badge, Button, Container, Group, Space, Tabs, Text, Title } from '@mantine/core';
 import LogViewer from '@/components/LogViewer';
-import { fetchPrs, getRunningHashes, InitStatus, PreCommitStatus, PrRecord, PrStatus, readLog, readPreCommitLog, triggerNotify, triggerRecheck, triggerRecheckByPrId } from '../actions';
+import { fetchPrs, getRunningHashes, InitStatus, InitTestStatus, PreCommitStatus, PrRecord, PrStatus, readLog, readPreCommitLog, triggerNotify, triggerRecheck, triggerRecheckByPrId } from '../actions';
 
 const STATUS_COLOR: Record<PrStatus, string> = {
     passed: 'green',
@@ -46,6 +46,16 @@ const INIT_COLOR: Record<InitStatus, string> = {
 const INIT_LABEL: Record<InitStatus, string> = {
     ok: 'init OK',
     ko: 'init KO',
+};
+
+const INIT_TEST_COLOR: Record<InitTestStatus, string> = {
+    ok: 'green',
+    ko: 'red',
+};
+
+const INIT_TEST_LABEL: Record<InitTestStatus, string> = {
+    ok: 'init-tests OK',
+    ko: 'init-tests KO',
 };
 
 export default function PrDetailPage() {
@@ -109,6 +119,13 @@ export default function PrDetailPage() {
         gcTime: 0,
     });
 
+    const { data: initTestLog } = useQuery<string | null>({
+        queryKey: ['devops', 'log', hash, 'inittest'],
+        queryFn: () => readLog(hash, 'inittest'),
+        refetchInterval: isActive ? 1_000 : false,
+        gcTime: 0,
+    });
+
     async function handleNotify() {
         setNotifying(true);
         try {
@@ -166,6 +183,11 @@ export default function PrDetailPage() {
                             {INIT_LABEL[pr.initStatus]}
                         </Badge>
                     )}
+                    {pr?.initTestStatus && (
+                        <Badge color={INIT_TEST_COLOR[pr.initTestStatus]} variant="outline">
+                            {INIT_TEST_LABEL[pr.initTestStatus]}
+                        </Badge>
+                    )}
                 </Group>
                 <Group gap="sm">
                     {pr?.sourceBranch && (
@@ -197,6 +219,7 @@ export default function PrDetailPage() {
                     <Tabs.Tab value="test">Test Log</Tabs.Tab>
                     <Tabs.Tab value="precommit">Pre-commit Log</Tabs.Tab>
                     <Tabs.Tab value="init">Init Log</Tabs.Tab>
+                    <Tabs.Tab value="inittest">Init Tests Log</Tabs.Tab>
                 </Tabs.List>
 
                 <Tabs.Panel value="install" pt="md">
@@ -257,6 +280,21 @@ export default function PrDetailPage() {
                         </Button>
                     </Group>
                     <LogViewer content={initLog ?? null} />
+                </Tabs.Panel>
+
+                <Tabs.Panel value="inittest" pt="md">
+                    <Group justify="flex-end" mb="xs">
+                        <Button
+                            size="xs"
+                            variant="light"
+                            leftSection={<IconDownload size={14} />}
+                            disabled={!initTestLog}
+                            onClick={() => downloadLog('inittest', initTestLog)}
+                        >
+                            Download
+                        </Button>
+                    </Group>
+                    <LogViewer content={initTestLog ?? null} />
                 </Tabs.Panel>
             </Tabs>
         </Container>

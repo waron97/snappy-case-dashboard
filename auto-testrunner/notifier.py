@@ -12,6 +12,7 @@ from config import DEVOPS_DRYRUN, MAX_TASK_ATTEMPTS, RESULTS_DIR, STATE_TTL, rdb
 from poller import enqueue_task
 from runner import (
     parse_init_result,
+    parse_init_test_result,
     parse_pre_commit_result,
     parse_test_result,
     task_log_paths,
@@ -27,8 +28,6 @@ _TEST_ICON = {
     "done": "ℹ️",
 }
 _PRE_COMMIT_ICON = {"ok": "✅", "ko": "❌"}
-_INIT_ICON = {"ok": "✅", "ko": "❌"}
-_INIT_LABEL = {"ok": "Initialization succeeded", "ko": "Initialization failed"}
 _TEST_STATUS_LABEL = {
     "passed": "All tests passed",
     "failed": "Test failures detected",
@@ -131,9 +130,18 @@ def notify_pr(commit_hash, force=False):
 
     # The init test runs on every PR now, so always render the row: a missing init.log
     # means the task did not produce a result, which should be visible, not omitted.
+    # Pass 1 (init) and pass 2 (config_wf_ml_* tests) are reported as one row, but the
+    # label distinguishes which pass actually failed, since they now have separate logs.
     init_status = parse_init_result(commit_hash)
-    init_icon = _INIT_ICON.get(init_status, "⚠️")
-    init_label = _INIT_LABEL.get(init_status, "Not run")
+    init_test_status = parse_init_test_result(commit_hash)
+    if init_status == "ko":
+        init_icon, init_label = "❌", "Failed (init)"
+    elif init_test_status == "ko":
+        init_icon, init_label = "❌", "Failed (tests)"
+    elif init_status == "ok":
+        init_icon, init_label = "✅", "Initialization succeeded"
+    else:
+        init_icon, init_label = "⚠️", "Not run"
     lines.append(f"| Initialization (live dump) | {init_icon} {init_label} |")
 
     attachment_lines = []
@@ -168,6 +176,17 @@ def notify_pr(commit_hash, force=False):
             except Exception as e:
                 resp_body = getattr(getattr(e, "response", None), "text", None)
                 log.warning(f"[{h8}] Could not upload init log: {e} | response: {resp_body}")
+
+    if init_test_status == "ko" and not DEVOPS_DRYRUN:
+        init_test_log = RESULTS_DIR / f"{commit_hash}.inittest.log"
+        if init_test_log.exists():
+            try:
+                att_url = upload_pr_attachment(pr_id, f"{h8}.inittest.txt", init_test_log)
+                if att_url:
+                    attachment_lines.append(f"[Init tests log]({att_url})")
+            except Exception as e:
+                resp_body = getattr(getattr(e, "response", None), "text", None)
+                log.warning(f"[{h8}] Could not upload init tests log: {e} | response: {resp_body}")
 
     if pre_commit_status == "ko" and not DEVOPS_DRYRUN:
         pc_log = RESULTS_DIR / f"{commit_hash}.precommit.log"

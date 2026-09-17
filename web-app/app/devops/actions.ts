@@ -22,6 +22,9 @@ export type PreCommitStatus = 'ok' | 'ko';
 
 export type InitStatus = 'ok' | 'ko';
 
+/** Pass 2 of the init task: -u/-i --test-enable on config_wf_ml_* modules with tests. */
+export type InitTestStatus = 'ok' | 'ko';
+
 /** The tests task's own result, independent of the commit-wide `status`. */
 export type TestStatus = 'passed' | 'failed' | 'unknown' | 'done';
 
@@ -44,7 +47,10 @@ export type PrRecord = {
     status: PrStatus;
     testStatus: TestStatus | null;
     preCommitStatus: PreCommitStatus | null;
+    /** Combined pass1+pass2 result for the single "init" task badge. */
     initStatus: InitStatus | null;
+    /** Pass 2 alone, for its own log panel. */
+    initTestStatus: InitTestStatus | null;
     tasks: Partial<Record<TaskName, TaskState>>;
     isDraft: boolean;
 };
@@ -142,7 +148,7 @@ export async function fetchPoolStatus(): Promise<PoolStatus> {
 
 export async function readLog(
     hash: string,
-    type: 'install' | 'test' | 'init'
+    type: 'install' | 'test' | 'init' | 'inittest'
 ): Promise<string | null> {
     const filePath = path.join(RESULTS, `${hash}.${type}.log`);
     try {

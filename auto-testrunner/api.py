@@ -22,7 +22,8 @@ from config import (
 from notifier import notify_pr
 from poller import do_poll, enqueue_all
 from runner import (
-    parse_init_result,
+    parse_init_overall_result,
+    parse_init_test_result,
     parse_pre_commit_result,
     parse_test_result,
     pg_env,
@@ -91,7 +92,9 @@ def api_prs():
         precommit_log_exists = bool(commit and (RESULTS_DIR / f"{commit}.precommit.log").exists())
         pre_commit_status = parse_pre_commit_result(commit) if precommit_log_exists else None
         init_log_exists = bool(commit and (RESULTS_DIR / f"{commit}.init.log").exists())
-        init_status = parse_init_result(commit) if init_log_exists else None
+        init_status = parse_init_overall_result(commit) if init_log_exists else None
+        init_test_log_exists = bool(commit and (RESULTS_DIR / f"{commit}.inittest.log").exists())
+        init_test_status = parse_init_test_result(commit) if init_test_log_exists else None
         result.append(
             {
                 "id": pr.get("pullRequestId"),
@@ -104,7 +107,10 @@ def api_prs():
                 # task of this commit is running", so the UI must not derive it from that.
                 "testStatus": parse_test_result(commit) if test_log_exists else None,
                 "preCommitStatus": pre_commit_status,
+                # Combined pass1+pass2 result, for the single "init" task badge.
                 "initStatus": init_status,
+                # Pass 2 alone (config_wf_ml_* --test-enable), for its own log panel.
+                "initTestStatus": init_test_status,
                 "tasks": _task_view(commit, task_states(commit)) if commit else {},
                 "isDraft": pr.get("isDraft", False),
             }

@@ -28,6 +28,7 @@ log = logging.getLogger(__name__)
 _RUNNER_RE = re.compile(r"odoo\.tests\.runner: (\d+) failed, (\d+) error\(s\)")
 _PRE_COMMIT_RE = re.compile(r"PRE_COMMIT_STATUS: (OK|KO)")
 _INIT_RE = re.compile(r"INIT_STATUS: (OK|KO)")
+_INIT_TEST_RE = re.compile(r"INIT_TEST_STATUS: (OK|KO)")
 
 
 # Which log files each task produces. Doubles as the per-task idempotency marker: a
@@ -36,7 +37,9 @@ _INIT_RE = re.compile(r"INIT_STATUS: (OK|KO)")
 TASK_LOGS = {
     "tests": ("install.log", "test.log"),
     "precommit": ("precommit.log",),
-    "init": ("init.log",),
+    # init.log: pass 1 (upgrade/install of changed + PR-touched config modules).
+    # inittest.log: pass 2 (-u/-i --test-enable on config_wf_ml_* modules with tests).
+    "init": ("init.log", "inittest.log"),
 }
 
 
@@ -89,7 +92,8 @@ def parse_pre_commit_result(commit_hash):
 
 
 def parse_init_result(commit_hash):
-    """Read last 1 KB of init.log for INIT_STATUS sentinel. Returns 'ok', 'ko', or None."""
+    """Read last 1 KB of init.log for INIT_STATUS sentinel (pass 1: upgrade/install of
+    changed + config modules). Returns 'ok', 'ko', or None."""
     init_log = RESULTS_DIR / f"{commit_hash}.init.log"
     if not init_log.exists():
         return None
@@ -103,6 +107,37 @@ def parse_init_result(commit_hash):
     except OSError:
         pass
     return None
+
+
+def parse_init_test_result(commit_hash):
+    """Read last 1 KB of inittest.log for INIT_TEST_STATUS sentinel (pass 2: the
+    config_wf_ml_* --test-enable pass). Returns 'ok', 'ko', or None if that pass never
+    ran (no such modules, or pass 1 failed first)."""
+    init_test_log = RESULTS_DIR / f"{commit_hash}.inittest.log"
+    if not init_test_log.exists():
+        return None
+    try:
+        with open(init_test_log, "rb") as f:
+            f.seek(max(0, init_test_log.stat().st_size - 1024))
+            tail = f.read().decode("utf-8", errors="replace")
+        m = _INIT_TEST_RE.search(tail)
+        if m:
+            return m.group(1).lower()
+    except OSError:
+        pass
+    return None
+
+
+def parse_init_overall_result(commit_hash):
+    """Combined pass/fail for the whole init task (both passes) for consumers that want
+    one badge rather than the finer init-vs-tests distinction the PR comment makes."""
+    init_status = parse_init_result(commit_hash)
+    test_status = parse_init_test_result(commit_hash)
+    if init_status == "ko" or test_status == "ko":
+        return "ko"
+    if init_status == "ok":
+        return "ok"
+    return init_status
 
 
 def vacuum(active_hashes):
@@ -249,6 +284,11 @@ def _write_init_status(init_log, status):
         f.write(f"\nINIT_STATUS: {status}\n".encode())
 
 
+def _write_init_test_status(init_test_log, status):
+    with open(init_test_log, "ab") as f:
+        f.write(f"\nINIT_TEST_STATUS: {status}\n".encode())
+
+
 def rebase_onto_target():
     """Rebase the current detached HEAD (PR head) onto a fresh origin/TARGET_BRANCH so
     the init test runs the PR's config changes on top of the latest dev, matching a
@@ -323,6 +363,7 @@ def _run_init_test(commit_hash, config_mods):
     """Upgrade the PR's changed config/ modules on an isolated copy of the restored
     test-01 base DB, to verify initialization succeeds on production-like data."""
     init_log = RESULTS_DIR / f"{commit_hash}.init.log"
+    init_test_log = RESULTS_DIR / f"{commit_hash}.inittest.log"
 
     # Grab a pre-warmed copy from the pool for an instant start; if the pool is empty,
     # fall back to an on-demand template copy so a run never blocks on an empty pool.
@@ -368,11 +409,13 @@ def _run_init_test(commit_hash, config_mods):
             with open(init_log, "ab") as f:
                 f.write(b"No modules to install or upgrade.\n")
 
+        _write_init_status(init_log, "OK" if rc == 0 else "KO")
+
         # Second pass: -u/-i --test-enable, scoped to config_wf_ml_* modules with a
-        # tests/ folder (none today). Only runs after a clean pass 1 (testing atop a
-        # failed upgrade isn't meaningful) and only starts Odoo again if there's
-        # something to test, so this is a no-op until such a module exists.
-        test_rc = 0
+        # tests/ folder (none today), logged and reported separately from pass 1. Only
+        # runs after a clean pass 1 (testing atop a failed upgrade isn't meaningful) and
+        # only starts Odoo again if there's something to test, so this is a no-op until
+        # such a module exists.
         if rc == 0:
             installed = installed_modules(copy_db)
             test_mods = _config_wf_ml_test_modules()
@@ -380,7 +423,7 @@ def _run_init_test(commit_hash, config_mods):
             test_install = sorted(test_mods - installed)
             if test_upgrade or test_install:
                 set_stage(f"testing {len(test_mods)} config_wf_ml_* modules")
-                with open(init_log, "ab") as f:
+                with open(init_test_log, "ab") as f:
                     f.write(f"TEST_INSTALL_MODULES: {','.join(test_install) or '(none)'}\n".encode())
                     f.write(f"TEST_UPGRADE_MODULES: {','.join(test_upgrade) or '(none)'}\n".encode())
                 test_cmd = ["python3", ODOO_BIN, "-c", ODOO_INIT_CONF, "-d", copy_db]
@@ -392,10 +435,10 @@ def _run_init_test(commit_hash, config_mods):
                     "--stop-after-init", "--i18n-overwrite", "--log-level=info",
                     "--test-enable",
                 ]
-                test_rc = run_cmd(test_cmd, log_file=init_log)
+                test_rc = run_cmd(test_cmd, log_file=init_test_log)
+                _write_init_test_status(init_test_log, "OK" if test_rc == 0 else "KO")
 
-        _write_init_status(init_log, "OK" if rc == 0 and test_rc == 0 else "KO")
-        log.info(f"[{commit_hash[:8]}] Init test complete (rc={rc}, test_rc={test_rc})")
+        log.info(f"[{commit_hash[:8]}] Init test complete (rc={rc})")
 
     except Exception as e:
         log.error(f"[{commit_hash[:8]}] Init test failed: {e}")
