@@ -348,13 +348,16 @@ def changed_config_modules(commit_hash):
 
 
 def _config_wf_ml_test_modules():
-    """config_wf_ml_* directories under ADDONS_DIR that contain a tests/ subfolder.
-    Filesystem-based and PR-independent by design: this exercises the standing
-    config_wf_ml_* + tests/ population on every init run, not just what the PR touched."""
-    if not ADDONS_DIR.is_dir():
+    """config_wf_ml_* directories under ADDONS_DIR/config (see TEST01_INIT_PATH_PREFIX;
+    every config_wf_ml_* module lives one level down, at config/<module>, never at the
+    addons root) that contain a tests/ subfolder. Filesystem-based and PR-independent by
+    design: this exercises the standing config_wf_ml_* + tests/ population on every init
+    run, not just what the PR touched."""
+    config_dir = ADDONS_DIR / TEST01_INIT_PATH_PREFIX.rstrip("/")
+    if not config_dir.is_dir():
         return set()
     return {
-        p.name for p in ADDONS_DIR.iterdir()
+        p.name for p in config_dir.iterdir()
         if p.name.startswith(CONFIG_WF_ML_TEST_PREFIX) and (p / "tests").is_dir()
     }
 
@@ -402,7 +405,8 @@ def _run_init_test(commit_hash, config_mods):
                 cmd += ["-i", ",".join(to_install)]
             if to_upgrade:
                 cmd += ["-u", ",".join(to_upgrade)]
-            cmd += ["--stop-after-init", "--i18n-overwrite", "--log-level=info"]
+                cmd += ["--i18n-overwrite"]
+            cmd += ["--stop-after-init", "--log-level=info"]
             rc = run_cmd(cmd, log_file=init_log)
         else:
             log.info(f"[{commit_hash[:8]}] Init test: nothing to install or upgrade")
@@ -431,8 +435,9 @@ def _run_init_test(commit_hash, config_mods):
                     test_cmd += ["-i", ",".join(test_install)]
                 if test_upgrade:
                     test_cmd += ["-u", ",".join(test_upgrade)]
+                    test_cmd += ["--i18n-overwrite"]
                 test_cmd += [
-                    "--stop-after-init", "--i18n-overwrite", "--log-level=info",
+                    "--stop-after-init", "--log-level=info",
                     "--test-enable",
                 ]
                 test_rc = run_cmd(test_cmd, log_file=init_test_log)
