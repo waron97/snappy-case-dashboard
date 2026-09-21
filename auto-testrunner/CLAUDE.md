@@ -115,3 +115,52 @@ instance when disabled.
   find the slow outlier rather than expecting one trace per page.
 - `profiling/repro_read.py` is a standalone (not wired into the app) manual `xmlrpc.client`
   script for triggering a specific call by hand.
+
+## Appendix: broken web assets on a dev copy (404/500 on `/web/assets/...`)
+
+Symptom: an attached instance renders an unstyled/broken or partially-broken web client; its
+log is full of `404` for `/web/assets/<id>-<version>/web.assets_*.min.{js,css}` plus
+`CacheMiss: 'ir.attachment(<id>,).raw'` and `_read_file reading .../filestore/<db>/<hh>/<hash>`
+for files that don't exist, occasionally followed by `500 MissingError` on the same URLs.
+
+Root cause — two independent caches going stale at once:
+
+1. **DB-side**: named dev copies are made with `createdb -T` (`base_db.create_copy`), and the
+   base itself is a plain `pg_restore` (`base_db._restore`). Neither copies the Odoo filestore.
+   The production dump's already-generated `ir_attachment` rows named `web.assets_*` therefore
+   point at `store_fname` blobs that were never placed under the local per-DB filestore
+   (`/home/odoo/.local/share/Odoo/filestore/<db>/`), so Odoo serves 404 for bundle URLs it
+   itself emitted.
+2. **Process-side**: generated asset node URLs (with those attachment ids baked in) are held in
+   an in-process `@ormcache` (`ir_qweb._generate_asset_nodes_cache` / `_get_asset_content`).
+   Its own comment: assets are "cached forever... the admin can force a cache clear by
+   restarting the server". Editing/deleting the rows under a running instance does not clear
+   it, so it keeps emitting URLs for the now-missing attachments — and can serve ids that no
+   longer exist, giving `500 MissingError` instead of a clean regenerate.
+
+Fix (verified working):
+
+```sql
+-- on the attached copy, e.g. dev_general_01
+DELETE FROM ir_attachment WHERE name LIKE 'web.assets%';
+```
+
+then restart (clears the ormcache so bundles recompile into the local filestore):
+
+```bash
+docker exec snappy-testrunner-testrunner-control-1 python3 -c "
+import urllib.request, json
+body = json.dumps({'upgrade': '', 'install': ''}).encode()  # '' = don't re-apply the previous -u
+req = urllib.request.Request('http://127.0.0.1:8765/instance/restart', data=body,
+                             headers={'Content-Type': 'application/json'})
+print(urllib.request.urlopen(req).read().decode())"
+```
+
+Verify: fetch `/web/login`, collect every `/web/assets/...` ref, request each — all should be
+200. (`GET /web/assets/...` as a logged-out user is enough; the backend bundle regenerates on
+first authenticated `/web` load.)
+
+Not yet automated: the recurrence is structural (every `pg_restore`/`createdb -T` inherits the
+dump's asset rows without a filestore), so a durable fix belongs in `base_db` right after the
+restore/clone — wipe `web.assets%` attachments there — rather than as a manual cleanup after
+each attach.
